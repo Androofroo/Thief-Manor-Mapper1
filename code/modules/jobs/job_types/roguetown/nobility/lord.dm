@@ -47,7 +47,7 @@ GLOBAL_LIST_EMPTY(lord_titles)
 			GLOB.lordsurname = "of [L.real_name]"
 		SSticker.rulermob = L
 		if(should_wear_femme_clothes(L))
-			SSticker.rulertype = "Grand Duchess"
+			SSticker.rulertype = "Lady"
 		else
 			SSticker.rulertype = "Lord"
 		to_chat(world, "<b><span class='notice'><span class='big'>[L.real_name] is [SSticker.rulertype] of Azure Peak.</span></span></b>")

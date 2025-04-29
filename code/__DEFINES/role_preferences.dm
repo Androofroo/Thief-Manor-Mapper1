@@ -17,7 +17,7 @@
 #define ROLE_LICH				"Lich"
 #define ROLE_ASCENDANT			"Ascendant"
 #define ROLE_WRETCH				"Wretch"
-
+#define ROLE_THIEF				"Thief"
 #define ROLE_SYNDICATE			"Syndicate"
 #define ROLE_TRAITOR			"Traitor"
 #define ROLE_OPERATIVE			"Operative"
@@ -70,7 +70,8 @@ GLOBAL_LIST_INIT(special_roles_rogue, list(
 	ROLE_ASPIRANT = /datum/antagonist/aspirant,
 	ROLE_WEREWOLF = /datum/antagonist/werewolf,
 	ROLE_NBEAST = /datum/antagonist/vampirelord,
-	ROLE_LICH = /datum/antagonist/lich
+	ROLE_LICH = /datum/antagonist/lich,
+	ROLE_THIEF = /datum/antagonist/thief
 ))
 
 //Job defines for what happens when you fail to qualify for any job during job selection

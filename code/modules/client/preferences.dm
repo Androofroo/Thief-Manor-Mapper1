@@ -565,6 +565,15 @@ GLOBAL_LIST_EMPTY(chosen_names)
 
 
 			for (var/i in GLOB.special_roles_rogue)
+				// Skip this villain role if thief_enabled is FALSE
+				var/datum/antagonist/antag_datum_type = GLOB.special_roles_rogue[i]
+				if(ispath(antag_datum_type))
+					var/datum/antagonist/temp_antag = new antag_datum_type
+					if(!temp_antag.thief_enabled)
+						qdel(temp_antag)
+						continue
+					qdel(temp_antag)
+				
 				if(is_banned_from(user.ckey, i))
 					dat += "<b>[capitalize(i)]:</b> <a href='?_src_=prefs;bancheck=[i]'>BANNED</a><br>"
 				else
@@ -577,9 +586,9 @@ GLOBAL_LIST_EMPTY(chosen_names)
 					if(days_remaining)
 						dat += "<b>[capitalize(i)]:</b> <font color=red> \[IN [days_remaining] DAYS]</font><br>"
 					else
-						dat += "<b>[capitalize(i)]:</b> <a href='?_src_=prefs;preference=be_special;be_special_type=[i]'>[(i in be_special) ? "Enabled" : "Disabled"]</a><br>"
+						dat += "<b>[capitalize(i)]:</b> <a href='?_src_=prefs;preference=antag;task=be_special;be_special_type=[i]'>[(i in be_special) ? "Enabled" : "Disabled"]</a><br>"
 //			dat += "<br>"
-//			dat += "<b>Midround Antagonist:</b> <a href='?_src_=prefs;preference=allow_midround_antag'>[(toggles & MIDROUND_ANTAG) ? "Enabled" : "Disabled"]</a><br>"
+//			
 			dat += "</td></tr></table>"
 
 		if(2) //OOC Preferences
@@ -1141,6 +1150,15 @@ Slots: [job.spawn_positions] [job.round_contrib_points ? "RCP: +[job.round_contr
 
 
 	for (var/i in GLOB.special_roles_rogue)
+		// Skip this villain role if thief_enabled is FALSE
+		var/datum/antagonist/antag_datum_type = GLOB.special_roles_rogue[i]
+		if(ispath(antag_datum_type))
+			var/datum/antagonist/temp_antag = new antag_datum_type
+			if(!temp_antag.thief_enabled)
+				qdel(temp_antag)
+				continue
+			qdel(temp_antag)
+		
 		if(is_banned_from(user.ckey, i))
 			dat += "<b>[capitalize(i)]:</b> <a href='?_src_=prefs;bancheck=[i]'>BANNED</a><br>"
 		else

@@ -18,6 +18,7 @@ GLOBAL_LIST_EMPTY(antagonists)
 	var/antag_hud_type
 	var/antag_hud_name
 	var/list/confess_lines
+	var/thief_enabled = FALSE //If this is TRUE, the antagonist will appear in the villain selection preference screen
 
 	//Antag panel properties
 	var/show_in_antagpanel = TRUE	//This will hide adding this antag type in antag panel, use only for internal subtypes that shouldn't be added directly but still show if possessed by mind
@@ -211,6 +212,10 @@ GLOBAL_LIST_EMPTY(antagonists)
 
 /datum/antagonist/proc/enabled_in_preferences(datum/mind/M)
 	if(job_rank)
+		// If thief_enabled is FALSE, don't show in villain selection preferences
+		if(!thief_enabled)
+			return FALSE
+		
 		if(M.current && M.current.client && (job_rank in M.current.client.prefs.be_special))
 			return TRUE
 		else

@@ -114,7 +114,7 @@
 		SSticker.rulermob = HU
 		var/dispjob = mind.assigned_role
 		removeomen(OMEN_NOLORD)
-		say("By the authority of the gods, I pronounce you Lord of the Manor!")
+		say("By the authority of Psydon, I pronounce you Lord of the Manor!")
 		priority_announce("[real_name] the [dispjob] has named [HU.real_name] the inheritor of THIEF MANOR!", title = "Long Live [HU.real_name]!", sound = 'sound/misc/bell.ogg')
 
 /mob/living/carbon/human/proc/churchexcommunicate()

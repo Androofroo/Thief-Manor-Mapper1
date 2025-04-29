@@ -559,3 +559,114 @@
 	pick_werewolves()
 
 	return TRUE
+
+/datum/game_mode/chaosmode/thiefmode
+	name = "thiefmode"
+	config_tag = "thiefmode"
+	report_type = "thiefmode"
+	false_report_weight = 0
+	required_players = 0 // No minimum player count to make it easily selectable
+	required_enemies = 0
+	recommended_enemies = 0
+	enemy_minimum_age = 0
+	votable = TRUE
+	probability = 75
+
+	announce_span = "danger"
+	announce_text = "Something valuable has gone missing! There may be thieves in the manor..."
+	
+	var/list/datum/mind/pre_thieves = list() // List to hold pre-setup thieves
+	var/list/datum/mind/thieves = list() // List to hold actual thieves
+
+// Override can_start to ensure it can always start
+/datum/game_mode/chaosmode/thiefmode/can_start()
+	var/playerC = 0
+	for(var/i in GLOB.new_player_list)
+		var/mob/dead/new_player/player = i
+		if(player.ready == PLAYER_READY_TO_PLAY)
+			playerC++
+	
+	if(!GLOB.Debug2)
+		if(playerC < required_players)
+			return FALSE
+	
+	return TRUE
+
+// Override pre_setup to select thieves
+/datum/game_mode/chaosmode/thiefmode/pre_setup()
+	if(allmig || roguefight)
+		return TRUE
+	
+	// Get antagonist candidates
+	for(var/A in GLOB.special_roles_rogue)
+		allantags |= get_players_for_role(A)
+	
+	// Select thieves
+	pick_thieves()
+	
+	return TRUE
+
+// Override after_DO to do nothing additional
+/datum/game_mode/chaosmode/thiefmode/after_DO()
+	if(allmig || roguefight)
+		return TRUE
+	
+	// No additional antagonists needed
+	return TRUE
+
+// Function to select thieves
+/datum/game_mode/chaosmode/thiefmode/proc/pick_thieves()
+	// Define restricted jobs
+	restricted_jobs = list("Lord", "Heir", "Knight")
+	
+	var/num_thieves = 0
+	
+	// Determine number of thieves based on player count
+	if(num_players() >= 10)
+		num_thieves = CLAMP(round(num_players() / 10) + 1, 2, 4) // 2-4 thieves depending on player count
+	else
+		num_thieves = 2 // Minimum 2 thieves for low pop
+	
+	if(num_thieves)
+		antag_candidates = get_players_for_role(ROLE_THIEF)
+		for(var/i = 0, i < num_thieves && antag_candidates.len > 0, ++i)
+			var/datum/mind/thief = pick_n_take(antag_candidates)
+			var/found = FALSE
+			
+			// Check if thief is in allantags
+			for(var/M in allantags)
+				if(M == thief)
+					found = TRUE
+					allantags -= M
+					break
+			
+			if(!found)
+				continue
+			
+			pre_thieves += thief
+			thief.special_role = "Thief"
+			testing("[key_name(thief)] has been selected as a thief")
+			log_game("[key_name(thief)] has been selected as a thief")
+	
+	// Add all pre_thieves to pre_setup_antags global list
+	for(var/antag in pre_thieves)
+		GLOB.pre_setup_antags |= antag
+	
+	restricted_jobs = list() // Reset restricted jobs
+
+// Override post_setup to process thieves
+/datum/game_mode/chaosmode/thiefmode/post_setup()
+	set waitfor = FALSE
+	
+	// Process thieves
+	for(var/datum/mind/thief_mind in pre_thieves)
+		var/datum/antagonist/new_antag = new /datum/antagonist/thief()
+		thief_mind.add_antag_datum(new_antag)
+		thieves += thief_mind
+		GLOB.pre_setup_antags -= thief_mind
+	
+	..()
+	// We're not actually ready until all antagonists are assigned
+	gamemode_ready = FALSE
+	addtimer(VARSET_CALLBACK(src, gamemode_ready, TRUE), 101)
+	return TRUE
