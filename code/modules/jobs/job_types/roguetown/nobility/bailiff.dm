@@ -6,7 +6,7 @@
 	total_positions = 1
 	spawn_positions = 1
 	allowed_sexes = list(MALE, FEMALE)
-	allowed_races = RACES_NO_CONSTRUCT
+	allowed_races = NOBLE_RACES_TYPES
 	allowed_ages = list(AGE_ADULT, AGE_MIDDLEAGED, AGE_OLD)
 	display_order = JDO_MARSHAL
 	tutorial = "The Magistrate is the manor’s authoritative judge and enforcer of law, entrusted with maintaining order and settling disputes. With sharp insight and the power to interrogate, detain, or issue decrees, their presence commands both respect and fear."

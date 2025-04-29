@@ -7,7 +7,7 @@
 	total_positions = 1
 	spawn_positions = 2
 	f_title = "Successor"
-	allowed_races = RACES_NO_CONSTRUCT //Maybe a system to force-pick lineage based on king and queen should be implemented. (No it shouldn't.)
+	allowed_races = NOBLE_RACES_TYPES //Maybe a system to force-pick lineage based on king and queen should be implemented. (No it shouldn't.)
 	allowed_sexes = list(MALE, FEMALE)
 	allowed_ages = list(AGE_ADULT)
 	advclass_cat_rolls = list(CTAG_HEIR = 20)
@@ -20,7 +20,7 @@
 	min_pq = 0
 	max_pq = null
 	round_contrib_points = 3
-	cmode_music = 'sound/music/combat_noble.ogg'
+	cmode_music = 'sound/music/combat_noble.ogg'	//Same reason as lord. See Lord.
 
 
 /datum/job/roguetown/prince/after_spawn(mob/living/H, mob/M, latejoin)

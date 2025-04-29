@@ -7,7 +7,7 @@
 	spawn_positions = 1
 
 	allowed_sexes = list(MALE, FEMALE)
-	allowed_races = RACES_NO_CONSTRUCT
+	allowed_races = NOBLE_RACES_TYPES
 	tutorial = "The Consort is a figure of charm and quiet influence, often overlooked but rarely uninformed. Behind their poised demeanor lies a keen mind, skilled in courtly manipulation, subtle persuasion, and guarding the manor’s most intimate secrets."
 
 	spells = list(/obj/effect/proc_holder/spell/self/convertrole/servant,
