@@ -54,8 +54,20 @@
 /datum/antagonist/thief/proc/add_objectives()
 	var/datum/objective/steal/steal_obj = new
 	steal_obj.owner = owner
-	steal_obj.set_target(locate(/obj/item/clothing/head/roguetown/crown/serpcrown) in world)
-	steal_obj.explanation_text = "Steal the Lord's Crown."
+	
+	// Make sure GLOB.possible_items is populated
+	if(!GLOB.possible_items.len)
+		for(var/I in subtypesof(/datum/objective_item/steal/rogue))
+			new I
+	
+	// Find the target item in GLOB.possible_items instead of directly setting steal_target
+	for(var/datum/objective_item/possible_item in GLOB.possible_items)
+		if(istype(possible_item, /datum/objective_item/steal/rogue/crown))
+			steal_obj.targetinfo = possible_item
+			steal_obj.steal_target = possible_item.targetitem
+			steal_obj.explanation_text = "Steal the Lord's Crown."
+			break
+	
 	objectives += steal_obj
 	
 	var/datum/objective/survive/survive_obj = new
