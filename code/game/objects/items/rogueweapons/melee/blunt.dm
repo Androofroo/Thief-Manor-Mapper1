@@ -66,6 +66,7 @@
 	wdefense = 2
 	wbalance = -1
 	blade_dulling = DULLING_BASHCHOP
+	intdamage_factor = 0.7
 
 /obj/item/rogueweapon/mace/church
 	force = 25
@@ -317,6 +318,7 @@
 	dropshrink = 0.6
 	bigboy = TRUE
 	gripsprite = TRUE
+	intdamage_factor = 0.5
 
 /obj/item/rogueweapon/mace/goden/getonmobprop(tag)
 	. = ..()
@@ -390,6 +392,7 @@
 	smeltresult = /obj/item/ingot/iron
 	blade_dulling = DULLING_BASH
 	wdefense = 3
+	intdamage_factor = 0.3
 
 /obj/item/rogueweapon/mace/warhammer/steel
 	force = 25

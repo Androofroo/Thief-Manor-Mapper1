@@ -627,3 +627,4 @@
 	anvilrepair = /datum/skill/craft/carpentry
 	wdefense = 3
 	wbalance = -1
+	intdamage_factor = 0.6

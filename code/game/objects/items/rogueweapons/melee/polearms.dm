@@ -618,6 +618,7 @@
 	wdefense = 5
 	wbalance = -1
 	sellprice = 60
+	intdamage_factor = 0.7
 
 /obj/item/rogueweapon/eaglebeak/getonmobprop(tag)
 	. = ..()
