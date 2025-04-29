@@ -2153,6 +2153,9 @@
 	desc = "A feathered leather hat, to show them all your superiority."
 	icon_state = "duelhat"
 	sewrepair = TRUE
+	color = COLOR_ALMOST_BLACK	
+	detail_tag = "_detail"
+	detail_color = COLOR_SILVER
 	salvage_result = /obj/item/natural/hide/cured
 
 
