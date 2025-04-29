@@ -1,4 +1,3 @@
-
 	//The mob should have a gender you want before running this proc. Will run fine without H
 /datum/preferences/proc/random_character(gender_override, antag_override = FALSE)
 	if(!pref_species)
@@ -8,14 +7,18 @@
 		gender = gender_override
 	else
 		gender = pick(MALE,FEMALE)
+	// Set voice type based on gender
+	voice_type = gender == FEMALE ? VOICE_TYPE_FEM : VOICE_TYPE_MASC
+	// Set pronouns based on gender
+	pronouns = gender == FEMALE ? SHE_HER : HE_HIM
 	age = AGE_ADULT
 	var/list/skins = pref_species.get_skin_list()
 	skin_tone = skins[pick(skins)]
 	eye_color = random_eye_color()
 	is_legacy = FALSE
 	flavortext = null
-	flavortext_display = " "	//_display left not null to prevent any legacy bugs.
-	ooc_notes_display = " "		//You can't join without filling in the blank FT / OOC notes, so these should be overriden before the character is ever examined.
+	flavortext_display = null
+	ooc_notes_display = null
 	ooc_notes = null
 	ooc_extra_link = null
 	ooc_extra = null

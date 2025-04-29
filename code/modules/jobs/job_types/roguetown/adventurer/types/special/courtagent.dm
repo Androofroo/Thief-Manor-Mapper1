@@ -2,8 +2,8 @@
 	title = "Court Agent"
 	flag = COURTAGENT
 	display_order = JDO_COURTAGENT
-	total_positions = 2
-	spawn_positions = 2
+	total_positions = 0
+	spawn_positions = 0
 	round_contrib_points = 2
 	tutorial = "Whether acquired by merit, shrewd negotiation or fulfilled bounties, you have found yourself under the underhanded employ of the Hand. Fulfill desires and whims of the court that they would rather not be publicly known. Your position is anything but secure, and any mistake can leave you disowned and charged like the petty criminal are. Garrison and Court members know who you are."
 	min_pq = 5

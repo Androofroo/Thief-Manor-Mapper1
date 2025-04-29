@@ -134,24 +134,6 @@
 				. = capitalize(.)
 			return
 
-	// LETHALSTONE EDIT: if our mob has pronouns, use those instead
-	if (pronouns) 
-		switch (pronouns)
-			if (HE_HIM)
-				. = "he"
-			if (HE_HIM_F)
-				. = "he"
-			if (SHE_HER)
-				. = "she"
-			if (SHE_HER_M)
-				. = "she"
-			if (THEY_THEM)
-				. = "they"
-			if (THEY_THEM_F)
-				. = "they"
-			if (IT_ITS)
-				. = "it"
-	// LETHALSTONE EDIT END
 	if(capitalized)
 		. = capitalize(.)
 
@@ -170,24 +152,6 @@
 				. = capitalize(.)
 			return
 
-	// LETHALSTONE EDIT: if our mob has pronouns, use those instead
-	if (pronouns) 
-		switch (pronouns)
-			if (HE_HIM)
-				. = "his"
-			if (HE_HIM_F)
-				. = "his"
-			if (SHE_HER)
-				. = "her"
-			if (SHE_HER_M)
-				. = "her"
-			if (THEY_THEM)
-				. = "their"
-			if (THEY_THEM_F)
-				. = "their"
-			if (IT_ITS)
-				. = "its"
-	// LETHALSTONE EDIT END
 	if(capitalized)
 		. = capitalize(.)
 
@@ -205,24 +169,7 @@
 			if (capitalized)
 				. = capitalize(.)
 			return
-	// LETHALSTONE EDIT: if our mob has pronouns, use those instead
-	if (pronouns) 
-		switch (pronouns)
-			if (HE_HIM)
-				. = "him"
-			if (HE_HIM_F)
-				. = "him"
-			if (SHE_HER)
-				. = "her"
-			if (SHE_HER_M)
-				. = "her"
-			if (THEY_THEM)
-				. = "them"
-			if (THEY_THEM_F)
-				. = "them"
-			if (IT_ITS)
-				. = "it"
-	// LETHALSTONE EDIT END
+
 	if(capitalized)
 		. = capitalize(.)
 
@@ -233,11 +180,6 @@
 	if(temp_gender == PLURAL)
 		. = "have"
 		return
-	// LETHALSTONE EDIT: use pronouns where possible
-	if (pronouns)
-		if (pronouns == THEY_THEM || pronouns == THEY_THEM_F)
-			. = "have"
-	// LETHALSTONE EDIT END
 
 /mob/p_are(temp_gender)
 	if(!temp_gender)
@@ -246,11 +188,6 @@
 	if(temp_gender == PLURAL)
 		. = "are"
 		return
-	// LETHALSTONE EDIT: use pronouns where possible
-	if (pronouns)
-		if (pronouns == THEY_THEM || pronouns == THEY_THEM_F)
-			. = "are"
-	// LETHALSTONE EDIT END
 
 /mob/p_were(temp_gender)
 	if(!temp_gender)
@@ -259,11 +196,6 @@
 	if(temp_gender == PLURAL)
 		. = "were"
 		return
-	// LETHALSTONE EDIT: use pronouns where possible
-	if (pronouns)
-		if (pronouns == THEY_THEM || pronouns == THEY_THEM_F)
-			. = "were"
-	// LETHALSTONE EDIT END
 
 /mob/p_do(temp_gender)
 	if(!temp_gender)
@@ -272,33 +204,18 @@
 	if(temp_gender == PLURAL)
 		. = "do"
 		return
-	// LETHALSTONE EDIT: use pronouns where possible
-	if (pronouns)
-		if (pronouns == THEY_THEM || pronouns == THEY_THEM_F)
-			. = "do"
-	// LETHALSTONE EDIT END
 
 /mob/p_s(temp_gender)
 	if(!temp_gender)
 		temp_gender = gender
 	if(temp_gender != PLURAL)
 		. = "s"
-	// LETHALSTONE EDIT: use pronouns where possible
-	if (pronouns)
-		if (pronouns != THEY_THEM && pronouns != THEY_THEM_F)
-			. = "s"
-	// LETHALSTONE EDIT END
 
 /mob/p_es(temp_gender)
 	if(!temp_gender)
 		temp_gender = gender
 	if(temp_gender != PLURAL)
 		. = "es"
-	// LETHALSTONE EDIT: use pronouns where possible
-	if (pronouns)
-		if (pronouns != THEY_THEM && pronouns != THEY_THEM_F)
-			. = "es"
-	// LETHALSTONE EDIT END
 
 //humans need special handling, because they can have their gender hidden
 /mob/living/carbon/human/p_they(capitalized, temp_gender)

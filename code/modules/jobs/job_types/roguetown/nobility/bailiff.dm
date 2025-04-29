@@ -1,5 +1,5 @@
 /datum/job/roguetown/marshal // A somewhat ham-fisted merge between bailiff and the old town sheriff role. The latter was built like a modern day officer, but we medieval in this bitch!
-	title = "Marshal"
+	title = "Magistrate"
 	flag = MARSHAL
 	department_flag = NOBLEMEN
 	faction = "Station"
@@ -9,8 +9,7 @@
 	allowed_races = RACES_NO_CONSTRUCT
 	allowed_ages = list(AGE_ADULT, AGE_MIDDLEAGED, AGE_OLD)
 	display_order = JDO_MARSHAL
-	tutorial = "You are an agent of the crown in matters of law and military, making sure that laws are pushed, verified and carried out by the retinue upon the citizenry of the realm. \
-				While you preside over the knights and men-at-arms, much of your work happens behind a desk, deferring to the Sergeant-at-Arms or the Knight Captain to make sure your will is carried out in the field."
+	tutorial = "The Magistrate is the manor’s authoritative judge and enforcer of law, entrusted with maintaining order and settling disputes. With sharp insight and the power to interrogate, detain, or issue decrees, their presence commands both respect and fear."
 	whitelist_req = FALSE
 
 	spells = list(/obj/effect/proc_holder/spell/self/convertrole/guard) // /obj/effect/proc_holder/spell/self/convertrole/bog
@@ -18,7 +17,7 @@
 
 	give_bank_account = 40
 	noble_income = 20
-	min_pq = 8
+	min_pq = 0
 	max_pq = null
 	round_contrib_points = 3
 	cmode_music = 'sound/music/combat_guard.ogg'

@@ -243,7 +243,7 @@ SUBSYSTEM_DEF(migrants)
 	to_chat(character, span_notice(role.greet_text))
 
 	ADD_TRAIT(character, TRAIT_OUTLANDER, TRAIT_GENERIC)
-	
+
 	if(role.outfit)
 		var/datum/outfit/outfit = new role.outfit()
 		outfit.equip(character)

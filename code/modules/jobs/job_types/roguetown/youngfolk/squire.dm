@@ -3,16 +3,14 @@
 	flag = SQUIRE
 	department_flag = YOUNGFOLK
 	faction = "Station"
-	total_positions = 4
-	spawn_positions = 4
+	total_positions = 1
+	spawn_positions = 1
 	allowed_races = RACES_ALL_KINDS
 	allowed_sexes = list(MALE, FEMALE)
 	allowed_ages = list(AGE_ADULT)
 	advclass_cat_rolls = list(CTAG_SQUIRE = 20)
 
-	tutorial = "Your folks said you were going to be something, they had better aspirations for you than the life of a peasant. You practiced the basics \
-		in the field alongside your friends, swordfighting with sticks, chasing rabbits with grain flail, and helping around the house lifting heavy \
-		bags of grain. The Knight took notice of your potential and brought you on as his personal ward. You're going to be something someday."
+	tutorial = "The Squire is a loyal aide-in-training, eager to prove themselves in service to their knight or the manor. Though inexperienced, they’re resourceful, quick on their feet, and often underestimated by friend and foe alike."
 	outfit = /datum/outfit/job/roguetown/squire
 	display_order = JDO_SQUIRE
 	give_bank_account = TRUE

@@ -7,7 +7,7 @@
 	spawn_positions = 1
 	selection_color = JCOLOR_YEOMAN
 	allowed_races = RACES_ALL_KINDS
-	tutorial = "You were born into wealth, learning from before you could talk about the basics of mathematics. Counting coins is a simple pleasure for any person, but you've made it an art form. These people are addicted to your wares, and you are the literal beating heart of this economy: Don't let these filth-covered troglodytes ever forget that."
+	tutorial = "The merchant's guild representative, tasked with maintaining trade relations with the outside world. They are tasked with procuring goods for the manor, and selling them to the townsfolk."
 
 	display_order = JDO_MERCHANT
 

@@ -8,7 +8,7 @@
 
 	allowed_sexes = list(MALE, FEMALE)
 	allowed_races = RACES_NO_CONSTRUCT
-	tutorial = "Picked out of your political value rather than likely any form of love, you have become the Grand Duke's most trusted confidant--and likely friend--throughout your marriage. Your loyalty and perhaps even your love will be tested this day... for the daggers that threaten your beloved are as equally pointed at your own throat."
+	tutorial = "The Consort is a figure of charm and quiet influence, often overlooked but rarely uninformed. Behind their poised demeanor lies a keen mind, skilled in courtly manipulation, subtle persuasion, and guarding the manor’s most intimate secrets."
 
 	spells = list(/obj/effect/proc_holder/spell/self/convertrole/servant,
 	/obj/effect/proc_holder/spell/self/grant_nobility)
@@ -17,7 +17,7 @@
 	display_order = JDO_LADY
 	give_bank_account = 50
 	noble_income = 22
-	min_pq = 5
+	min_pq = 0
 	max_pq = null
 	round_contrib_points = 3
 

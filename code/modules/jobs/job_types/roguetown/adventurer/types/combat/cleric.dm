@@ -54,15 +54,7 @@
 			H.mind.adjust_skillrank(/datum/skill/misc/reading, 2, TRUE)
 			H.mind.adjust_skillrank(/datum/skill/magic/holy, 2, TRUE)
 			ADD_TRAIT(H, TRAIT_DODGEEXPERT, TRAIT_GENERIC)
-			var/weapons = list("Katar","Knuckle Dusters","MY BARE HANDS!!!")
-			var/weapon_choice = input("Choose your weapon.", "TAKE UP ARMS") as anything in weapons
-			switch(weapon_choice)
-				if("Katar")
-					backpack_contents += list(/obj/item/rogueweapon/katar = 1)
-				if("Knuckle Dusters")
-					backpack_contents += list(/obj/item/rogueweapon/knuckles = 1)
-				if("MY BARE HANDS!!!")
-					ADD_TRAIT(H, TRAIT_CIVILIZEDBARBARIAN, TRAIT_GENERIC)
+			ADD_TRAIT(H, TRAIT_CIVILIZEDBARBARIAN, TRAIT_GENERIC)
 			switch(H.patron?.type)
 				if(/datum/patron/old_god)
 					cloak = /obj/item/clothing/cloak/psydontabard
@@ -165,18 +157,6 @@
 			H.dna.species.soundpack_m = new /datum/voicepack/male/knight()
 			var/datum/devotion/C = new /datum/devotion(H, H.patron)
 			C.grant_spells_templar(H)
-			var/weapons = list("Bastard Sword","Mace","Flail")
-			var/weapon_choice = input("Choose your weapon.", "TAKE UP ARMS") as anything in weapons
-			switch(weapon_choice)
-				if("Bastard Sword")
-					H.mind.adjust_skillrank(/datum/skill/combat/swords, 1, TRUE)
-					beltr = /obj/item/rogueweapon/sword/long
-				if("Mace")
-					H.mind.adjust_skillrank(/datum/skill/combat/maces, 1, TRUE)
-					beltr = /obj/item/rogueweapon/mace
-				if("Flail")
-					H.mind.adjust_skillrank(/datum/skill/combat/whipsflails, 1, TRUE)
-					beltr = /obj/item/rogueweapon/flail
 			H.set_blindness(0)
 			H.change_stat("strength", 2)
 			H.change_stat("constitution", 2)
@@ -194,7 +174,6 @@
 			pants = /obj/item/clothing/under/roguetown/trou/leather
 			shoes = /obj/item/clothing/shoes/roguetown/boots/leather
 			belt = /obj/item/storage/belt/rogue/leather/knifebelt/iron
-			beltr = /obj/item/rogueweapon/huntingknife/idagger/steel/special
 			beltl = /obj/item/storage/belt/rogue/pouch/coins/poor
 			var/datum/devotion/C = new /datum/devotion(H, H.patron)
 			C.grant_spells_templar(H)
@@ -240,24 +219,9 @@
 					cloak = /obj/item/clothing/cloak/templar/pestra
 				else
 					cloak = /obj/item/clothing/cloak/cape/crusader
-			var/weapons = list("Harp","Lute","Accordion","Guitar","Hurdy-Gurdy","Viola","Vocal Talisman")
-			var/weapon_choice = input("Choose your instrument.", "TAKE UP ARMS") as anything in weapons
-			H.set_blindness(0)
-			switch(weapon_choice)
-				if("Harp")
-					backr = /obj/item/rogue/instrument/harp
-				if("Lute")
-					backr = /obj/item/rogue/instrument/lute
-				if("Accordion")
-					backr = /obj/item/rogue/instrument/accord
-				if("Guitar")
-					backr = /obj/item/rogue/instrument/guitar
-				if("Hurdy-Gurdy")
-					backr = /obj/item/rogue/instrument/hurdygurdy
-				if("Viola")
-					backr = /obj/item/rogue/instrument/viola
-				if("Vocal Talisman")
-					backr = /obj/item/rogue/instrument/vocals
+			var/datum/devotion/C = new /datum/devotion(H, H.patron)
+			C.grant_spells(H)
+			START_PROCESSING(SSobj, C)
 
 		if("Missionary")
 			H.set_blindness(0)
@@ -266,7 +230,6 @@
 			shirt = /obj/item/clothing/suit/roguetown/shirt/undershirt/priest
 			pants = /obj/item/clothing/under/roguetown/trou/leather
 			shoes = /obj/item/clothing/shoes/roguetown/boots
-			backr = /obj/item/rogueweapon/woodstaff
 			belt = /obj/item/storage/belt/rogue/leather
 			beltr = /obj/item/flashlight/flare/torch/lantern
 			backpack_contents = list(/obj/item/storage/belt/rogue/pouch/coins/poor = 1, /obj/item/flashlight/flare/torch = 1)

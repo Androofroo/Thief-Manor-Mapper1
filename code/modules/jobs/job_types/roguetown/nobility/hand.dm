@@ -3,8 +3,8 @@
 	flag = HAND
 	department_flag = NOBLEMEN
 	faction = "Station"
-	total_positions = 1
-	spawn_positions = 1
+	total_positions = 0
+	spawn_positions = 0
 
 	allowed_races = RACES_NO_CONSTRUCT	//No noble constructs.
 	allowed_sexes = list(MALE, FEMALE)

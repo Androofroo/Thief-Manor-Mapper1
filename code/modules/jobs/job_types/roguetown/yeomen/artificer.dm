@@ -1,15 +1,15 @@
 /datum/job/roguetown/artificer
-	title = "Artificer"
+	title = "Engineer"
 	flag = ARTIFICER
 	department_flag = YEOMEN
 	faction = "Station"
-	total_positions = 3
-	spawn_positions = 2
+	total_positions = 1
+	spawn_positions = 1
 
 	allowed_races = RACES_ALL_KINDS
 	allowed_sexes = list(MALE, FEMALE)
 
-	tutorial = "Hidden in the depths are ancient mechanical secrets, something your creed has taken it upon themselves to studying and understanding. To some these mechanical wonders may seem like magic, but you know their inner workings as well as you do stone, down to the last cog."
+	tutorial = "The Lord’s Engineer is a master of mechanisms and invention, responsible for maintaining the manor’s hidden passages, security devices, and arcane machinery. Equal parts genius and eccentric, they see the manor not as a home, but as a puzzle always in need of refinement."
 
 	outfit = /datum/outfit/job/roguetown/artificer
 	display_order = JDO_ARTIFICER

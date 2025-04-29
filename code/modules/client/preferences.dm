@@ -66,10 +66,10 @@ GLOBAL_LIST_EMPTY(chosen_names)
 	var/slot_randomized					//keeps track of round-to-round randomization of the character slot, prevents overwriting
 	var/real_name						//our character's name
 	var/gender = MALE					//gender of character (well duh) (LETHALSTONE EDIT: this no longer references anything but whether the masculine or feminine model is used)
-	var/pronouns = HE_HIM				// LETHALSTONE EDIT: character's pronouns (well duh)
+	var/pronouns = HE_HIM				//pronouns are now automatically set from gender
 	var/voice_type = VOICE_TYPE_MASC	// LETHALSTONE EDIT: the type of soundpack the mob should use
-	var/datum/statpack/statpack	= new /datum/statpack/wildcard/fated // LETHALSTONE EDIT: the statpack we're giving our char instead of racial bonuses
-	var/datum/virtue/virtue = new /datum/virtue/none // LETHALSTONE EDIT: the virtue we get for not picking a statpack
+	var/datum/statpack/statpack	= new /datum/statpack/wildcard/austere // Default statpack with no stats
+	var/datum/virtue/virtue = new /datum/virtue/none // Default virtue NONE
 	var/datum/virtue/virtuetwo = new /datum/virtue/none
 	var/age = AGE_ADULT						//age of character
 	var/origin = "Default"
@@ -333,34 +333,29 @@ GLOBAL_LIST_EMPTY(chosen_names)
 			dat += "<BR>"
 			dat += "<b>Nickname:</b> "
 			dat += "<a href='?_src_=prefs;preference=nickname;task=input'>[nickname]</a><BR>"
-			// LETHALSTONE EDIT BEGIN: add pronoun prefs
-			dat += "<b>Pronouns:</b> <a href='?_src_=prefs;preference=pronouns;task=input'>[pronouns]</a><BR>"
+			// pronouns now auto-set from gender
+			//dat += "<b>Pronouns:</b> <a href='?_src_=prefs;preference=pronouns;task=input'>[pronouns]</a><BR>"
 			// LETHALSTONE EDIT END
 
 			dat += "<BR>"
 			dat += "<b>Race:</b> <a href='?_src_=prefs;preference=species;task=input'>[pref_species.name]</a>[spec_check(user) ? "" : " (!)"]<BR>"
 
-			// LETHALSTONE EDIT BEGIN: add statpack selection
-			dat += "<b>Statpack:</b> <a href='?_src_=prefs;preference=statpack;task=input'>[statpack.name]</a><BR>"
-//			dat += "<a href='?_src_=prefs;preference=species;task=random'>Random Species</A> "
-//			dat += "<a href='?_src_=prefs;preference=toggle_random;random_type=[RANDOM_SPECIES]'>Always Random Species: [(randomise[RANDOM_SPECIES]) ? "Yes" : "No"]</A><br>"
+			// Statpack and virtues are now fixed
+			//dat += "<b>Statpack:</b> <a href='?_src_=prefs;preference=statpack;task=input'>[statpack.name]</a><BR>"
 
 			if(!(AGENDER in pref_species.species_traits))
 				var/dispGender
 				if(gender == MALE)
-					dispGender = "Masculine" // LETHALSTONE EDIT: repurpose gender as bodytype, display accordingly
+					dispGender = "Male" // LETHALSTONE EDIT: repurpose gender as bodytype, display accordingly
 				else if(gender == FEMALE)
-					dispGender = "Feminine" // LETHALSTONE EDIT: repurpose gender as bodytype, display accordingly
+					dispGender = "Female" // LETHALSTONE EDIT: repurpose gender as bodytype, display accordingly
 				else
 					dispGender = "Other"
-				dat += "<b>Body Type:</b> <a href='?_src_=prefs;preference=gender'>[dispGender]</a><BR>"
+				dat += "<b>Gender:</b> <a href='?_src_=prefs;preference=gender'>[dispGender]</a><BR>"
 				if(randomise[RANDOM_BODY] || randomise[RANDOM_BODY_ANTAG]) //doesn't work unless random body
 					dat += "<a href='?_src_=prefs;preference=toggle_random;random_type=[RANDOM_GENDER]'>Always Random Bodytype: [(randomise[RANDOM_GENDER]) ? "Yes" : "No"]</A>"
 					dat += "<a href='?_src_=prefs;preference=toggle_random;random_type=[RANDOM_GENDER_ANTAG]'>When Antagonist: [(randomise[RANDOM_GENDER_ANTAG]) ? "Yes" : "No"]</A>"
 
-			// LETHALSTONE EDIT BEGIN: add voice type prefs
-			dat += "<b>Voice Type</b>: <a href='?_src_=prefs;preference=voicetype;task=input'>[voice_type]</a><BR>"
-			// LETHALSTONE EDIT END
 
 			dat += "<b>Age:</b> <a href='?_src_=prefs;preference=age;task=input'>[age]</a><BR>"
 
@@ -370,9 +365,6 @@ GLOBAL_LIST_EMPTY(chosen_names)
 //				dat += "<a href='?_src_=prefs;preference=toggle_random;random_type=[RANDOM_AGE_ANTAG]'>When Antagonist: [(randomise[RANDOM_AGE_ANTAG]) ? "Yes" : "No"]</A>"
 
 //			dat += "<b><a href='?_src_=prefs;preference=name;task=random'>Random Name</A></b><BR>"
-			dat += "<b>Virtue:</b> <a href='?_src_=prefs;preference=virtue;task=input'>[virtue]</a><BR>"
-			if(statpack.name == "Virtuous")
-				dat += "<b>Second Virtue:</b> <a href='?_src_=prefs;preference=virtuetwo;task=input'>[virtuetwo]</a><BR>"
 			dat += "<b>Vice:</b> <a href='?_src_=prefs;preference=charflaw;task=input'>[charflaw]</a><BR>"
 			var/datum/faith/selected_faith = GLOB.faithlist[selected_patron?.associated_faith]
 			dat += "<b>Faith:</b> <a href='?_src_=prefs;preference=faith;task=input'>[selected_faith?.name || "FUCK!"]</a><BR>"
@@ -445,11 +437,14 @@ GLOBAL_LIST_EMPTY(chosen_names)
 			if(is_legacy)
 				dat += "<br><i><font size = 1>(Legacy)<a href='?_src_=prefs;preference=legacyhelp;task=input'>(?)</a></font></i>"
 
+			// Flavortext, OOC Notes, and OOC Extra have been removed
+			/*
 			dat += "<br><b>[(length(flavortext) < MINIMUM_FLAVOR_TEXT) ? "<font color = '#802929'>" : ""]Flavortext:[(length(flavortext) < MINIMUM_FLAVOR_TEXT) ? "</font>" : ""]</b><a href='?_src_=prefs;preference=formathelp;task=input'>(?)</a><a href='?_src_=prefs;preference=flavortext;task=input'>Change</a>"
 
 			dat += "<br><b>[(length(ooc_notes) < MINIMUM_OOC_NOTES) ? "<font color = '#802929'>" : ""]OOC Notes:[(length(ooc_notes) < MINIMUM_OOC_NOTES) ? "</font>" : ""]</b><a href='?_src_=prefs;preference=formathelp;task=input'>(?)</a><a href='?_src_=prefs;preference=ooc_notes;task=input'>Change</a>"
 
 			dat += "<br><b>OOC Extra:</b> <a href='?_src_=prefs;preference=ooc_extra;task=input'>Change</a>"
+			*/
 			dat += "<br><a href='?_src_=prefs;preference=ooc_preview;task=input'><b>Preview Examine</b></a>"
 
 			dat += "<br><b>Loadout Item I:</b> <a href='?_src_=prefs;preference=loadout_item;task=input'>[loadout ? loadout.name : "None"]</a>"
@@ -1468,40 +1463,25 @@ Slots: [job.spawn_positions] [job.round_contrib_points ? "RCP: +[job.round_contr
 						ResetJobs()
 						to_chat(user, "<font color='red'>Classes reset.</font>")
 
-				// LETHALSTONE EDIT: add statpack selection
+				// LETHALSTONE EDIT: statpack selection removed
 				if ("statpack")
-					var/list/statpacks_available = list()
-					for (var/path as anything in GLOB.statpacks)
-						var/datum/statpack/statpack = GLOB.statpacks[path]
-						if (!statpack.name)
-							continue
-						statpacks_available[statpack.name] = statpack
-
-					var/statpack_input = input(user, "Choose your character's statpack", "Statpack") as null|anything in statpacks_available
-					if (statpack_input)
-						var/datum/statpack/statpack_chosen = statpacks_available[statpack_input]
-						statpack = statpack_chosen
-						to_chat(user, "<font color='purple'>[statpack.name]</font>")
-						to_chat(user, "<font color='purple'>[statpack.description_string()]</font>")
-						/* also, unset our virtue if we're not a virtuous statpack.
-						if (!istype(statpack, /datum/statpack/wildcard/virtuous) && virtue.type != /datum/virtue/none)
-							virtue = new /datum/virtue/none
-							to_chat(user, span_info("Your virtue has been removed due to taking a stat-altering statpack.")) */
-				// LETHALSTONE EDIT: add pronouns
+					to_chat(user, "<font color='red'>Statpacks have been disabled. All characters now use the default statpack with no stat modifiers.</font>")
+					
+				// LETHALSTONE EDIT: pronouns now auto-set from gender
 				if ("pronouns")
-					var pronouns_input = input(user, "Choose your character's pronouns", "Pronouns") as null|anything in GLOB.pronouns_list
-					if(pronouns_input)
-						pronouns = pronouns_input
-						ResetJobs()
-						to_chat(user, "<font color='red'>Your character's pronouns are now [pronouns].</font>")
-						to_chat(user, "<font color='red'><b>Your classes have been reset.</b></font>")
+					to_chat(user, "<font color='red'>Pronouns are now automatically set based on your character's gender.</font>")
+
+				// LETHALSTONE EDIT: virtue selection removed
+				if("virtue")
+					to_chat(user, "<font color='red'>Virtues have been disabled. All characters now have no virtues by default.</font>")
+
+				if("virtuetwo")
+					to_chat(user, "<font color='red'>Virtues have been disabled. All characters now have no virtues by default.</font>")
 
 				// LETHALSTONE EDIT: add voice type selection
 				if ("voicetype")
-					var voicetype_input = input(user, "Choose your character's voice type", "Voice Type") as null|anything in GLOB.voice_types_list
-					if(voicetype_input)
-						voice_type = voicetype_input
-						to_chat(user, "<font color='red'>Your character will now vocalize with a [lowertext(voice_type)] affect.</font>")
+					to_chat(user, "<font color='red'>Voice type is now automatically set based on your character's gender.</font>")
+					return
 
 				if("faith")
 					var/list/faiths_named = list()
@@ -1637,46 +1617,22 @@ Slots: [job.spawn_positions] [job.round_contrib_points ? "RCP: +[job.round_contr
 					popup.set_content(dat.Join())
 					popup.open(FALSE)
 				if("flavortext")
-					to_chat(user, "<span class='notice'>["<span class='bold'>Flavortext should not include nonphysical nonsensory attributes such as backstory or the character's internal thoughts.</span>"]</span>")
-					var/new_flavortext = input(user, "Input your character description:", "Flavortext", flavortext) as message|null
-					if(new_flavortext == null)
-						return
-					if(new_flavortext == "")
-						flavortext = null
-						flavortext_display = null
-						is_legacy = FALSE
-						ShowChoices(user)
-						return
-					flavortext = new_flavortext
-					var/ft = flavortext
-					ft = html_encode(ft)
-					ft = replacetext(parsemarkdown_basic(ft), "\n", "<BR>")
-					flavortext_display = ft
-					is_legacy = FALSE
-					to_chat(user, "<span class='notice'>Successfully updated flavortext</span>")
-					log_game("[user] has set their flavortext'.")
+					to_chat(user, "<font color='red'>Flavortext has been disabled.</font>")
+					return
 				if("ooc_notes")
-					to_chat(user, "<span class='notice'>["<span class='bold'>If you put 'anything goes' or 'no limits' here, do not be surprised if people take you up on it.</span>"]</span>")
-					var/new_ooc_notes = input(user, "Input your OOC preferences:", "OOC notes", ooc_notes) as message|null
-					if(new_ooc_notes == null)
-						return
-					if(new_ooc_notes == "")
-						ooc_notes = null
-						ooc_notes_display = null
-						is_legacy = FALSE
-						ShowChoices(user)
-						return
-					ooc_notes = new_ooc_notes
-					var/ooc = ooc_notes
-					ooc = html_encode(ooc)
-					ooc = replacetext(parsemarkdown_basic(ooc), "\n", "<BR>")
-					ooc_notes_display = ooc
-					is_legacy = FALSE
-					to_chat(user, "<span class='notice'>Successfully updated OOC notes.</span>")
-					log_game("[user] has set their OOC notes'.")
+					to_chat(user, "<font color='red'>OOC Notes have been disabled.</font>")
+					return
+				if("ooc_extra")
+					to_chat(user, "<font color='red'>OOC Extra has been disabled.</font>")
+					return
 				if("ooc_preview")	//Unashamedly copy pasted from human_topic.dm L:7. Sorry!
 					var/list/dat = list()
 					dat += "<div align='center'><font size = 5; font color = '#dddddd'><b>[real_name]</b></font></div>"
+					
+					// Flavortext, OOC Notes, and OOC Extra have been disabled
+					dat += "<div align='center'><font color='red'>Flavortext, OOC Notes, and OOC Extra have been disabled.</font></div>"
+					
+					/*
 					var/legacy_check = FALSE
 					if(isnull(flavortext_display) && !isnull(flavortext))	//If there's an FT already in the slot, but no _display, that means it's a legacy slot.
 						is_legacy = TRUE
@@ -1702,63 +1658,17 @@ Slots: [job.spawn_positions] [job.round_contrib_points ? "RCP: +[job.round_contr
 						dat += "<div align='left'>[ooc_notes_display]</div>"
 					if(ooc_extra)
 						dat += "[ooc_extra]"
+					*/
+					
+					if(valid_headshot_link(null, headshot_link, TRUE))
+						dat += ("<div align='center'><img src='[headshot_link]' width='325px' height='325px'></div>")
+					
 					var/datum/browser/popup = new(user, "[real_name]", nwidth = 600, nheight = 800)
 					popup.set_content(dat.Join())
 					popup.open(FALSE)
 				if("ooc_extra")
-					to_chat(user, "<span class='notice'>Add a link from a suitable host (catbox, etc) to an mp3, mp4, or jpg / png file to have it embed at the bottom of your OOC notes.</span>")
-					to_chat(user, "<span class='notice'>If the link doesn't show up properly in-game, ensure that it's a direct link that opens properly in a browser.</span>")
-					to_chat(user, "<span class='notice'>Videos will be shrunk to a ~300x300 square. Keep this in mind.</span>")
-					to_chat(user, "<font color = '#d6d6d6'>Leave a single space to delete it from your OOC notes.</font>")
-					to_chat(user, "<font color ='red'>Abuse of this will get you banned.</font>")
-					var/new_extra_link = input(user, "Input the accessory link (https, hosts: gyazo, discord, lensdump, imgbox, catbox):", "OOC Extra", ooc_extra_link) as text|null
-					if(new_extra_link == null)
-						return
-					if(new_extra_link == "")
-						new_extra_link = null
-						ShowChoices(user)
-						return
-					if(new_extra_link == " ")	//Single space to delete
-						ooc_extra_link = null
-						ooc_extra = null
-						to_chat(user, "<span class='notice'>Successfully deleted OOC Extra.</span>")
-					var/static/list/valid_extensions = list("jpg", "png", "jpeg", "gif", "mp4", "mp3")
-					if(!valid_headshot_link(user, new_extra_link, FALSE, valid_extensions))
-						new_extra_link = null
-						ShowChoices(user)
-						return
-
-					var/list/value_split = splittext(new_extra_link, ".")
-
-					// extension will always be the last entry
-					var/extension = value_split[length(value_split)]
-					var/info
-					if((extension in valid_extensions))
-						ooc_extra_link = new_extra_link
-						ooc_extra = null
-						ooc_extra = "<div align ='center'><center>"
-						if(extension == "jpg" || extension == "png" || extension == "jpeg" || extension == "gif")
-							ooc_extra += "<br>"
-							ooc_extra += "<img src='[ooc_extra_link]'/>"
-							info = "an embedded image."
-						else 
-							switch(extension)
-								if("mp4")
-									ooc_extra = "<br>"
-									ooc_extra += "<video width=["288"] height=["288"] controls=["true"]>"
-									ooc_extra += "<source src='[ooc_extra_link]' type=["video/mp4"]>"
-									ooc_extra += "</video>"
-									info = "a video."
-								if("mp3")
-									ooc_extra = "<br>"
-									ooc_extra += "<audio controls>"
-									ooc_extra += "<source src='[ooc_extra_link]' type=["audio/mp3"]>"
-									ooc_extra += "Your browser does not support the audio element."
-									ooc_extra += "</audio>"
-									info = "embedded audio."
-						ooc_extra += "</center></div>"
-						to_chat(user, "<span class='notice'>Successfully updated OOC Extra with [info]</span>")
-						log_game("[user] has set their OOC Extra to '[ooc_extra_link]'.")
+					to_chat(user, "<font color='red'>OOC Extra has been disabled.</font>")
+					return
 				if("loadout_item")
 					var/list/loadouts_available = list("None")
 					for (var/path as anything in GLOB.loadout_items)
@@ -2041,6 +1951,13 @@ Slots: [job.spawn_positions] [job.round_contrib_points ? "RCP: +[job.round_contr
 						pickedGender = "female"
 					if(pickedGender && pickedGender != gender)
 						gender = pickedGender
+						// Set pronouns to match gender
+						if(gender == MALE)
+							pronouns = HE_HIM
+							voice_type = VOICE_TYPE_MASC
+						else if(gender == FEMALE)
+							pronouns = SHE_HER
+							voice_type = VOICE_TYPE_FEM
 						to_chat(user, "<font color='red'>Your character will now use a [friendlyGenders[pickedGender]] sprite.</font>")
 						//random_character(gender)
 					genderize_customizer_entries()

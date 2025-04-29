@@ -1,12 +1,12 @@
 /datum/job/roguetown/prince
-	title = "Prince"
-	f_title = "Princess"
+	title = "Heir"
+	f_title = "Successor"
 	flag = PRINCE
 	department_flag = YOUNGFOLK
 	faction = "Station"
-	total_positions = 2
+	total_positions = 1
 	spawn_positions = 2
-	f_title = "Princess"
+	f_title = "Successor"
 	allowed_races = RACES_NO_CONSTRUCT //Maybe a system to force-pick lineage based on king and queen should be implemented. (No it shouldn't.)
 	allowed_sexes = list(MALE, FEMALE)
 	allowed_ages = list(AGE_ADULT)
@@ -17,7 +17,7 @@
 	display_order = JDO_PRINCE
 	give_bank_account = 30
 	noble_income = 20
-	min_pq = 1
+	min_pq = 0
 	max_pq = null
 	round_contrib_points = 3
 	cmode_music = 'sound/music/combat_noble.ogg'
