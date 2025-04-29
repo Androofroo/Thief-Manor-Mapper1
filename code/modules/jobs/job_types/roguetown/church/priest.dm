@@ -1,12 +1,12 @@
 /datum/job/roguetown/priest
-	title = "Priest"
+	title = "Deacon"
 	flag = PRIEST
 	department_flag = CHURCHMEN
 	faction = "Station"
 	total_positions = 1
 	spawn_positions = 1
 	selection_color = JCOLOR_CHURCH
-	f_title = "Priestess"
+	f_title = "Deaconess"
 	allowed_races = RACES_NO_CONSTRUCT		//Too recent arrivals to ascend to priesthood.
 	allowed_sexes = list(MALE, FEMALE)
 	tutorial = "The Divine is all that matters in a world of the immoral. The Weeping God left his children to rule over us mortals--and you will preach their wisdom to any who still heed their will. The faithless are growing in number. It is up to you to shepard them toward a Gods-fearing future; for you are a priest of Astrata."
@@ -25,12 +25,10 @@
 	virtue_restrictions = list(/datum/virtue/utility/noble)
 
 /datum/outfit/job/roguetown/priest
-	allowed_patrons = list(/datum/patron/divine/astrata)
 
 /datum/outfit/job/roguetown/priest/pre_equip(mob/living/carbon/human/H)
 	..()
-	neck = /obj/item/clothing/neck/roguetown/psicross/astrata
-	head = /obj/item/clothing/head/roguetown/priestmask
+	neck = /obj/item/clothing/neck/roguetown/psicross/silver
 	shirt = /obj/item/clothing/suit/roguetown/shirt/undershirt/priest
 	pants = /obj/item/clothing/under/roguetown/tights/black
 	shoes = /obj/item/clothing/shoes/roguetown/shortboots
@@ -38,7 +36,6 @@
 	belt = /obj/item/storage/belt/rogue/leather/rope
 	beltr = /obj/item/storage/belt/rogue/pouch/coins/rich
 	id = /obj/item/clothing/ring/active/nomag
-	armor = /obj/item/clothing/suit/roguetown/shirt/robe/priest
 	backl = /obj/item/storage/backpack/rogue/satchel
 	backpack_contents = list(
 		/obj/item/needle/pestra = 1,
@@ -89,7 +86,7 @@
 	for(var/mob/living/carbon/human/HU in get_step(src, src.dir))
 		if(!HU.mind)
 			continue
-		if(HU.mind.assigned_role == "Grand Duke")
+		if(HU.mind.assigned_role == "Lord")
 			continue
 		if(!HU.head)
 			continue
@@ -99,26 +96,26 @@
 		//Abdicate previous King
 		for(var/mob/living/carbon/human/HL in GLOB.human_list)
 			if(HL.mind)
-				if(HL.mind.assigned_role == "Grand Duke" || HL.mind.assigned_role == "Consort")
+				if(HL.mind.assigned_role == "Lord" || HL.mind.assigned_role == "Consort")
 					HL.mind.assigned_role = "Towner" //So they don't get the innate traits of the king
 			//would be better to change their title directly, but that's not possible since the title comes from the job datum
-			if(HL.job == "Grand Duke")
-				HL.job = "Duke Emeritus"
+			if(HL.job == "Lord")
+				HL.job = "Lord Emeritus"
 			if(HL.job == "Consort")
 				HL.job = "Consort Dowager"
 
 		//Coronate new King (or Queen)
-		HU.mind.assigned_role = "Grand Duke"
-		HU.job = "Grand Duke"
+		HU.mind.assigned_role = "Lord"
+		HU.job = "Lord"
 		if(should_wear_femme_clothes(HU))
-			SSticker.rulertype = "Grand Duchess"
+			SSticker.rulertype = "Lady"
 		else
-			SSticker.rulertype = "Grand Duke"
+			SSticker.rulertype = "Lord"
 		SSticker.rulermob = HU
 		var/dispjob = mind.assigned_role
 		removeomen(OMEN_NOLORD)
-		say("By the authority of the gods, I pronounce you Ruler of all Azuria!")
-		priority_announce("[real_name] the [dispjob] has named [HU.real_name] the inheritor of AZURE PEAK!", title = "Long Live [HU.real_name]!", sound = 'sound/misc/bell.ogg')
+		say("By the authority of the gods, I pronounce you Lord of the Manor!")
+		priority_announce("[real_name] the [dispjob] has named [HU.real_name] the inheritor of THIEF MANOR!", title = "Long Live [HU.real_name]!", sound = 'sound/misc/bell.ogg')
 
 /mob/living/carbon/human/proc/churchexcommunicate()
 	set name = "Curse"

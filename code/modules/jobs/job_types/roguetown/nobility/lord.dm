@@ -49,7 +49,7 @@ GLOBAL_LIST_EMPTY(lord_titles)
 		if(should_wear_femme_clothes(L))
 			SSticker.rulertype = "Grand Duchess"
 		else
-			SSticker.rulertype = "Grand Duke"
+			SSticker.rulertype = "Lord"
 		to_chat(world, "<b><span class='notice'><span class='big'>[L.real_name] is [SSticker.rulertype] of Azure Peak.</span></span></b>")
 		if(STATION_TIME_PASSED() <= 10 MINUTES) //Late to the party? Stuck with default colors, sorry!
 			addtimer(CALLBACK(L, TYPE_PROC_REF(/mob, lord_color_choice)), 50)

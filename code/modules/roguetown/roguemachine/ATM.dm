@@ -113,7 +113,7 @@
 				return
 			var/can_anyone_know = FALSE
 			for(var/mob/living/carbon/human/HJ in GLOB.player_list)
-				if(HJ.job == "Steward" || HJ.job == "Grand Duke")
+				if(HJ.job == "Steward" || HJ.job == "Lord")
 					can_anyone_know = TRUE
 			if(!can_anyone_know)
 				to_chat(user, span_info("There is no one important for the transaction to flow through."))
@@ -168,7 +168,7 @@
 	else
 		loc.visible_message(span_warning("A horrible scraping sound emanates from the Crown as it does its work..."))
 		if(!has_reported)
-			send_ooc_note("A parasite of the Freefolk is draining a Meister! Location: [location_tag ? location_tag : "Unknown"]", job = list("Grand Duke", "Steward", "Clerk"))
+			send_ooc_note("A parasite of the Freefolk is draining a Meister! Location: [location_tag ? location_tag : "Unknown"]", job = list("Lord", "Steward", "Clerk"))
 			has_reported = TRUE
 		playsound(src, 'sound/misc/TheDrill.ogg', 70, TRUE)
 		spawn(100) // The time it takes to complete an interval. If you adjust this, please adjust the sound too. It's 'about' perfect at 100. Anything less It'll start overlapping.
@@ -260,11 +260,11 @@
 								playsound(src, 'sound/misc/DrillDone.ogg', 70, TRUE)
 								is_active = FALSE
 								to_chat(H,span_info("<font color ='red'>You feel very drained.</font>"))
-								send_ooc_note("A parasite of the Freefolk has siphoned [H.real_name] of [sum] from the Nervemaster's veins.", job = list("Grand Duke", "Steward", "Clerk"))
+								send_ooc_note("A parasite of the Freefolk has siphoned [H.real_name] of [sum] from the Nervemaster's veins.", job = list("Lord", "Steward", "Clerk"))
 						else
 							is_active = FALSE
 							if(sum)
-								send_ooc_note("A parasite of the Freefolk has siphoned [H.real_name] of [sum] from the Nervemaster's veins.", job = list("Grand Duke", "Steward", "Clerk"))
+								send_ooc_note("A parasite of the Freefolk has siphoned [H.real_name] of [sum] from the Nervemaster's veins.", job = list("Lord", "Steward", "Clerk"))
 							break
 				if("Slow")
 					is_active = TRUE
@@ -288,11 +288,11 @@
 								drain_effect_fast(H)
 							if(i == needed_cycles)	//Last cycle.
 								is_active = FALSE
-								send_ooc_note("A parasite of the Freefolk has siphoned [H.real_name] of [sum] from the Nervemaster's veins.", job = list("Grand Duke", "Steward", "Clerk"))
+								send_ooc_note("A parasite of the Freefolk has siphoned [H.real_name] of [sum] from the Nervemaster's veins.", job = list("Lord", "Steward", "Clerk"))
 						else
 							is_active = FALSE
 							if(sum)
-								send_ooc_note("A parasite of the Freefolk has siphoned [H.real_name] of [sum] from the Nervemaster's veins.", job = list("Grand Duke", "Steward", "Clerk"))
+								send_ooc_note("A parasite of the Freefolk has siphoned [H.real_name] of [sum] from the Nervemaster's veins.", job = list("Lord", "Steward", "Clerk"))
 							break
 				if("Nevermind")
 					return

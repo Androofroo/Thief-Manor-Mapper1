@@ -4,7 +4,7 @@
 	possible_item_intents = list(/datum/intent/lordbash, /datum/intent/lord_electrocute, /datum/intent/lord_silence)
 	gripped_intents = list(/datum/intent/lordbash)
 	name = "master's rod"
-	desc = "Bend the knee. Can't be used outside of the manor."
+	desc = "Bend the knee."
 	icon_state = "scepter"
 	icon = 'icons/roguetown/weapons/32.dmi'
 	sharpness = IS_BLUNT
@@ -63,7 +63,7 @@
 	if(ishuman(user))
 		var/mob/living/carbon/human/HU = user
 
-		if((HU.job != "Grand Duke") && (HU.job != "Consort"))
+		if((HU.job != "Lord") && (HU.job != "Consort"))
 			to_chat(user, span_danger("The rod doesn't obey me."))
 			return
 
