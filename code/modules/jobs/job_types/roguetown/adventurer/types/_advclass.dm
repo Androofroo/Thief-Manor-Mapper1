@@ -32,8 +32,69 @@
 		return FALSE
 
 	if(outfit)
+		// Create a temporary outfit instance to check which slots will be affected
+		var/datum/outfit/O = new outfit()
+		var/list/slots_to_clear = list()
+		
+		// Identify which slots need to be cleared based on the outfit
+		if(O.uniform || O.pants)
+			slots_to_clear += H.wear_pants
+		if(O.suit || O.armor)
+			slots_to_clear += H.wear_armor
+		if(O.back)
+			slots_to_clear += H.back
+		if(O.belt)
+			slots_to_clear += H.belt
+		if(O.gloves)
+			slots_to_clear += H.gloves
+		if(O.shoes)
+			slots_to_clear += H.shoes
+		if(O.head)
+			slots_to_clear += H.head
+		if(O.mask)
+			slots_to_clear += H.wear_mask
+		if(O.neck)
+			slots_to_clear += H.wear_neck
+		if(O.ears)
+			slots_to_clear += H.ears
+		if(O.glasses)
+			slots_to_clear += H.glasses
+		if(O.id)
+			slots_to_clear += H.wear_ring
+		if(O.wrists)
+			slots_to_clear += H.wear_wrists
+		if(O.suit_store)
+			slots_to_clear += H.s_store
+		if(O.cloak)
+			slots_to_clear += H.cloak
+		if(O.beltl)
+			slots_to_clear += H.beltl
+		if(O.beltr)
+			slots_to_clear += H.beltr
+		if(O.backr)
+			slots_to_clear += H.backr
+		if(O.backl)
+			slots_to_clear += H.backl
+		if(O.mouth)
+			slots_to_clear += H.mouth
+		if(O.shirt)
+			slots_to_clear += H.wear_shirt
+			
+		// Remove only items in slots that will be replaced
+		for(var/obj/item/I in slots_to_clear)
+			if(I)
+				qdel(I)
+				
+		// Clear hands if outfit specifies hand items
+		if(O.r_hand || O.l_hand)
+			H.drop_all_held_items()
+			
+		// Clean up the temporary outfit
+		qdel(O)
+		
+		// Apply the outfit
 		H.equipOutfit(outfit)
-
+	
 	post_equip(H)
 
 	H.advjob = name
@@ -49,9 +110,7 @@
 	if(noble_income)
 		SStreasury.noble_incomes[H] = noble_income
 
-
 	// After the end of adv class equipping, apply a SPECIAL trait if able
-
 	apply_character_post_equipment(H)
 
 /datum/advclass/proc/post_equip(mob/living/carbon/human/H)

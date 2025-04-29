@@ -1,17 +1,17 @@
 /datum/job/roguetown/manorguard
-	title = "Man at Arms"
+	title = "Manor Guard"
 	flag = MANATARMS
 	department_flag = GARRISON
 	faction = "Station"
-	total_positions = 8
-	spawn_positions = 8
+	total_positions = 3
+	spawn_positions = 3
 
 	allowed_sexes = list(MALE, FEMALE)
 	allowed_races = RACES_ALL_KINDS
 	allowed_ages = list(AGE_ADULT, AGE_MIDDLEAGED)
-	tutorial = "Having proven yourself loyal and capable, you are entrusted to defend the town and enforce its laws. \
+	tutorial = "Having proven yourself loyal and capable, you are entrusted to defend the manor. \
 				Trained regularly in combat and siege warfare, you deal with threats - both within and without. \
-				Obey your Sergeant-at-Arms, the Marshal, and the Crown. Show the nobles and knights your respect, so that you may earn it in turn. Not as a commoner, but as a soldier.."
+				Obey your Lord and Knight. Show the nobles and knights your respect, so that you may earn it in turn. Not as a commoner, but as a soldier.."
 	display_order = JDO_CASTLEGUARD
 	whitelist_req = TRUE
 
@@ -19,7 +19,7 @@
 	advclass_cat_rolls = list(CTAG_MENATARMS = 20)
 
 	give_bank_account = 22
-	min_pq = 3
+	min_pq = 0
 	max_pq = null
 	round_contrib_points = 2
 
