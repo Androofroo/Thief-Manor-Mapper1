@@ -1178,6 +1178,10 @@
 	name = "Vulpkian Raine"
 	icon_state = "raine"
 
+/datum/sprite_accessory/hair/head/witch
+	name = "Witch"
+	icon_state = "witch"
+
 /datum/sprite_accessory/hair/facial
 	abstract_type = /datum/sprite_accessory/hair/facial
 	icon = 'icons/mob/sprite_accessory/hair/human_facial_hair.dmi'
@@ -1436,3 +1440,4 @@
 /datum/sprite_accessory/hair/facial/vox/neck
 	name = "Neck Quills"
 	icon_state = "neck"
+
