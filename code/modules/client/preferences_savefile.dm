@@ -463,9 +463,10 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	var/patron_typepath
 	S["selected_patron"]	>> patron_typepath
 	if(patron_typepath)
-		selected_patron = GLOB.patronlist[patron_typepath]
-		if(!selected_patron) //failsafe
-			selected_patron = GLOB.patronlist[default_patron]
+		// Always set to old god regardless of saved value
+		selected_patron = GLOB.patronlist[/datum/patron/old_god]
+	if(!selected_patron) //failsafe
+		selected_patron = GLOB.patronlist[/datum/patron/old_god]
 
 	//Custom names
 	for(var/custom_name_id in GLOB.preferences_custom_names)

@@ -18,146 +18,22 @@ SUBSYSTEM_DEF(migrants)
 	return ..()
 
 /datum/controller/subsystem/migrants/fire(resumed)
-	process_migrants(2 SECONDS)
-	update_ui()
+	return // Migrants disabled
 
 /datum/controller/subsystem/migrants/proc/set_current_wave(wave_type, time)
-	current_wave = wave_type
-	wave_timer = time
+	return // Migrants disabled
 
 /datum/controller/subsystem/migrants/proc/process_migrants(dt)
-	if(current_wave)
-		process_current_wave(dt)
-	else
-		process_next_wave(dt)
+	return // Migrants disabled
 
 /datum/controller/subsystem/migrants/proc/process_current_wave(dt)
-	wave_timer -= dt
-	if(wave_timer > 0)
-		return
-	// Try and spawn wave
-	var/success = try_spawn_wave()
-	if(success)
-		log_game("Migrants: Successfully spawned wave: [current_wave]")
-	else
-		log_game("Migrants: FAILED to spawn wave: [current_wave]")
-	// Unset some values, increment wave number if success
-	if(success)
-		wave_number++
-	var/datum/migrant_wave/wave = MIGRANT_WAVE(current_wave)
-	set_current_wave(null, 0)
-	if(success)
-		time_until_next_wave = time_between_waves
-	else
-		if(wave.downgrade_wave)
-			set_current_wave(wave.downgrade_wave, wave_wait_time)
-		else
-			time_until_next_wave = time_between_fail_wave
+	return // Migrants disabled
+
+/datum/controller/subsystem/migrants/proc/process_next_wave(dt)
+	return // Migrants disabled
 
 /datum/controller/subsystem/migrants/proc/try_spawn_wave()
-	var/datum/migrant_wave/wave = MIGRANT_WAVE(current_wave)
-	/// Create initial assignment list
-	var/list/assignments = list()
-	/// Populate it
-	for(var/role_type in wave.roles)
-		var/amount = wave.roles[role_type]
-		for(var/i in 1 to amount)
-			assignments += new /datum/migrant_assignment(role_type)
-	/// Shuffle assignments so role rolling is not consistent
-	assignments = shuffle(assignments)
-
-	var/list/active_migrants = get_active_migrants()
-	active_migrants = shuffle(active_migrants)
-
-	var/list/picked_migrants = list()
-
-	if(!length(active_migrants))
-		return FALSE
-	/// Try to assign priority players to positions
-	for(var/datum/migrant_assignment/assignment as anything in assignments)
-		if(!length(active_migrants))
-			break // Out of migrants, we're screwed and will fail
-		if(assignment.client)
-			continue
-		var/list/priority = get_priority_players(active_migrants, assignment.role_type)
-		if(!length(priority))
-			continue
-		var/client/picked
-		priority = shuffle(priority)
-		for(var/client/client as anything in priority)
-			if(!can_be_role(client, assignment.role_type))
-				continue
-			picked = client
-			break
-		if(!picked)
-			continue
-
-		active_migrants -= picked
-		assignment.client = picked
-		picked_migrants += picked
-
-	/// Assign rest of the players to positions
-	for(var/datum/migrant_assignment/assignment as anything in assignments)
-		if(!length(active_migrants))
-			break // Out of migrants, we're screwed and will fail
-		if(assignment.client)
-			continue
-
-		var/client/picked
-		for(var/client/client as anything in active_migrants)
-			if(!can_be_role(client, assignment.role_type))
-				continue
-			picked = client
-			break
-		if(!picked)
-			continue
-
-		active_migrants -= picked
-		assignment.client = picked
-		picked_migrants += picked
-
-	/// Find spawn points for the assignments
-	var/turf/spawn_location = get_spawn_turf_for_job(wave.spawn_landmark)
-	var/atom/fallback_location = spawn_location
-
-	var/list/turfs = get_safe_turfs_around_location(spawn_location)
-	for(var/i in 1 to turfs.len)
-		var/turf/turf = turfs[i]
-		if(assignments.len < i)
-			break
-		var/datum/migrant_assignment/assignment = assignments[i]
-		assignment.spawn_location = turf
-
-	/// See if anything went wrong and return FALSE if it did
-	for(var/datum/migrant_assignment/assignment as anything in assignments)
-		if(!assignment.client)
-			return FALSE
-		if(!assignment.spawn_location)
-			assignment.spawn_location = fallback_location
-
-	/// At this point everything is GOOD and SWELL, we want to spawn the wave
-
-	/// Unset their pref so if they respawn they wont get yoinked into migrants immediately
-	for(var/client/client as anything in picked_migrants)
-		client.prefs.migrant.post_spawn()
-
-	/// Spawn the migrants, hooray
-	for(var/datum/migrant_assignment/assignment as anything in assignments)
-		spawn_migrant(wave, assignment, wave.spawn_on_location)
-
-	// Increment wave spawn counter
-	var/used_wave_type = wave.type
-	if(wave.shared_wave_type)
-		used_wave_type = wave.shared_wave_type
-	if(!spawned_waves[used_wave_type])
-		spawned_waves[used_wave_type] = 0
-	spawned_waves[used_wave_type] += 1
-
-	message_admins("MIGRANTS: Spawned wave: [wave.name] (players: [assignments.len]) at [ADMIN_VERBOSEJMP(spawn_location)]")
-
-	unset_all_active_migrants()
-
-	return TRUE
+	return FALSE // Migrants disabled
 
 /datum/controller/subsystem/migrants/proc/get_status_line()
 	var/string = ""
@@ -289,17 +165,6 @@ SUBSYSTEM_DEF(migrants)
 	if(role.allowed_ages && !(prefs.age in role.allowed_ages))
 		return FALSE
 	return TRUE
-
-/datum/controller/subsystem/migrants/proc/process_next_wave(dt)
-	time_until_next_wave -= dt
-	if(time_until_next_wave > 0)
-		return
-	var/wave_type = roll_wave()
-	if(wave_type)
-		log_game("Migrants: Rolled wave: [wave_type]")
-		set_current_wave(wave_type, wave_wait_time)
-
-	time_until_next_wave = time_between_fail_wave
 
 /datum/controller/subsystem/migrants/proc/roll_wave()
 	var/list/available_weighted_waves = list()

@@ -23,8 +23,7 @@ GLOBAL_LIST_EMPTY(lord_titles)
 	round_contrib_points = 4
 	give_bank_account = 1000
 	required = TRUE
-	cmode_music = 'sound/music/combat_noble.ogg'
-	allowed_patrons = NON_PSYDON_PATRONS		//No Psydonites - Lore reason: Town is Astratan town, you are crowned by Astrata for right to rule. (Inhumen people pose as Ten worshipers.)
+	cmode_music = 'sound/music/combat_noble.ogg'		//No Psydonites - Lore reason: Town is Astratan town, you are crowned by Astrata for right to rule. (Inhumen people pose as Ten worshipers.)
 
 /datum/job/roguetown/exlord //just used to change the lords title
 	title = "Duke Emeritus"

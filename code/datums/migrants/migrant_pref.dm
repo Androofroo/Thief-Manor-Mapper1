@@ -13,27 +13,14 @@
 /datum/migrant_pref/proc/set_active(new_state, silent = FALSE)
 	if(active == new_state)
 		return
-	active = new_state
+	active = FALSE // Always set to false - migrants disabled
 	role_preferences.Cut()
 	if(!silent && prefs.parent)
-		if(new_state)
-			to_chat(prefs.parent, span_notice("You are now in the migrant queue, and will join the game with them when they arrive"))
-		else
-			to_chat(prefs.parent, span_boldwarning("You are no longer in the migrant queue"))
+		to_chat(prefs.parent, span_boldwarning("The migrant system has been disabled."))
 
 /datum/migrant_pref/proc/toggle_role_preference(role_type)
-	if(role_type in role_preferences)
-		role_preferences -= role_type
-	else
-		// Currently only allow 1 role preffed up for clarity
-		role_preferences.Cut()
-
-		if(SSmigrants.can_be_role(prefs.parent, role_type))
-			role_preferences += role_type
-			var/datum/migrant_role/role = MIGRANT_ROLE(role_type)
-			to_chat(prefs.parent, span_nicegreen("You have prioritizd the [role.name]. This does not guarantee getting the role."))
-		else
-			to_chat(prefs.parent, span_warning("You can't be this role. (Wrong species, gender, or age.)"))
+	to_chat(prefs.parent, span_boldwarning("The migrant system has been disabled."))
+	return
 
 /datum/migrant_pref/proc/post_spawn()
 	set_active(FALSE, TRUE)

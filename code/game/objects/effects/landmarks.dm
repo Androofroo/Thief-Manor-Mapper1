@@ -132,7 +132,7 @@ INITIALIZE_IMMEDIATE(/obj/effect/landmark)
 	delete_after_roundstart = FALSE
 
 /obj/effect/landmark/start/lord
-	name = "Grand Duke"
+	name = "Lord"
 	icon_state = "arrow"
 
 /obj/effect/landmark/start/knight
@@ -216,7 +216,7 @@ INITIALIZE_IMMEDIATE(/obj/effect/landmark)
 	icon_state = "arrow"
 
 /obj/effect/landmark/start/priest
-	name = "Priest"
+	name = "Deacon"
 	icon_state = "arrow"
 
 /obj/effect/landmark/start/cleric

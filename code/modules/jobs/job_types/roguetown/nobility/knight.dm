@@ -143,7 +143,7 @@
 	var/armorchoice = input("Choose your armor.", "TAKE UP ARMOR") as anything in armors
 	armor = armors[armorchoice]
 
-	backpack_contents = list(/obj/item/rogueweapon/huntingknife/idagger/steel/special = 1, /obj/item/rope/chain = 1)
+	backpack_contents = list(/obj/item/rogueweapon/huntingknife/idagger/steel/special = 1, /obj/item/rope/chain = 1, /obj/item/storage/keyring/royal = 1)
 
 /datum/advclass/knight/blackguard
 	name = "Blackguard"
@@ -208,15 +208,42 @@
 		head = helmets[helmchoice]
 
 	var/armors = list(
-		"Black Steel Plate"	= /obj/item/clothing/suit/roguetown/armor/plate/blacksteel_half_plate,
-		"Iron Cuirass"		= /obj/item/clothing/suit/roguetown/armor/plate/half/iron,
+		"Black Steel Cuirass"	= /obj/item/clothing/suit/roguetown/armor/plate/blacksteel_half_plate,
 		"Brigandine"		= /obj/item/clothing/suit/roguetown/armor/brigandine,
 		"Studded Leather"	= /obj/item/clothing/suit/roguetown/armor/leather/studded,
 	)
 	var/armorchoice = input("Choose your armor.", "TAKE UP ARMOR") as anything in armors
 	armor = armors[armorchoice]
 
-	backpack_contents = list(/obj/item/rogueweapon/huntingknife/idagger/steel/special = 1, /obj/item/rope/chain = 1)
+	backpack_contents = list(/obj/item/rogueweapon/huntingknife/idagger/steel/special = 1, /obj/item/rope/chain = 1, /obj/item/storage/keyring/royal = 1)
+
+/datum/outfit/job/roguetown/knight/blackguard/post_equip(mob/living/carbon/human/H)
+	..()
+	// Apply black color only to armor components
+	if(H.head)
+		H.head.add_atom_colour("#414143", FIXED_COLOUR_PRIORITY) // Black from the dyer
+		H.update_inv_head()
+	if(H.wear_armor)
+		H.wear_armor.add_atom_colour("#414143", FIXED_COLOUR_PRIORITY)
+		H.update_inv_armor()
+	if(H.wear_pants)
+		H.wear_pants.add_atom_colour("#414143", FIXED_COLOUR_PRIORITY)
+		H.update_inv_pants()
+	if(H.shoes)
+		H.shoes.add_atom_colour("#414143", FIXED_COLOUR_PRIORITY)
+		H.update_inv_shoes()
+	if(H.gloves)
+		H.gloves.add_atom_colour("#414143", FIXED_COLOUR_PRIORITY)
+		H.update_inv_gloves()
+	if(H.wear_wrists)
+		H.wear_wrists.add_atom_colour("#414143", FIXED_COLOUR_PRIORITY)
+		H.update_inv_wrists()
+	if(H.wear_neck)
+		H.wear_neck.add_atom_colour("#414143", FIXED_COLOUR_PRIORITY)
+		H.update_inv_neck()
+	
+	// Force a full update of the mob's appearance
+	H.regenerate_icons()
 
 /datum/advclass/knight/templar
 	name = "Templar"
@@ -263,36 +290,23 @@
 			beltl = /obj/item/rogueweapon/mace/warhammer
 			backl = /obj/item/rogueweapon/shield/wood
 
+	head = /obj/item/clothing/head/roguetown/helmet/heavy/psydonhelm
+	shoes = /obj/item/clothing/shoes/roguetown/boots/psydonboots
+	gloves = /obj/item/clothing/gloves/roguetown/chain/psydon
+	wrists = /obj/item/clothing/neck/roguetown/psicross/silver
+	mask = /obj/item/clothing/head/roguetown/roguehood/psydon
+	cloak = /obj/item/clothing/cloak/psydontabard
 	shirt = /obj/item/clothing/suit/roguetown/armor/chainmail/hauberk
-	shirt = /obj/item/clothing/suit/roguetown/armor/chainmail
 	pants = /obj/item/clothing/under/roguetown/chainlegs
 
-	var/helmets = list(
-		"Pigface Bascinet" 	= /obj/item/clothing/head/roguetown/helmet/bascinet/pigface,
-		"Guard Helmet"		= /obj/item/clothing/head/roguetown/helmet/heavy/guard,
-		"Barred Helmet"		= /obj/item/clothing/head/roguetown/helmet/heavy/sheriff,
-		"Bucket Helmet"		= /obj/item/clothing/head/roguetown/helmet/heavy/bucket,
-		"Knight Helmet"		= /obj/item/clothing/head/roguetown/helmet/heavy/knight,
-		"Visored Sallet"	= /obj/item/clothing/head/roguetown/helmet/sallet/visored,
-		"Armet"				= /obj/item/clothing/head/roguetown/helmet/heavy/knight/armet,
-		"Hounskull Bascinet" = /obj/item/clothing/head/roguetown/helmet/bascinet/pigface/hounskull,
-		"Etruscan Bascinet" = /obj/item/clothing/head/roguetown/helmet/bascinet/etruscan,
-		"None"
-	)
-	var/helmchoice = input("Choose your Helm.", "TAKE UP HELMS") as anything in helmets
-	if(helmchoice != "None")
-		head = helmets[helmchoice]
-
 	var/armors = list(
-		"Brigandine"		= /obj/item/clothing/suit/roguetown/armor/brigandine,
-		"Coat of Plates"	= /obj/item/clothing/suit/roguetown/armor/brigandine/coatplates,
-		"Steel Cuirass"		= /obj/item/clothing/suit/roguetown/armor/plate/half,
-		"Fluted Cuirass"	= /obj/item/clothing/suit/roguetown/armor/plate/half/fluted,
+		"Psydonite Hauberk"		= /obj/item/clothing/suit/roguetown/armor/chainmail/hauberk/ornate,
+		"Coat of Plates"	= /obj/item/clothing/suit/roguetown/armor/brigandine/coatplates
 	)
 	var/armorchoice = input("Choose your armor.", "TAKE UP ARMOR") as anything in armors
 	armor = armors[armorchoice]
 
-	backpack_contents = list(/obj/item/rogueweapon/huntingknife/idagger/steel/special = 1, /obj/item/rope/chain = 1)
+	backpack_contents = list(/obj/item/rogueweapon/huntingknife/idagger/steel/special = 1, /obj/item/rope/chain = 1, /obj/item/storage/keyring/royal = 1)
 
 /datum/advclass/knight/otavan
 	name = "Foreign Knight"
@@ -362,6 +376,6 @@
 	shoes = /obj/item/clothing/shoes/roguetown/boots/otavan
 	gloves = /obj/item/clothing/gloves/roguetown/otavan
 	backr = /obj/item/storage/backpack/rogue/satchel/black
-	backpack_contents = list(/obj/item/rogueweapon/huntingknife/idagger/steel/special = 1, /obj/item/rope/chain = 1)
+	backpack_contents = list(/obj/item/rogueweapon/huntingknife/idagger/steel/special = 1, /obj/item/rope/chain = 1, /obj/item/storage/keyring/royal = 1)
 
 	H.grant_language(/datum/language/otavan)
