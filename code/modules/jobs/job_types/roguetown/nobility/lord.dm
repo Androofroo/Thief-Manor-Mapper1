@@ -23,11 +23,13 @@ GLOBAL_LIST_EMPTY(lord_titles)
 	round_contrib_points = 4
 	give_bank_account = 1000
 	required = TRUE
-	cmode_music = 'sound/music/combat_noble.ogg'		//No Psydonites - Lore reason: Town is Astratan town, you are crowned by Astrata for right to rule. (Inhumen people pose as Ten worshipers.)
+	cmode_music = 'sound/music/combat_noble.ogg'
+	advclass_cat_rolls = list(CTAG_LORD = 20)
+	advjob_examine = TRUE
 
 /datum/job/roguetown/exlord //just used to change the lords title
-	title = "Duke Emeritus"
-	f_title = "Duchess Emeritus"
+	title = "Lord Emeritus"
+	f_title = "Lady Emeritus"
 	flag = LORD
 	department_flag = NOBLEMEN
 	faction = "Station"
@@ -50,11 +52,22 @@ GLOBAL_LIST_EMPTY(lord_titles)
 			SSticker.rulertype = "Lady"
 		else
 			SSticker.rulertype = "Lord"
-		to_chat(world, "<b><span class='notice'><span class='big'>[L.real_name] is [SSticker.rulertype] of Azure Peak.</span></span></b>")
-		if(STATION_TIME_PASSED() <= 10 MINUTES) //Late to the party? Stuck with default colors, sorry!
-			addtimer(CALLBACK(L, TYPE_PROC_REF(/mob, lord_color_choice)), 50)
+		to_chat(world, "<b><span class='notice'><span class='big'>[L.real_name] is [SSticker.rulertype] of Thief Manor.</span></span></b>")
+		
+		// Set up adv class selection
+		var/mob/living/carbon/human/H = L
+		H.advsetup = 1
+		H.invisibility = INVISIBILITY_MAXIMUM
+		H.become_blind("advsetup")
+		// Color choice will be handled by the subclass after selection
 
-/datum/outfit/job/roguetown/lord/pre_equip(mob/living/carbon/human/H)
+/datum/advclass/lord/standard
+	name = "Standard Lord"
+	tutorial = "The traditional Lord of the Manor, you rule with honor and tradition. Your martial prowess and noble education have prepared you for any challenge that may come your way."
+	outfit = /datum/outfit/job/roguetown/lord/standard
+	category_tags = list(CTAG_LORD)
+
+/datum/outfit/job/roguetown/lord/standard/pre_equip(mob/living/carbon/human/H)
 	..()
 	head = /obj/item/clothing/head/roguetown/crown/serpcrown
 	neck = /obj/item/storage/belt/rogue/pouch/coins/rich
@@ -130,7 +143,191 @@ GLOBAL_LIST_EMPTY(lord_titles)
 	ADD_TRAIT(H, TRAIT_NOBLE, TRAIT_GENERIC)
 	ADD_TRAIT(H, TRAIT_NOSEGRAB, TRAIT_GENERIC)
 	ADD_TRAIT(H, TRAIT_HEAVYARMOR, TRAIT_GENERIC)
-//	SSticker.rulermob = H
+	
+	// Add color choice after class selection
+	addtimer(CALLBACK(H, TYPE_PROC_REF(/mob, lord_color_choice)), 50)
+
+/datum/advclass/lord/hedonist
+	name = "Hedonist Lord"
+	tutorial = "You've known nothing but pleasure along your lifetime. You are extremely rich, but most of your riches go towards self indulgence and the finer things in life."
+	outfit = /datum/outfit/job/roguetown/lord/hedonist
+	category_tags = list(CTAG_LORD)
+
+/datum/outfit/job/roguetown/lord/hedonist/pre_equip(mob/living/carbon/human/H)
+	..()
+	head = /obj/item/clothing/head/roguetown/crown/serpcrown
+	neck = /obj/item/storage/belt/rogue/pouch/coins/rich
+	belt = /obj/item/storage/belt/rogue/leather/plaquegold
+	beltl = /obj/item/storage/keyring/lord
+	backpack_contents = list(
+		/obj/item/rogueweapon/huntingknife/idagger/steel/special = 1
+	)
+	id = /obj/item/clothing/ring/active/nomag
+	if(should_wear_femme_clothes(H))
+		pants = /obj/item/clothing/under/roguetown/tights/stockings/silk/purple
+		shirt = /obj/item/clothing/suit/roguetown/shirt/undershirt/black
+		armor = /obj/item/clothing/suit/roguetown/shirt/dress/royal
+		cloak = /obj/item/clothing/cloak/lordcloak/ladycloak
+		wrists = /obj/item/clothing/wrists/roguetown/royalsleeves
+		shoes = /obj/item/clothing/shoes/roguetown/shortboots
+	else if(should_wear_masc_clothes(H))
+		pants = /obj/item/clothing/under/roguetown/tights/black
+		shirt = /obj/item/clothing/suit/roguetown/shirt/tunic/noblecoat
+		armor = /obj/item/clothing/suit/roguetown/shirt/tunic/silktunic
+		cloak = /obj/item/clothing/cloak/lordcloak
+		shoes = /obj/item/clothing/shoes/roguetown/boots/nobleboot
+	
+	if(H.mind)
+		H.mind.adjust_skillrank(/datum/skill/combat/swords, 3, TRUE)
+		H.mind.adjust_skillrank(/datum/skill/combat/knives, 2, TRUE)
+		H.mind.adjust_skillrank(/datum/skill/misc/swimming, 2, TRUE)
+		H.mind.adjust_skillrank(/datum/skill/misc/athletics, 2, TRUE)
+		H.mind.adjust_skillrank(/datum/skill/misc/reading, 3, TRUE)
+		H.mind.adjust_skillrank(/datum/skill/misc/riding, 4, TRUE)
+		H.mind.adjust_skillrank(/datum/skill/craft/cooking, 2, TRUE)
+		H.mind.adjust_skillrank(/datum/skill/misc/music, 3, TRUE)
+		H.change_stat("intelligence", 2)
+		H.change_stat("endurance", 1)
+		H.change_stat("perception", 1)
+		H.change_stat("fortune", 3)
+	
+	if(H.wear_mask)
+		if(istype(H.wear_mask, /obj/item/clothing/mask/rogue/eyepatch))
+			qdel(H.wear_mask)
+			mask = /obj/item/clothing/mask/rogue/lordmask
+		if(istype(H.wear_mask, /obj/item/clothing/mask/rogue/eyepatch/left))
+			qdel(H.wear_mask)
+			mask = /obj/item/clothing/mask/rogue/lordmask/l
+
+	ADD_TRAIT(H, TRAIT_NOBLE, TRAIT_GENERIC)
+	ADD_TRAIT(H, TRAIT_NOSEGRAB, TRAIT_GENERIC)
+	ADD_TRAIT(H, TRAIT_GOODLOVER, TRAIT_GENERIC)
+	ADD_TRAIT(H, TRAIT_SEEPRICES, TRAIT_GENERIC)
+	
+	// Add color choice after class selection
+	addtimer(CALLBACK(H, TYPE_PROC_REF(/mob, lord_color_choice)), 50)
+
+/datum/advclass/lord/merchant
+	name = "Merchant Prince"
+	tutorial = "You have bought your title of nobility through shrewd economics and charisma. Buy cheap, sell expensive - this has been your motto through life. Now you've risen from merchant to noble through the sheer power of your coin."
+	outfit = /datum/outfit/job/roguetown/lord/merchant
+	category_tags = list(CTAG_LORD)
+
+/datum/outfit/job/roguetown/lord/merchant/pre_equip(mob/living/carbon/human/H)
+	..()
+	head = /obj/item/clothing/head/roguetown/crown/serpcrown
+	neck = /obj/item/storage/belt/rogue/pouch/coins/rich
+	backr = /obj/item/storage/backpack/rogue/satchel
+	belt = /obj/item/storage/belt/rogue/leather/plaquegold
+	beltl = /obj/item/storage/keyring/lord
+	beltr = /obj/item/storage/belt/rogue/pouch/coins/rich
+	backpack_contents = list(/obj/item/rogueweapon/huntingknife/idagger/steel/special = 1)
+	id = /obj/item/clothing/ring/active/nomag
+	
+	if(should_wear_femme_clothes(H))
+		pants = /obj/item/clothing/under/roguetown/tights/stockings/silk/red
+		shirt = /obj/item/clothing/suit/roguetown/shirt/undershirt/black
+		armor = /obj/item/clothing/suit/roguetown/shirt/dress/royal
+		cloak = /obj/item/clothing/cloak/lordcloak/ladycloak
+		shoes = /obj/item/clothing/shoes/roguetown/shortboots
+	else if(should_wear_masc_clothes(H))
+		pants = /obj/item/clothing/under/roguetown/tights/black
+		shirt = /obj/item/clothing/suit/roguetown/shirt/undershirt/black
+		armor = /obj/item/clothing/suit/roguetown/armor/leather/vest/black
+		cloak = /obj/item/clothing/cloak/lordcloak
+		shoes = /obj/item/clothing/shoes/roguetown/boots/nobleboot
+	
+	if(H.mind)
+		H.mind.adjust_skillrank(/datum/skill/combat/swords, 2, TRUE)
+		H.mind.adjust_skillrank(/datum/skill/combat/knives, 2, TRUE)
+		H.mind.adjust_skillrank(/datum/skill/misc/reading, 5, TRUE)
+		H.mind.adjust_skillrank(/datum/skill/misc/lockpicking, 2, TRUE)
+		H.mind.adjust_skillrank(/datum/skill/misc/sneaking, 3, TRUE)
+		H.mind.adjust_skillrank(/datum/skill/misc/stealing, 3, TRUE)
+		H.mind.adjust_skillrank(/datum/skill/labor/mining, 2, TRUE)
+		H.mind.adjust_skillrank(/datum/skill/craft/crafting, 2, TRUE)
+		H.change_stat("intelligence", 4)
+		H.change_stat("endurance", 2)
+		H.change_stat("speed", 1)
+		H.change_stat("perception", 3)
+		H.change_stat("fortune", 1)
+	
+	if(H.wear_mask)
+		if(istype(H.wear_mask, /obj/item/clothing/mask/rogue/eyepatch))
+			qdel(H.wear_mask)
+			mask = /obj/item/clothing/mask/rogue/lordmask
+		if(istype(H.wear_mask, /obj/item/clothing/mask/rogue/eyepatch/left))
+			qdel(H.wear_mask)
+			mask = /obj/item/clothing/mask/rogue/lordmask/l
+
+	ADD_TRAIT(H, TRAIT_NOBLE, TRAIT_GENERIC)
+	ADD_TRAIT(H, TRAIT_NOSEGRAB, TRAIT_GENERIC)
+	ADD_TRAIT(H, TRAIT_SEEPRICES, TRAIT_GENERIC)
+	
+	// Add color choice after class selection
+	addtimer(CALLBACK(H, TYPE_PROC_REF(/mob, lord_color_choice)), 50)
+
+/datum/advclass/lord/scholar
+	name = "Renowned Scholar"
+	tutorial = "Your noble upbringing afforded you time to bury yourself in books and experiments. You've published books furthering the fields of science and magic alike. Your manor has many wards to safeguard against curses and external threats."
+	outfit = /datum/outfit/job/roguetown/lord/scholar
+	category_tags = list(CTAG_LORD)
+
+/datum/outfit/job/roguetown/lord/scholar/pre_equip(mob/living/carbon/human/H)
+	..()
+	head = /obj/item/clothing/head/roguetown/crown/serpcrown
+	neck = /obj/item/storage/belt/rogue/pouch/coins/rich
+	cloak = /obj/item/clothing/cloak/lordcloak
+	backr = /obj/item/storage/backpack/rogue/satchel
+	belt = /obj/item/storage/belt/rogue/leather/plaquegold
+	beltl = /obj/item/storage/keyring/lord
+	backpack_contents = list(/obj/item/rogueweapon/huntingknife/idagger/steel/special = 1)
+	id = /obj/item/clothing/ring/active/nomag
+	
+	if(should_wear_femme_clothes(H))
+		pants = /obj/item/clothing/under/roguetown/tights/stockings/silk/blue
+		shirt = /obj/item/clothing/suit/roguetown/shirt/undershirt/black
+		armor = /obj/item/clothing/suit/roguetown/shirt/dress/royal
+		cloak = /obj/item/clothing/cloak/lordcloak/ladycloak
+		shoes = /obj/item/clothing/shoes/roguetown/shortboots
+	else if(should_wear_masc_clothes(H))
+		pants = /obj/item/clothing/under/roguetown/tights/black
+		shirt = /obj/item/clothing/suit/roguetown/shirt/undershirt/black
+		armor = /obj/item/clothing/suit/roguetown/shirt/tunic/silktunic
+		cloak = /obj/item/clothing/cloak/lordcloak
+		shoes = /obj/item/clothing/shoes/roguetown/boots/nobleboot
+	
+	if(H.mind)
+		H.mind.adjust_skillrank(/datum/skill/combat/swords, 2, TRUE)
+		H.mind.adjust_skillrank(/datum/skill/combat/knives, 2, TRUE)
+		H.mind.adjust_skillrank(/datum/skill/misc/reading, 6, TRUE)
+		H.mind.adjust_skillrank(/datum/skill/misc/medicine, 4, TRUE)
+		H.mind.adjust_skillrank(/datum/skill/craft/alchemy, 4, TRUE)
+		H.mind.adjust_skillrank(/datum/skill/craft/crafting, 3, TRUE)
+		H.mind.adjust_skillrank(/datum/skill/magic/arcane, 3, TRUE)
+		H.mind.adjust_skillrank(/datum/skill/misc/riding, 2, TRUE)
+		H.change_stat("intelligence", 5)
+		H.change_stat("endurance", 1)
+		H.change_stat("perception", 3)
+		H.change_stat("fortune", 1)
+	
+	if(H.wear_mask)
+		if(istype(H.wear_mask, /obj/item/clothing/mask/rogue/eyepatch))
+			qdel(H.wear_mask)
+			mask = /obj/item/clothing/mask/rogue/lordmask
+		if(istype(H.wear_mask, /obj/item/clothing/mask/rogue/eyepatch/left))
+			qdel(H.wear_mask)
+			mask = /obj/item/clothing/mask/rogue/lordmask/l
+
+	ADD_TRAIT(H, TRAIT_NOBLE, TRAIT_GENERIC)
+	ADD_TRAIT(H, TRAIT_NOSEGRAB, TRAIT_GENERIC)
+	
+	// Add color choice after class selection
+	addtimer(CALLBACK(H, TYPE_PROC_REF(/mob, lord_color_choice)), 50)
+
+/datum/outfit/job/roguetown/lord/pre_equip(mob/living/carbon/human/H)
+	..() 
+	// This will be handled by the subclasses
 
 /datum/outfit/job/roguetown/lord/visuals/pre_equip(mob/living/carbon/human/H)
 	..()

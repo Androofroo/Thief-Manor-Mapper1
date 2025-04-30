@@ -643,6 +643,10 @@
 			if(!found)
 				continue
 			
+			// Check if candidate's job is restricted
+			if(thief.assigned_role in restricted_jobs)
+				continue
+			
 			pre_thieves += thief
 			thief.special_role = "Thief"
 			testing("[key_name(thief)] has been selected as a thief")

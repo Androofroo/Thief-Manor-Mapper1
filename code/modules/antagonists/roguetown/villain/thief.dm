@@ -17,13 +17,19 @@
 	equip_thief()
 	greet()
 	add_objectives()
+	finalize_thief()
 
 	return ..()
 
+/datum/antagonist/thief/proc/finalize_thief()
+	owner.current.playsound_local(get_turf(owner.current), 'sound/music/thief.ogg', 60, FALSE, pressure_affected = FALSE)
+	var/mob/living/carbon/human/H = owner.current
+	ADD_TRAIT(H, TRAIT_GENERIC, TRAIT_GENERIC)
+	ADD_TRAIT(H, TRAIT_CICERONE, TRAIT_GENERIC) // Knowledge of the manor layout
+	to_chat(H, span_alertsyndie("I am a THIEF!"))
+	to_chat(H, span_boldwarning("I've worked in the manor for years, always overlooked, always underappreciated. I know every corner, every secret passage. Now it's time to take what I deserve - the Lord's Crown. My insider knowledge gives me an advantage, but betrayal is punished harshly in these lands."))
+
 /datum/antagonist/thief/greet()
-	to_chat(owner.current, span_userdanger("You've worked in the manor for years, always overlooked, always underappreciated."))
-	to_chat(owner.current, span_danger("You know every corner, every secret passage in the manor. Now it's time to take what you deserve - the Lord's crown."))
-	to_chat(owner.current, span_danger("Your insider knowledge gives you an advantage. Be careful, betrayal is punished harshly in these lands."))
 	owner.announce_objectives()
 
 /datum/antagonist/thief/proc/equip_thief()
@@ -46,10 +52,6 @@
 	H.change_stat("intelligence", 2)
 	H.change_stat("perception", 3)
 	H.change_stat("speed", 1)
-	
-	// Add thief traits
-	ADD_TRAIT(H, TRAIT_GENERIC, TRAIT_GENERIC)
-	ADD_TRAIT(H, TRAIT_CICERONE, TRAIT_GENERIC) // Knowledge of the manor layout
 
 /datum/antagonist/thief/proc/add_objectives()
 	var/datum/objective/steal/steal_obj = new
