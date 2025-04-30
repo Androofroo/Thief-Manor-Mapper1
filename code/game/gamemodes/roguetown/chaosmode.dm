@@ -627,79 +627,57 @@
 	else
 		num_thieves = 2 // Minimum 2 thieves for low pop
 	
+	message_admins("Thiefmode: Starting thief selection with [num_thieves] thieves needed")
+	
 	if(num_thieves)
-		// Get base candidates - don't immediately filter them
-		antag_candidates = get_players_for_role(ROLE_THIEF)
+		// First try to get candidates from ROLE_THIEF
+		var/list/initial_candidates = get_players_for_role(ROLE_THIEF)
 		
-		// Debug log
-		log_game("Starting thief selection with [num_thieves] thieves needed. Initial candidates: [antag_candidates.len]")
-		log_game("Restricted jobs: [restricted_jobs.Join(", ")]")
+		message_admins("Thiefmode: Initial ROLE_THIEF candidates: [initial_candidates.len]")
 		
-		// Manually create a new filtered list
-		var/list/final_candidates = list()
+		// Prepare a list to track selected thieves
+		var/list/selected_thieves = list()
 		
-		// Loop through all candidates and strictly check their job
-		for(var/datum/mind/M in antag_candidates)
-			// Skip minds without a mob (shouldn't happen)
-			if(!M.current)
-				log_game("Thief candidate [M] has no current mob, skipping")
-				continue
-				
-			var/mob/living/carbon/human/H = M.current
-			if(!istype(H))
-				log_game("Thief candidate [M] is not a human, skipping")
-				continue
-			
-			// Direct check for job - this is the key fix
-			// We explicitly check the current mob's job variable
-			var/thisjob = H.job
-			
-			// Check if job is in restricted list
-			var/is_restricted = FALSE
-			for(var/forbidden in restricted_jobs)
-				if(thisjob == forbidden)
-					is_restricted = TRUE
-					log_game("Rejecting [M.key] as thief - restricted job: [thisjob]")
-					break
-			
-			if(is_restricted)
-				continue
-				
-			// Check if in allantags list
-			var/valid_antag = FALSE
-			for(var/datum/mind/A in allantags)
-				if(A == M)
-					valid_antag = TRUE
-					break
-					
-			if(!valid_antag)
-				log_game("Rejecting [M.key] as thief - not in allantags list")
-				continue
-			
-			// If we pass all checks, add to final candidates
-			final_candidates += M
-			log_game("Added [M.key] as valid thief candidate with job [thisjob]")
+		// First pass - select thieves from ROLE_THIEF candidates
+		for(var/i = 0, i < num_thieves && initial_candidates.len > 0, i++)
+			var/datum/mind/thief = pick_n_take(initial_candidates)
+			if(thief)
+				selected_thieves += thief
+				message_admins("Thiefmode: Selected [thief.key] as thief #[i+1] (first pass)")
 		
-		// Debug log our results
-		log_game("After filtering, found [final_candidates.len] valid thief candidates")
-		
-		// If we don't have enough candidates
-		if(final_candidates.len == 0)
-			log_game("ERROR: No valid thief candidates after filtering!")
-			return
-		
-		// Now select thieves from valid candidates
-		for(var/i = 0, i < num_thieves && final_candidates.len > 0, i++)
-			var/datum/mind/thief = pick_n_take(final_candidates)
+		// If we still need more thieves, get candidates from all roles
+		if(selected_thieves.len < num_thieves)
+			message_admins("Thiefmode: Not enough ROLE_THIEF candidates, getting candidates from all roles")
+			// Get all available candidates from all roles
+			var/list/all_candidates = SSticker.minds.Copy()
 			
-			// Remove from allantags
-			allantags -= thief
+			// Remove nobles/restricted roles
+			for(var/datum/mind/M in all_candidates)
+				// Only check if assigned_role exists to avoid null references
+				if(M.assigned_role && (M.assigned_role in restricted_jobs))
+					message_admins("Thiefmode: Removing [M.key] from candidates - restricted job: [M.assigned_role]")
+					all_candidates -= M
 			
-			// Add to pre_thieves
-			pre_thieves += thief
+			// Remove already selected thieves
+			for(var/datum/mind/T in selected_thieves)
+				all_candidates -= T
+			
+			// Second pass - select remaining thieves from all available candidates
+			for(var/i = selected_thieves.len, i < num_thieves && all_candidates.len > 0, i++)
+				var/datum/mind/thief = pick_n_take(all_candidates)
+				if(thief)
+					selected_thieves += thief
+					message_admins("Thiefmode: Selected [thief.key] as thief #[i+1] (second pass)")
+		
+		// Set special_role for all selected thieves and add to pre_thieves list
+		for(var/datum/mind/thief in selected_thieves)
 			thief.special_role = "Thief"
-			
-			log_game("Selected [thief.key] as thief #[i+1]")
+			pre_thieves += thief
+			// Try to remove from allantags if it's there
+			if(thief in allantags)
+				allantags -= thief
+		
+		message_admins("Thiefmode: Selected [pre_thieves.len] thieves in total")
 	
 	// Add thieves to pre_setup_antags
 	for(var/datum/mind/thief in pre_thieves)
@@ -708,19 +686,83 @@
 	// Reset restricted jobs list
 	restricted_jobs = list()
 	
-	log_game("Thief selection complete. Selected [pre_thieves.len] thieves.")
 	return TRUE
 
 // Override post_setup to process thieves
 /datum/game_mode/chaosmode/thiefmode/post_setup()
 	set waitfor = FALSE
 	
-	// Process thieves
+	// Define restricted jobs again for reference
+	var/list/restricted_roles = list("Lord", "Heir", "Knight", "Lady", "Successor", "Consort")
+	
+	// Create a list to track valid thieves
+	var/list/valid_thieves = list()
+	var/list/rejected_thieves = list()
+	
+	// First pass - check all pre-selected thieves for validity
 	for(var/datum/mind/thief_mind in pre_thieves)
+		// Skip if it's a noble/restricted role
+		var/is_restricted = FALSE
+		if(thief_mind.assigned_role)
+			for(var/job in restricted_roles)
+				if(thief_mind.assigned_role == job)
+					message_admins("Thiefmode: Rejecting thief [thief_mind.key] in post_setup - restricted job: [thief_mind.assigned_role]")
+					is_restricted = TRUE
+					rejected_thieves += thief_mind
+					break
+		
+		if(!is_restricted)
+			valid_thieves += thief_mind
+	
+	// If we have rejected thieves, try to find replacements
+	if(rejected_thieves.len > 0)
+		message_admins("Thiefmode: Trying to find [rejected_thieves.len] replacement thieves")
+		
+		// Get a pool of potential replacement candidates
+		var/list/replacement_candidates = SSticker.minds.Copy()
+		
+		// Remove players already selected as thieves
+		for(var/datum/mind/T in valid_thieves)
+			replacement_candidates -= T
+		
+		// Remove players in restricted roles
+		for(var/datum/mind/M in replacement_candidates)
+			// Skip if no assigned role yet
+			if(!M.assigned_role)
+				continue
+				
+			// Remove if in restricted roles
+			for(var/job in restricted_roles)
+				if(M.assigned_role == job)
+					replacement_candidates -= M
+					break
+		
+		// Add replacement thieves
+		var/replacements_found = 0
+		for(var/i = 1, i <= rejected_thieves.len && replacement_candidates.len > 0, i++)
+			var/datum/mind/replacement = pick_n_take(replacement_candidates)
+			if(replacement)
+				valid_thieves += replacement
+				replacement.special_role = "Thief"
+				message_admins("Thiefmode: Found replacement thief [replacement.key] ([replacement.assigned_role])")
+				replacements_found++
+		
+		message_admins("Thiefmode: Found [replacements_found] replacement thieves")
+	
+	// Process valid thieves
+	message_admins("Thiefmode: Processing [valid_thieves.len] valid thieves")
+	for(var/datum/mind/thief_mind in valid_thieves)
+		message_admins("Thiefmode: Processing thief [thief_mind.key] ([thief_mind.assigned_role]) in post_setup")
 		var/datum/antagonist/new_antag = new /datum/antagonist/thief()
 		thief_mind.add_antag_datum(new_antag)
 		thieves += thief_mind
-		GLOB.pre_setup_antags -= thief_mind
+		
+		// Remove from pre_setup_antags if it's there
+		if(thief_mind in GLOB.pre_setup_antags)
+			GLOB.pre_setup_antags -= thief_mind
+	
+	// Clear the pre_thieves list since we've processed all valid thieves
+	pre_thieves.Cut()
 	
 	..()
 	// We're not actually ready until all antagonists are assigned
