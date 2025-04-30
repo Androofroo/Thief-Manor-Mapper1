@@ -28,12 +28,17 @@
 	ADD_TRAIT(H, TRAIT_CICERONE, TRAIT_GENERIC) // Knowledge of the manor layout
 	to_chat(H, span_alertsyndie("I am a THIEF!"))
 	to_chat(H, span_boldwarning("I've worked in the manor for years, always overlooked, always underappreciated. I know every corner, every secret passage. Now it's time to take what I deserve - the Lord's Crown. My insider knowledge gives me an advantage, but betrayal is punished harshly in these lands."))
+	to_chat(H, span_boldnotice("I've learned how to silently snuff out lights to help me move unseen. Use the Snuff Light ability to extinguish any fire or light source within reach."))
 
 /datum/antagonist/thief/greet()
 	owner.announce_objectives()
 
 /datum/antagonist/thief/proc/equip_thief()
 	var/mob/living/carbon/human/H = owner.current
+	
+	
+	// Give thief the ability to snuff lights
+	H.mind.AddSpell(new /obj/effect/proc_holder/spell/self/snuff_light)
 	
 	// Improve stealth-related skills
 	H.mind.adjust_skillrank(/datum/skill/misc/sneaking, 5, TRUE)
@@ -52,6 +57,10 @@
 	H.change_stat("intelligence", 2)
 	H.change_stat("perception", 3)
 	H.change_stat("speed", 1)
+	
+	// Add thief traits
+	ADD_TRAIT(H, TRAIT_GENERIC, TRAIT_GENERIC)
+	ADD_TRAIT(H, TRAIT_CICERONE, TRAIT_GENERIC) // Knowledge of the manor layout
 
 /datum/antagonist/thief/proc/add_objectives()
 	var/datum/objective/steal/steal_obj = new
@@ -76,3 +85,28 @@
 	survive_obj.owner = owner
 	objectives += survive_obj
 
+/obj/effect/proc_holder/spell/self/snuff_light
+	name = "Snuff Light"
+	desc = "Silently extinguish nearby lights to enhance your stealth operations."
+	overlay_state = "shadow_hand"
+	antimagic_allowed = TRUE
+	charge_max = 50 // 5 seconds
+	clothes_req = FALSE
+	action_icon = 'icons/roguetown/misc/lighting.dmi'
+	action_icon_state = "wallcandle0"
+
+/obj/effect/proc_holder/spell/self/snuff_light/cast(mob/user = usr)
+	var/snuffed = FALSE
+	
+	// Find all lights in range around the user
+	for(var/obj/machinery/light/rogue/L in range(1, user))
+		if(L.on)
+			L.burn_out() // Extinguish the light
+			snuffed = TRUE
+	
+	if(snuffed)
+		to_chat(user, "<span class='notice'>You silently extinguish nearby lights.</span>")
+	else
+		to_chat(user, "<span class='warning'>There are no lit lights within reach.</span>")
+	
+	return TRUE
