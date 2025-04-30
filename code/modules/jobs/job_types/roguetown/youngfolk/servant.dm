@@ -157,7 +157,7 @@
 
 /datum/advclass/servant/groundskeeper
 	name = "Groundskeeper"
-	tutorial = "Your days are spent tending to the Duke's gardens and grounds. You understand soil, plants, and the value of honest work outdoors. While the other servants clean the manor's interior, you ensure its exterior remains pristine and productive."
+	tutorial = "Your days are spent tending to the Lord's gardens and grounds. You understand soil, plants, and the value of honest work outdoors. While the other servants clean the manor's interior, you ensure its exterior remains pristine and productive."
 	outfit = /datum/outfit/job/roguetown/servant/groundskeeper
 	category_tags = list(CTAG_SERVANT)
 

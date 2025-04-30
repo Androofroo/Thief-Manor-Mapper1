@@ -499,7 +499,7 @@
 	color = CLOTHING_RED
 
 /obj/item/clothing/head/roguetown/crown/serpcrown
-	name = "crown of azure peak"
+	name = "lord's crown
 	desc = ""
 	icon_state = "serpcrown"
 	//dropshrink = 0
