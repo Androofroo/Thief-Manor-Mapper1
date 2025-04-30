@@ -334,41 +334,6 @@ GLOBAL_LIST_EMPTY(loadout_items)
 	name = "Psydonian Cross"
 	path = /obj/item/clothing/neck/roguetown/psicross
 
-/datum/loadout_item/psicross/astrata
-	name = "Amulet of Astrata"
-	path = /obj/item/clothing/neck/roguetown/psicross/astrata
-
-/datum/loadout_item/psicross/noc
-	name = "Amulet of Noc"
-	path = /obj/item/clothing/neck/roguetown/psicross/noc
-
-/datum/loadout_item/psicross/abyssor
-	name = "Amulet of Abyssor"
-	path = /obj/item/clothing/neck/roguetown/psicross/abyssor
-
-/datum/loadout_item/psicross/dendor
-	name = "Amulet of Dendor"
-	path = /obj/item/clothing/neck/roguetown/psicross/dendor
-
-/datum/loadout_item/psicross/necra
-	name = "Amulet of Necra"
-	path = /obj/item/clothing/neck/roguetown/psicross/necra
-
-/datum/loadout_item/psicross/pestra
-	name = "Amulet of Pestra"
-	path = /obj/item/clothing/neck/roguetown/psicross/pestra
-
-/datum/loadout_item/psicross/ravox
-	name = "Amulet of Ravox"
-	path = /obj/item/clothing/neck/roguetown/psicross/ravox
-
-/datum/loadout_item/psicross/malum
-	name = "Amulet of Malum"
-	path = /obj/item/clothing/neck/roguetown/psicross/malum
-
-/datum/loadout_item/psicross/eora
-	name = "Amulet of Eora"
-	path = /obj/item/clothing/neck/roguetown/psicross/eora
 
 //Donator Section
 //All these items are stored in the donator_fluff.dm in the azure modular folder for simplicity.

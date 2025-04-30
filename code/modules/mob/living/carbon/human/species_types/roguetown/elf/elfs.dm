@@ -2,21 +2,10 @@
 	race = /datum/species/elf/wood
 
 /datum/species/elf/wood
-	name = "Elf"
+	name = "Wood Aelf"
 	id = "elfw"
 	desc = "<b>Elf</b><br>\
-	\"Elf\" is a catch-all term used for tall, pointy-eared humanoids who can trace \
-	their heritage to the ancient and mysterious Snow Elves. This particular species \
-	of elf are what most imagine when they hear the word, and are also known among \
-	the elder races as \"Wood-Elves\". Considering their diverse history, it is extremely \
-	difficult for other mortals to even conceive the various intricacies found in elven \
-	society, thanks in no small part to the hundreds if not thousands of tribes that exist \
-	within their culture. Although ancient and complex, Elves tend to be looked poorly upon by \
-	Humens, as historically the two races have been rivals in various conflicts and \
-	territorial disputes. This, however, does not stop many Humens and Elves from forming \
-	relationships, which are capable of producing half-elven children. Elves are known for \
-	their intelligence and sharp eyes, but their graceful nature typically leaves their bodies \
-	more frail and fagile than most. In these lands, only a handful of the many Elvish tribes are seen.<br>\
+	Wood aelfs are a common type of aelf living as peasants in Psydonia. They are immigrants from Tir Na Shaer, a sacred forest which was burned to near extinction by Zizo. They have adapted poorly to this age of metal walls and concrete floors, and have been generally kept out of the Psydonian nobility. They speak Imperial and AElfish.<br>\
 	(+1 Speed)"
 
 	skin_tone_wording = "Tribal Identity"

@@ -5,13 +5,7 @@
 	name = "Humen"
 	id = "humen"
 	desc = "<b>Humen</b><br>\
-	Humens (or \"Humans\") are the eldest of the Weeping God's creations. Noted for their \
-	tenacity and overwhelming population, humens are the most commonly seen race across the lands, \
-	at a rate of about ten to one in regions such as Grenzelhoft. However, to the west \
-	the opposite is true. Humens come from a vast swathe of cultures and ethnicities, most of which \
-	have historically been at odds with one another. Being the eldest creations of the Weeping God, humens \
-	tend to find fortune easier than the other races, and are so diverse that no other racial traits \
-	are dominant in their species.<br>\
+	Humen are descendants of ancient empires who conquered most of known Creation by being master soldiers and statesmen. The dead 'Holy King' and uniter of humenkind, Gideon Varis, was an imperial of the old blood.<br>\
 	(+1 Endurance, +1 Intelligence)"
 
 	skin_tone_wording = "Ancestry"

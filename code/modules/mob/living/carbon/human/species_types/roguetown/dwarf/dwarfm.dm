@@ -6,19 +6,7 @@
 	id = "dwarfm"
 	clothes_id = "dwarf"
 	desc = "<b>Dwarf</b><br>\
-	A proud and robust race of short mountain folk, \
-	the dwarves are known for their pride in martial strength \
-	and the tenacity with which they adhere to their ancient traditions. \
-	A Dwarf, much like the rock that they carve their fortresses out of, \
-	is stubborn and ancient, with their race being the longest lived of all \
-	of the Weeping God's creations. They, like stone, also rarely change \
-	and tend to shun the modernization of the world around them. \
-	Instead, a Dwarf looks to their ancestorial heritage for guidance on \
-	the various challenges they face. Even if, ironically, this behaviour \
-	leads their kind towards technological advacement as they continue \
-	to improve their crafts, both in engineering workshops and the forges. \
-	Dwarves are hearty, but are not known for their speed or eyesight... \
-	Each dwarf hails from a ancient fortress named after the most plentiful mineral.<br>\
+	A rare and insular people native to the deep places beneath Psydonia. When found in the world above, they stand together closely and speak little to outsiders. In the time before Zizo, they dreamed mighty and beautiful dreams in their Mountainhome: Shining lamps of hewn crystal, pale opal, beryl and pearl worked into gold and silver bright as the sun and moon - mail as fine as fish scales, swords and shining spears held fast in honorable hands. Of these dreams and these treasures, little remains, and all Dwarves yet living remember and resent this.<br>\
 	(+1 Constitution, +1 Endurance)"
 
 	skin_tone_wording = "Dwarf Fortress"

@@ -10,7 +10,7 @@
 	allowed_races = RACES_ALL_KINDS
 	allowed_ages = ALL_AGES_LIST
 
-	tutorial = "Granted a life of comfortable servitude in the Duke's manor, you follow the Seneschal's commands and spend your day performing necessary but menial tasks. This role offers an aesthetic choice between labor-servant, maid, and butler."
+	tutorial = "Granted a life of comfortable servitude in the Lord's manor, you follow the Seneschal's commands and spend your day performing necessary but menial tasks. This role offers an aesthetic choice between labor-servant, maid, and butler."
 
 	outfit = /datum/outfit/job/roguetown/servant
 	advclass_cat_rolls = list(CTAG_SERVANT = 20)
@@ -153,4 +153,41 @@
 		H.change_stat("speed", 1)
 		H.change_stat("intelligence", 1)
 		H.change_stat("perception", 2)
+		ADD_TRAIT(H, TRAIT_CICERONE, TRAIT_GENERIC)
+
+/datum/advclass/servant/groundskeeper
+	name = "Groundskeeper"
+	tutorial = "Your days are spent tending to the Duke's gardens and grounds. You understand soil, plants, and the value of honest work outdoors. While the other servants clean the manor's interior, you ensure its exterior remains pristine and productive."
+	outfit = /datum/outfit/job/roguetown/servant/groundskeeper
+	category_tags = list(CTAG_SERVANT)
+
+/datum/outfit/job/roguetown/servant/groundskeeper/pre_equip(mob/living/carbon/human/H)
+	..()
+	head = /obj/item/clothing/head/roguetown/strawhat
+	pants = /obj/item/clothing/under/roguetown/trou
+	shirt = /obj/item/clothing/suit/roguetown/shirt/undershirt/random
+	shoes = /obj/item/clothing/shoes/roguetown/simpleshoes
+	backl = /obj/item/storage/backpack/rogue/satchel
+	belt = /obj/item/storage/belt/rogue/leather/rope
+	beltr = /obj/item/storage/keyring/servant
+	armor = /obj/item/clothing/suit/roguetown/armor/workervest
+	gloves = /obj/item/clothing/gloves/roguetown/fingerless
+	if(H.mind)
+		H.mind.adjust_skillrank(/datum/skill/combat/knives, 1, TRUE)
+		H.mind.adjust_skillrank(/datum/skill/combat/polearms, 2, TRUE)
+		H.mind.adjust_skillrank(/datum/skill/craft/crafting, 2, TRUE)
+		H.mind.adjust_skillrank(/datum/skill/craft/alchemy, 1, TRUE)
+		H.mind.adjust_skillrank(/datum/skill/labor/farming, 5, TRUE)
+		H.mind.adjust_skillrank(/datum/skill/misc/medicine, 1, TRUE)
+		H.mind.adjust_skillrank(/datum/skill/misc/sewing, 1, TRUE)
+		H.mind.adjust_skillrank(/datum/skill/craft/cooking, 1, TRUE)
+		H.mind.adjust_skillrank(/datum/skill/craft/carpentry, 1, TRUE)
+		H.mind.adjust_skillrank(/datum/skill/misc/sneaking, 1, TRUE)
+		H.mind.adjust_skillrank(/datum/skill/misc/reading, 1, TRUE)
+		H.mind.adjust_skillrank(/datum/skill/misc/climbing, 2, TRUE)
+		H.mind.adjust_skillrank(/datum/skill/labor/butchering, 2, TRUE)
+		H.change_stat("strength", 1)
+		H.change_stat("constitution", 1)
+		H.change_stat("perception", 1)
+		ADD_TRAIT(H, TRAIT_SEEDKNOW, TRAIT_GENERIC)
 		ADD_TRAIT(H, TRAIT_CICERONE, TRAIT_GENERIC)

@@ -2,24 +2,10 @@
 	race = /datum/species/elf/dark
 
 /datum/species/elf/dark
-	name = "Dark Elf"
+	name = "Dark Aelf"
 	id = "elfd"
-	desc = "<b>Dark Elf</b><br>\
-	\"Elf\" is a catch-all term used for tall, pointy-eared humanoids who can trace their \
-	heritage to the ancient and mysterious Snow Elves. This species of elf, less frequently \
-	seen, are also referred to by some as \"drow,\" and have several key differences \
-	that set them apart from their more well-known and surface-dwelling kin. Chief among these \
-	differences are their dark complexions and origins from the Underdark; a massive subterranean \
-	landscape made up of a vast network of interconnected caves, caverns and tunnels. In this world \
-	hidden deep beneath the soil are several dark elven cities who exist and function far from the \
-	reaches of the rest of the surface-dwelling societies. These are a large part of what has earned \
-	the dark elves their notoriety, for in these cities the worship of the ascendant pantheon is \
-	normalized, and their cruel and bloodthirsty culture reflects this. It was rare to see dark \
-	elves outside of their underground homes, but in recent years, more and more of them have fled \
-	to the surface. The reasons for each dark elf fleeing the Underdark vary depending on the \
-	individual, such as a kinder heart fleeing from a brutal society that scorns them for their \
-	less cruel nature. However, not every dark elf seen on the surface can be safely assumed as \
-	kind, for some leave the Underdark simply to find their own greater heights of power.<br>\
+	desc = "<b>Dark Aelf</b><br>\
+	Dark aelves are a matriarchal people, with the women preferring to seek and devour their male counterparts like the spiders they once worshipped. A male cave aelf therefore never concerns himself with courting females, usually more focused on their labor or perfecting skills. Dark aelfs fit in poorly with the psydonians above-ground, but can sometimes be seen as lowly peasants, criminals and adventurers. Dwarves hate them, a mutual sentiment.  <br>\
 	(+1 Intellect, +1 Perception)"
 
 /*
