@@ -1,5 +1,6 @@
 GLOBAL_VAR(lordsurname)
 GLOBAL_LIST_EMPTY(lord_titles)
+GLOBAL_VAR(lord_selected)
 
 /datum/job/roguetown/lord
 	title = "Lord"
@@ -59,6 +60,8 @@ GLOBAL_LIST_EMPTY(lord_titles)
 		H.advsetup = 1
 		H.invisibility = INVISIBILITY_MAXIMUM
 		H.become_blind("advsetup")
+		// Set a global var to track if the lord has already been selected to prevent treasury multiplication on respawn
+		GLOB.lord_selected = FALSE
 		// Color choice will be handled by the subclass after selection
 
 /datum/advclass/lord/standard
@@ -155,6 +158,12 @@ GLOBAL_LIST_EMPTY(lord_titles)
 
 /datum/outfit/job/roguetown/lord/hedonist/pre_equip(mob/living/carbon/human/H)
 	..()
+	// Triple the treasury value as this is the hedonist lord, but only if it's the first selection
+	if(!GLOB.lord_selected)
+		SStreasury.treasury_value *= 3
+		to_chat(world, "<span class='boldnotice'>The Hedonist Lord's lavish lifestyle has resulted in a substantial treasury boost!</span>")
+		GLOB.lord_selected = TRUE
+	
 	head = /obj/item/clothing/head/roguetown/crown/serpcrown
 	neck = /obj/item/storage/belt/rogue/pouch/coins/rich
 	belt = /obj/item/storage/belt/rogue/leather/plaquegold

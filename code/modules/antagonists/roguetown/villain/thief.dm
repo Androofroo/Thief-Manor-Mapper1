@@ -4,7 +4,7 @@
 	antagpanel_category = "Thief"
 
 	confess_lines = list(
-		"I betrayed the lord and stole his crown!",
+		"I betrayed the lord!",
 		"These valuables? I... found them!",
 		"I was just going to return it, I swear!",
 	)
@@ -39,7 +39,8 @@
 	
 	// Give thief the ability to snuff lights
 	H.mind.AddSpell(new /obj/effect/proc_holder/spell/self/snuff_light)
-	
+	H.mind.AddSpell(new /obj/effect/proc_holder/spell/invoked/invisibility)
+
 	// Improve stealth-related skills
 	H.mind.adjust_skillrank(/datum/skill/misc/sneaking, 5, TRUE)
 	H.mind.adjust_skillrank(/datum/skill/misc/climbing, 4, TRUE)
@@ -60,7 +61,6 @@
 	
 	// Add thief traits
 	ADD_TRAIT(H, TRAIT_GENERIC, TRAIT_GENERIC)
-	ADD_TRAIT(H, TRAIT_CICERONE, TRAIT_GENERIC) // Knowledge of the manor layout
 
 /datum/antagonist/thief/proc/add_objectives()
 	var/datum/objective/steal/steal_obj = new
@@ -71,7 +71,7 @@
 		for(var/I in subtypesof(/datum/objective_item/steal/rogue))
 			new I
 	
-	// Find the target item in GLOB.possible_items instead of directly setting steal_target
+	
 	for(var/datum/objective_item/possible_item in GLOB.possible_items)
 		if(istype(possible_item, /datum/objective_item/steal/rogue/crown))
 			steal_obj.targetinfo = possible_item
@@ -80,7 +80,6 @@
 			break
 	
 	objectives += steal_obj
-	
 	var/datum/objective/survive/survive_obj = new
 	survive_obj.owner = owner
 	objectives += survive_obj
@@ -88,12 +87,12 @@
 /obj/effect/proc_holder/spell/self/snuff_light
 	name = "Snuff Light"
 	desc = "Silently extinguish nearby lights to enhance your stealth operations."
-	overlay_state = "shadow_hand"
+	overlay_state = "sacredflame"
 	antimagic_allowed = TRUE
 	charge_max = 50 // 5 seconds
 	clothes_req = FALSE
-	action_icon = 'icons/roguetown/misc/lighting.dmi'
-	action_icon_state = "wallcandle0"
+	action_icon = 'icons/mob/actions/roguespells.dmi'
+	action_icon_state = "spell0"
 
 /obj/effect/proc_holder/spell/self/snuff_light/cast(mob/user = usr)
 	var/snuffed = FALSE
