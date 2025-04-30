@@ -174,6 +174,10 @@
 			if(isliving(ex_pulled))
 				var/mob/living/L = ex_pulled
 				L.update_mobility()// mob gets up if it was lyng down in a chokehold
+				if(ex_pulled.hud_used)
+					var/atom/movable/screen/inventory/hand/H = ex_pulled.hud_used.hand_slots["[ex_pulled.active_hand_index]"]
+					if(H)
+						H.update_icon()
 	setGrabState(0)
 
 /atom/movable/proc/Move_Pulled(atom/A)
