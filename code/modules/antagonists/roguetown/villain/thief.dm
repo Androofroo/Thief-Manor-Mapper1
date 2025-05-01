@@ -28,7 +28,6 @@
 	owner.current.playsound_local(get_turf(owner.current), 'sound/music/thief.ogg', 60, FALSE, pressure_affected = FALSE)
 	var/mob/living/carbon/human/H = owner.current
 	ADD_TRAIT(H, TRAIT_GENERIC, TRAIT_GENERIC)
-	ADD_TRAIT(H, TRAIT_CICERONE, TRAIT_GENERIC) // Knowledge of the manor layout
 	to_chat(H, span_alertsyndie("I am a THIEF!"))
 	to_chat(H, span_boldwarning("I've worked in the manor for years, always overlooked, always underappreciated. I know every corner, every secret passage. Now it's time to take what I deserve - the Lord's Crown. My insider knowledge gives me an advantage, but betrayal is punished harshly in these lands."))
 	to_chat(H, span_boldnotice("I've learned how to silently snuff out lights to help me move unseen. Use the Snuff Light ability to extinguish any fire or light source within reach."))
@@ -123,9 +122,8 @@
 	human_req = TRUE
 	charge_max = 600
 	cooldown_min = 400
-	invocation = "I AM NOT WHO I APPEAR TO BE!"
-	invocation_type = "shout"
-	action_icon_state = "thief"
+	action_icon = 'icons/mob/actions/roguespells.dmi'
+	action_icon_state = "comedy"
 	
 	var/datum/disguise_info/stored_appearance
 	var/mob/living/carbon/human/current_target
