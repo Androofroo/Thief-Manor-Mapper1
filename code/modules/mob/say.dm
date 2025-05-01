@@ -30,7 +30,7 @@
 
 	// Make sure we have a valid language before trying to speak
 	var/datum/language/language = get_default_language()
-	if(!language)
+	if(!language || !istype(language, /datum/language))
 		language = /datum/language/common
 	
 	say(message, language=language)

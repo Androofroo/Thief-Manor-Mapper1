@@ -901,6 +901,10 @@
 	. = TRUE
 
 /atom/movable/proc/can_speak_in_language(datum/language/dt)
+	// Check if dt is a valid language datum
+	if(!dt || !istype(dt, /datum/language))
+		return FALSE
+		
 	var/datum/language_holder/H = get_language_holder()
 	if(!H.has_language(dt) || HAS_TRAIT(src, TRAIT_LANGUAGE_BARRIER))
 		return FALSE
@@ -935,7 +939,8 @@
 			chosen_langtype = langtype
 			highest_priority = pri
 
-	H.selected_default_language = .
+	if(chosen_langtype)
+		H.selected_default_language = chosen_langtype
 	. = chosen_langtype
 
 /* End language procs */
