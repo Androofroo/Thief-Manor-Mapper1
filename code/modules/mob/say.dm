@@ -28,7 +28,12 @@
 		return
 	clear_typing_indicator()		// clear it immediately!
 
-	say(message)
+	// Make sure we have a valid language before trying to speak
+	var/datum/language/language = get_default_language()
+	if(!language)
+		language = /datum/language/common
+	
+	say(message, language=language)
 
 ///Whisper verb
 /mob/verb/whisper_verb(message as text)

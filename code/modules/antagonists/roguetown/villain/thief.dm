@@ -140,7 +140,7 @@
 	var/list/mob/living/carbon/human/targets_with_minds = list()
 	
 	// Find all human mobs with minds, regardless of distance
-	for(var/mob/living/carbon/human/H in GLOB.player_list)
+	for(var/mob/living/carbon/human/H)
 		if(H != user && H.mind) // Only include other mobs with minds
 			var/target_name = H.name
 			if(H.job) // Add job in parentheses if available
@@ -188,9 +188,14 @@
 	snapshot.icon = target.icon
 	snapshot.icon_state = target.icon_state
 	
-	// Capture all overlays from the target
+	// Capture all overlays from the target, but filter out the sleeping overlay
 	snapshot.overlays = list()
 	for(var/overlay in target.overlays)
+		// Skip the sleeping overlay if it exists
+		if(istype(overlay, /mutable_appearance) || istype(overlay, /image))
+			var/image/I = overlay
+			if(findtext(I.icon_state, "sleep") || I.icon_state == "zzz")
+				continue
 		snapshot.overlays += overlay
 	
 	// Store the user's original appearance
