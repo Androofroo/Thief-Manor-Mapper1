@@ -1,3 +1,24 @@
+// Helper function to determine if an item name is plural
+/proc/is_plural_item(item_name)
+	if(!item_name)
+		return FALSE
+	
+	var/static/list/plural_items = list(
+		"pants", "shorts", "leggings", "boots", "shoes", "sandals",
+		"gloves", "mitts", "gauntlets", "glasses", "goggles", "chausses",
+		"trousers", "robes", "jeans", "clothes", "remains", "bracers", "greaves"
+	)
+	
+	for(var/plural in plural_items)
+		if(findtext(item_name, plural))
+			return TRUE
+	
+	// Check for common plural endings
+	if(findtext(item_name, "s$"))
+		return TRUE
+	
+	return FALSE
+
 /mob/living/carbon/human/proc/on_examine_face(mob/living/carbon/human/user)
 	if(!istype(user))
 		return
@@ -63,12 +84,20 @@
 	)
 	if(get_visible_name() in unknown_names)
 		obscure_name = TRUE
+	
+	// If using magical disguise and the target's face was hidden, enforce unknown identity
+	if(DS && DS.is_identity_concealed())
+		obscure_name = TRUE
 
 	if(observer_privilege)
 		obscure_name = FALSE
 
 	if(obscure_name)
-		. = list(span_info("ø ------------ ø\nThis is <EM>Unknown</EM>."))
+		// If we have a magical disguise with a specific "Unknown" name variant, use it
+		if(DS && DS.is_identity_concealed() && DS.get_visible_name())
+			. = list(span_info("ø ------------ ø\nThis is <EM>[DS.get_visible_name()]</EM>."))
+		else
+			. = list(span_info("ø ------------ ø\nThis is <EM>Unknown</EM>."))
 	else
 		on_examine_face(user)
 		var/used_name = name
@@ -227,12 +256,13 @@
 	// Shirt section
 	if(disguised_equipment && disguised_equipment["wear_shirt"] && !(SLOT_SHIRT in obscured))
 		var/item_data = disguised_equipment["wear_shirt"]
+		var/plural = is_plural_item(item_data["name"])
 		if(!disguised_equipment["wear_armor"])
-			. += "[m3] [item_data["name"]]."
+			. += "[m3] [plural ? "some" : "a"] [item_data["name"]]."
 		else if(is_smart)
-			. += "[m3] [item_data["name"]]."
+			. += "[m3] [plural ? "some" : "a"] [item_data["name"]]."
 		else if(!is_stupid && is_normal)
-			. += "[m3] [item_data["name"]]."
+			. += "[m3] [plural ? "some" : "a"] [item_data["name"]]."
 	else if(wear_shirt && !(SLOT_SHIRT in obscured))
 		if(!wear_armor)
 			. += "[m3] [wear_shirt.get_examine_string(user)]."
@@ -249,7 +279,11 @@
 		var/item_data = disguised_equipment["wear_pants"]
 		var/accessory_msg = ""
 		
-		var/str = "[m3] [item_data["name"]][accessory_msg]. "
+		var/str = ""
+		// Check if it's a plural item (pants, shorts, etc.) or a singular item
+		var/plural = is_plural_item(item_data["name"])
+		str = "[m3] [plural ? "" : "a "][item_data["name"]][accessory_msg]. "
+			
 		if(!disguised_equipment["wear_armor"])
 			if(is_normal && !is_smart)
 				// No condition display for disguised items
@@ -280,16 +314,15 @@
 	// Head section
 	if(disguised_equipment && disguised_equipment["head"] && !(SLOT_HEAD in obscured))
 		var/item_data = disguised_equipment["head"]
-		var/str = "[m3] [item_data["name"]] on [m2] head. "
+		var/plural = is_plural_item(item_data["name"])
+		var/str = "[m3] [plural ? "some" : "a"] [item_data["name"]] on [m2] head. "
 		if(is_smart)
-			str += "It's in decent condition."
+			// No condition for disguised items
 		else if(is_stupid)
 			if(findtext(item_data["name"], "helmet"))
 				str = "[m3] some kinda helmet!"
 			else
 				str = "[m3] some kinda hat!"
-		else
-			str += "It's in decent condition."
 		. += str
 	else if(head && !(SLOT_HEAD in obscured))
 		var/str = "[m3] [head.get_examine_string(user)] on [m2] head. "
@@ -307,22 +340,26 @@
 	// Armor section
 	if(disguised_equipment && disguised_equipment["wear_armor"] && !(SLOT_ARMOR in obscured))
 		var/item_data = disguised_equipment["wear_armor"]
-		var/str = "[m3] [item_data["name"]]. "
+		var/plural = is_plural_item(item_data["name"])
+		var/str = "[m3] [plural ? "some" : "a"] [item_data["name"]]. "
 		if(is_smart)
-			str += "It's in decent condition."
+			// No condition for disguised items
 		else if (is_stupid)
 			if(findtext(item_data["name"], "armor"))
 				. += "[m3] some kind of armor!"
 			else
 				. += "[m3] some kind of outfit!"
-		else
-			str += "It's in decent condition."
+			return
+		
 		. += str
 		
 		// Store slot for disguised armor
 		if(disguised_equipment["s_store"] && !(SLOT_S_STORE in obscured))
 			if(is_normal || is_smart)
-				. += "[m1] carrying [disguised_equipment["s_store"]["name"]] on [m2] [item_data["name"]]."
+				var/s_plural = FALSE
+				if(disguised_equipment["s_store"]["name"])
+					s_plural = is_plural_item(disguised_equipment["s_store"]["name"])
+				. += "[m1] carrying [s_plural ? "some" : "a"] [disguised_equipment["s_store"]["name"]] on [m2] [item_data["name"]]."
 	else if(wear_armor && !(SLOT_ARMOR in obscured))
 		var/str = "[m3] [wear_armor.get_examine_string(user)]. "
 		if(is_smart)
@@ -355,17 +392,18 @@
 	// Cloak section
 	if(disguised_equipment && disguised_equipment["cloak"] && !(SLOT_CLOAK in obscured))
 		var/item_data = disguised_equipment["cloak"]
+		var/plural = is_plural_item(item_data["name"])
 		if(is_smart)
-			var/str = "[m3] [item_data["name"]] on [m2] shoulders. "
-			// Don't show condition for disguised items
+			var/str = "[m3] [plural ? "some" : "a"] [item_data["name"]] on [m2] shoulders. "
+			// No condition for disguised items
 			. += str
 		else if (is_stupid)
 			if(!findtext(item_data["name"], "tabard") && user.mind?.get_skill_level(/datum/skill/misc/reading))
 				. += "[m3] some kinda clothy thing on [m2] shoulders!"
 			else
-				. += "[m3] [item_data["name"]] on [m2] shoulders."
+				. += "[m3] [plural ? "some" : "a"] [item_data["name"]] on [m2] shoulders."
 		else
-			. += "[m3] [item_data["name"]] on [m2] shoulders."
+			. += "[m3] [plural ? "some" : "a"] [item_data["name"]] on [m2] shoulders."
 	else if(cloak && !(SLOT_CLOAK in obscured))
 		if(is_smart)
 			var/str = "[m3] [cloak.get_examine_string(user)] on [m2] shoulders. "
@@ -382,12 +420,13 @@
 	// Right back section
 	if(disguised_equipment && disguised_equipment["backr"] && !(SLOT_BACK_R in obscured))
 		var/item_data = disguised_equipment["backr"]
+		var/plural = is_plural_item(item_data["name"])
 		if(is_smart)
-			var/str = "[m3] [item_data["name"]] on [m2] back. "
-			// Don't show condition for disguised items
+			var/str = "[m3] [plural ? "some" : "a"] [item_data["name"]] on [m2] back. "
+			// No condition for disguised items
 			. += str
 		else
-			. += "[m3] [item_data["name"]] on [m2] back."
+			. += "[m3] [plural ? "some" : "a"] [item_data["name"]] on [m2] back."
 	else if(backr && !(SLOT_BACK_R in obscured))
 		if(is_smart)
 			var/str = "[m3] [backr.get_examine_string(user)] on [m2] back. "
@@ -399,12 +438,13 @@
 	// Left back section
 	if(disguised_equipment && disguised_equipment["backl"] && !(SLOT_BACK_L in obscured))
 		var/item_data = disguised_equipment["backl"]
+		var/plural = is_plural_item(item_data["name"])
 		if(is_smart)
-			var/str = "[m3] [item_data["name"]] on [m2] back. "
-			// Don't show condition for disguised items
+			var/str = "[m3] [plural ? "some" : "a"] [item_data["name"]] on [m2] back. "
+			// No condition for disguised items
 			. += str
 		else
-			. += "[m3] [item_data["name"]] on [m2] back."
+			. += "[m3] [plural ? "some" : "a"] [item_data["name"]] on [m2] back."
 	else if(backl && !(SLOT_BACK_L in obscured))
 		if(is_smart)
 			var/str = "[m3] [backl.get_examine_string(user)] on [m2] back. "
@@ -414,14 +454,17 @@
 			. += "[m3] [backl.get_examine_string(user)] on [m2] back."
 
 	// Hands section
-	if(disguised_equipment && disguised_equipment["held_items"] && disguised_equipment["held_items"].len)
+	if(disguised_equipment && disguised_equipment["held_items"] && length(disguised_equipment["held_items"]))
 		for(var/item_data in disguised_equipment["held_items"])
+			var/plural = FALSE
+			if(item_data["name"])
+				plural = is_plural_item(item_data["name"])
 			if(is_smart)
-				var/str = "[m1] holding [item_data["name"]] in [m2] [item_data["held_name"]]."
-				// Don't show condition for disguised items
+				var/str = "[m1] holding [plural ? "some" : "a"] [item_data["name"]] in [m2] [item_data["held_name"]]."
+				// No condition for disguised items
 				. += str
 			else
-				. += "[m1] holding [item_data["name"]] in [m2] [item_data["held_name"]]."
+				. += "[m1] holding [plural ? "some" : "a"] [item_data["name"]] in [m2] [item_data["held_name"]]."
 	else
 		for(var/obj/item/I in held_items)
 			if(!(I.item_flags & ABSTRACT))
@@ -435,7 +478,14 @@
 	// Gloves section
 	if(disguised_equipment && disguised_equipment["gloves"] && !(SLOT_GLOVES in obscured))
 		var/item_data = disguised_equipment["gloves"]
-		var/str = "[m3] [item_data["name"]] on [m2] hands. "
+		var/str = ""
+		// Check if it's a plural item (gloves usually are)
+		var/plural = is_plural_item(item_data["name"])
+		if(plural)
+			str = "[m3] some [item_data["name"]] on [m2] hands. "
+		else
+			str = "[m3] a [item_data["name"]] on [m2] hands. "
+			
 		if(is_smart)
 			// No condition display for disguised items
 			str += ""
@@ -465,12 +515,13 @@
 	// Belt section
 	if(disguised_equipment && disguised_equipment["belt"] && !(SLOT_BELT in obscured))
 		var/item_data = disguised_equipment["belt"]
+		var/plural = is_plural_item(item_data["name"])
 		if(is_smart)
-			var/str = "[m3] [item_data["name"]] about [m2] waist. "
-			// Don't show condition for disguised items
+			var/str = "[m3] [plural ? "some" : "a"] [item_data["name"]] about [m2] waist. "
+			// No condition for disguised items
 			. += str
 		else
-			. += "[m3] [item_data["name"]] about [m2] waist."
+			. += "[m3] [plural ? "some" : "a"] [item_data["name"]] about [m2] waist."
 	else if(belt && !(SLOT_BELT in obscured))
 		if(is_smart)
 			var/str = "[m3] [belt.get_examine_string(user)] about [m2] waist. "
@@ -482,12 +533,13 @@
 	// Right belt section
 	if(disguised_equipment && disguised_equipment["beltr"] && !(SLOT_BELT_R in obscured))
 		var/item_data = disguised_equipment["beltr"]
+		var/plural = is_plural_item(item_data["name"])
 		if(is_smart)
-			var/str = "[m3] [item_data["name"]] on [m2] belt. "
-			// Don't show condition for disguised items
+			var/str = "[m3] [plural ? "some" : "a"] [item_data["name"]] on [m2] belt. "
+			// No condition for disguised items
 			. += str
 		else
-			. += "[m3] [item_data["name"]] on [m2] belt."
+			. += "[m3] [plural ? "some" : "a"] [item_data["name"]] on [m2] belt."
 	else if(beltr && !(SLOT_BELT_R in obscured))
 		if(is_smart)
 			var/str = "[m3] [beltr.get_examine_string(user)] on [m2] belt. "
@@ -499,12 +551,13 @@
 	// Left belt section
 	if(disguised_equipment && disguised_equipment["beltl"] && !(SLOT_BELT_L in obscured))
 		var/item_data = disguised_equipment["beltl"]
+		var/plural = is_plural_item(item_data["name"])
 		if(is_smart)
-			var/str = "[m3] [item_data["name"]] on [m2] belt. "
+			var/str = "[m3] [plural ? "some" : "a"] [item_data["name"]] on [m2] belt. "
 			// Don't show condition for disguised items
 			. += str
 		else
-			. += "[m3] [item_data["name"]] on [m2] belt."
+			. += "[m3] [plural ? "some" : "a"] [item_data["name"]] on [m2] belt."
 	else if(beltl && !(SLOT_BELT_L in obscured))
 		if(is_smart)
 			var/str = "[m3] [beltl.get_examine_string(user)] on [m2] belt. "
@@ -516,7 +569,9 @@
 	// Shoes section
 	if(disguised_equipment && disguised_equipment["shoes"] && !(SLOT_SHOES in obscured))
 		var/item_data = disguised_equipment["shoes"]
-		var/str = "[m3] [item_data["name"]] on [m2] feet. "
+		var/plural = is_plural_item(item_data["name"])
+		var/str = "[m3] [plural ? "some" : "a"] [item_data["name"]] on [m2] feet. "
+			
 		if(is_smart)
 			// No condition display for disguised items
 			str += ""
@@ -539,7 +594,8 @@
 	// Mask section
 	if(disguised_equipment && disguised_equipment["wear_mask"] && !(SLOT_WEAR_MASK in obscured))
 		var/item_data = disguised_equipment["wear_mask"]
-		var/str = "[m3] [item_data["name"]] on [m2] face. "
+		var/plural = is_plural_item(item_data["name"])
+		var/str = "[m3] [plural ? "some" : "a"] [item_data["name"]] on [m2] face. "
 		if(is_smart)
 			// No condition display for disguised items
 			str += ""
@@ -559,7 +615,8 @@
 	// Mouth section
 	if(disguised_equipment && disguised_equipment["mouth"] && !(SLOT_MOUTH in obscured))
 		var/item_data = disguised_equipment["mouth"]
-		var/str = "[m3] [item_data["name"]] in [m2] mouth. "
+		var/plural = is_plural_item(item_data["name"])
+		var/str = "[m3] [plural ? "some" : "a"] [item_data["name"]] in [m2] mouth. "
 		if(is_smart)
 			// No condition display for disguised items
 			str += ""
@@ -579,7 +636,8 @@
 	// Neck section
 	if(disguised_equipment && disguised_equipment["wear_neck"] && !(SLOT_NECK in obscured))
 		var/item_data = disguised_equipment["wear_neck"]
-		var/str = "[m3] [item_data["name"]] around [m2] neck. "
+		var/plural = is_plural_item(item_data["name"])
+		var/str = "[m3] [plural ? "some" : "a"] [item_data["name"]] around [m2] neck. "
 		if(is_smart)
 			// No condition display for disguised items
 			str += ""
@@ -599,7 +657,8 @@
 	// Eyes section
 	if(!(SLOT_GLASSES in obscured))
 		if(disguised_equipment && disguised_equipment["glasses"])
-			. += "[m3] [disguised_equipment["glasses"]["name"]] covering [m2] eyes."
+			var/plural = is_plural_item(disguised_equipment["glasses"]["name"])
+			. += "[m3] [plural ? "some" : "a"] [disguised_equipment["glasses"]["name"]] covering [m2] eyes."
 		else if(glasses)
 			. += "[m3] [glasses.get_examine_string(user)] covering [m2] eyes."
 		else if(eye_color == BLOODCULT_EYE)
@@ -607,17 +666,19 @@
 
 	// Ears section
 	if(disguised_equipment && disguised_equipment["ears"] && !(SLOT_HEAD in obscured))
-		. += "[m3] [disguised_equipment["ears"]["name"]] on [m2] ears."
+		var/plural = is_plural_item(disguised_equipment["ears"]["name"])
+		. += "[m3] [plural ? "some" : "a"] [disguised_equipment["ears"]["name"]] on [m2] ears."
 	else if(ears && !(SLOT_HEAD in obscured))
 		. += "[m3] [ears.get_examine_string(user)] on [m2] ears."
 
 	// Ring section
 	if(disguised_equipment && disguised_equipment["wear_ring"] && !(SLOT_RING in obscured))
 		var/item_data = disguised_equipment["wear_ring"]
+		var/plural = is_plural_item(item_data["name"])
 		if(is_stupid)
 			. += "[m3] some sort of ring!"
 		else
-			. += "[m3] [item_data["name"]] on [m2] hands."
+			. += "[m3] [plural ? "some" : "a"] [item_data["name"]] on [m2] hands."
 	else if(wear_ring && !(SLOT_RING in obscured))
 		if(is_stupid)
 			. += "[m3] some sort of ring!"
@@ -636,7 +697,8 @@
 	// Wrists section
 	if(disguised_equipment && disguised_equipment["wear_wrists"] && !(SLOT_WRISTS in obscured))
 		var/item_data = disguised_equipment["wear_wrists"]
-		var/str = "[m3] [item_data["name"]] on [m2] wrists."
+		var/plural = is_plural_item(item_data["name"])
+		var/str = "[m3] [plural ? "some" : "a"] [item_data["name"]] on [m2] wrists."
 		if(is_smart)
 			// Don't show condition for disguised items
 			str += ""

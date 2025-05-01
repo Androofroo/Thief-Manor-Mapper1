@@ -276,7 +276,7 @@
 	H.change_stat("intelligence", 2)
 
 	H.adjust_blindness(-3)
-	var/weapons = list("Longsword + Tower Shield","Steel Mace + Buckler","Warhammer + Wooden Shield")
+	var/weapons = list("Longsword + Kite Shield","Steel Mace + Buckler","Warhammer + Wooden Shield")
 	var/weapon_choice = input("Choose your weapon.", "TAKE UP ARMS") as anything in weapons
 	H.set_blindness(0)
 	switch(weapon_choice)

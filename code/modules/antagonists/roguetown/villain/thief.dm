@@ -1,3 +1,6 @@
+// Villain jobs based on stealth and stealing
+#define TRAIT_DISGUISE_ACTIVE "disguise_active"
+
 /datum/antagonist/thief
 	name = "Thief"
 	roundend_category = "Thieves"
@@ -129,36 +132,54 @@
 	var/disguise_duration = 2400 // 4 minutes
 	var/disguise_active = FALSE
 	var/datum/icon_snapshot/snapshot   // Snapshot of target's appearance
+	var/list/original_held_items = list() // To track what items were originally held
 
 /obj/effect/proc_holder/spell/self/magical_disguise/cast(list/targets, mob/living/carbon/human/user)
 	if(disguise_active)
 		remove_disguise(user)
 		return
 		
-	var/list/mob/living/carbon/human/targets_in_range = list()
-	for(var/mob/living/carbon/human/H in view(7, user))
-		if(H != user)
-			targets_in_range += H
-			
-	if(!targets_in_range.len)
+	var/list/mob/living/carbon/human/targets_with_minds = list()
+	
+	// Find all human mobs with minds, regardless of distance
+	for(var/mob/living/carbon/human/H in GLOB.player_list)
+		if(H != user && H.mind) // Only include other mobs with minds
+			var/target_name = H.name
+			if(H.job) // Add job in parentheses if available
+				target_name = "[target_name] ([H.job])"
+			targets_with_minds[target_name] = H
+	
+	if(!length(targets_with_minds))
 		to_chat(user, "<span class='warning'>No valid targets found!</span>")
 		return
-		
-	var/mob/living/carbon/human/selected_target = input("Select a target to disguise as.", "Disguise Target") as null|anything in targets_in_range
-	if(!selected_target || QDELETED(selected_target) || selected_target == user || !(selected_target in view(7, user)))
+	
+	// Let the user select from the list with formatted names
+	var/choice = input("Select a target to disguise as.", "Disguise Target") as null|anything in targets_with_minds
+	if(!choice)
+		to_chat(user, "<span class='warning'>No target selected!</span>")
+		return
+	
+	var/mob/living/carbon/human/selected_target = targets_with_minds[choice]
+	if(!selected_target || QDELETED(selected_target))
 		to_chat(user, "<span class='warning'>Invalid target!</span>")
 		return
-		
+	
 	if(!do_after(user, 50, target = user))
 		to_chat(user, "<span class='warning'>You were interrupted!</span>")
 		return
-		
+	
 	apply_disguise(user, selected_target)
 
 /obj/effect/proc_holder/spell/self/magical_disguise/proc/apply_disguise(mob/living/carbon/human/user, mob/living/carbon/human/target)
 	// Store original appearance info for later restoration
 	current_target = target
 	stored_appearance = new /datum/disguise_info(user)
+	
+	// Store original held items
+	original_held_items.Cut()
+	for(var/obj/item/I in user.held_items)
+		if(!(I.item_flags & ABSTRACT))
+			original_held_items += I
 	
 	// Force regenerate target's icons to ensure complete appearance capture
 	target.regenerate_icons()
@@ -178,15 +199,38 @@
 	stored_appearance.original_icon = user.icon
 	stored_appearance.original_icon_state = user.icon_state
 	stored_appearance.original_overlays = user.overlays.Copy()
+	stored_appearance.original_obscured_flags = user.obscured_flags
+	stored_appearance.original_name_override = user.name_override
 	
-	// Basic identity information
-	user.real_name = target.real_name
-	user.name = target.name
+	// Handle identity - check if target's face is concealed/unknown
+	var/target_visible_name = target.get_visible_name()
+	var/static/list/unknown_names = list(
+		"Unknown",
+		"Unknown Man",
+		"Unknown Woman",
+	)
+	
+	if(target_visible_name in unknown_names)
+		// If target appears as "Unknown", we should store that fact
+		stored_appearance.disguised_as_unknown = TRUE
+		// Set name_override to match the target's visible name for mouseover
+		user.name_override = target_visible_name
+		// Store target's visible name for examination
+		stored_appearance.target_visible_name = target_visible_name
+	else
+		// Otherwise use the target's normal name
+		stored_appearance.disguised_as_unknown = FALSE
+		user.name_override = null // Clear any existing name override
+		user.real_name = target.real_name
+		user.name = target.name
 	
 	// Copy job if available
 	if(target.job)
 		stored_appearance.original_job = user.job
 		user.job = target.job
+	
+	// Copy gender first - this ensures descriptors will generate properly
+	user.gender = target.gender
 	
 	// Copy species name and descriptors for examination
 	if(istype(target) && target.dna && target.dna.species)
@@ -201,36 +245,16 @@
 		// Capture the visible equipment from the target
 		var/list/equipment_data = capture_visible_equipment(target)
 		
-		// Use a component to store the species name, descriptors, and equipment
-		user.AddComponent(/datum/component/disguised_species, target.dna.species.name, target_descriptors, original_descriptors, equipment_data)
+		// Add our custom component that doesn't use signals
+		user.AddComponent(/datum/component/disguised_species, target.dna.species.name, target_descriptors, original_descriptors, equipment_data, stored_appearance.disguised_as_unknown, stored_appearance.target_visible_name)
 		
-		// Replace the user's descriptors with the target's
+		// Replace the user's descriptors with the target's after gender has been set
 		user.clear_mob_descriptors()
 		if(length(target_descriptors))
 			user.mob_descriptors = target_descriptors.Copy()
 	
-	// Copy gender for consistency
-	user.gender = target.gender
-	
-	// Store the flags for hair/face visibility to ensure proper hiding with helmets
-	if(target.head)
-		stored_appearance.target_head_flags = target.head.flags_inv
-		// If the target is wearing a helmet that hides things, we should simulate those being hidden
-		if(target.head.flags_inv & HIDEHAIR)
-			stored_appearance.original_hair = user.hairstyle
-			stored_appearance.original_hair_color = user.hair_color
-			user.hairstyle = "Bald"
-			// No need to change the color as it won't be visible
-		
-		if(target.head.flags_inv & HIDEFACE)
-			stored_appearance.original_face = user.facial_hairstyle
-			stored_appearance.original_face_color = user.facial_hair_color
-			user.facial_hairstyle = "Shaved"
-			// No need to change the color as it won't be visible
-		
-		// Update the user's appearance to apply the hair changes
-		user.update_hair()
-		user.update_body()
+	// Copy the target's obscured flags to properly handle hidden features
+	user.obscured_flags = target.obscured_flags
 	
 	// Apply the visual snapshot to the user
 	user.icon = snapshot.icon
@@ -239,12 +263,22 @@
 	for(var/overlay in snapshot.overlays)
 		user.add_overlay(overlay)
 	
-	// Set a timer to remove the disguise
+	// Override attack and equip functions to break the disguise
+	ADD_TRAIT(user, TRAIT_DISGUISE_ACTIVE, MAGICAL_DISGUISE_TRAIT)
+	
+	// Set up a timer to remove the disguise
 	addtimer(CALLBACK(src, PROC_REF(remove_disguise), user), disguise_duration)
 	
 	disguise_active = TRUE
 	playsound(get_turf(user), 'sound/magic/swap.ogg', 50, TRUE)
-	to_chat(user, "<span class='notice'>You take on the appearance of [target.real_name]!</span>")
+	
+	// Create a more detailed disguise message that includes the job if available
+	var/disguise_message = "You take on the appearance of [target_visible_name]"
+	if(target.job)
+		disguise_message += ", the [target.job]"
+	disguise_message += "! Attacking, putting anything in your hands or changing your clothing will break the disguise."
+	
+	to_chat(user, "<span class='notice'>[disguise_message]</span>")
 
 /obj/effect/proc_holder/spell/self/magical_disguise/proc/remove_disguise(mob/living/carbon/human/user)
 	if(!disguise_active || !stored_appearance)
@@ -262,29 +296,31 @@
 	user.name = stored_appearance.name
 	user.gender = stored_appearance.gender
 	
+	// Restore name_override
+	user.name_override = stored_appearance.original_name_override
+	
 	// Restore job if it was changed
 	if(stored_appearance.original_job)
 		user.job = stored_appearance.original_job
 	
-	// Restore hair and facial hair if they were changed
-	if(stored_appearance.original_hair)
-		user.hairstyle = stored_appearance.original_hair
+	// Restore original obscured flags
+	user.obscured_flags = stored_appearance.original_obscured_flags
 	
-	if(stored_appearance.original_hair_color)
-		user.hair_color = stored_appearance.original_hair_color
-	
-	if(stored_appearance.original_face)
-		user.facial_hairstyle = stored_appearance.original_face
-	
-	if(stored_appearance.original_face_color)
-		user.facial_hair_color = stored_appearance.original_face_color
-	
-	// Make sure we update the user's appearance to show restored hair
+	// Make sure we update the user's appearance to reflect the restored obscured flags
 	user.update_hair()
 	user.update_body()
 	
+	// Force complete icon regeneration to ensure original appearance is fully restored
+	user.regenerate_icons()
+	
 	// Remove the target species name trait
 	REMOVE_TRAIT(user, TRAIT_DISGUISED_SPECIES, MAGICAL_DISGUISE_TRAIT)
+	
+	// Remove the disguise active trait
+	REMOVE_TRAIT(user, TRAIT_DISGUISE_ACTIVE, MAGICAL_DISGUISE_TRAIT)
+	
+	// Remove the break disguise verb
+	user.verbs -= /mob/proc/break_magical_disguise
 	
 	// Get the component and restore original descriptors
 	var/datum/component/disguised_species/DS = user.GetComponent(/datum/component/disguised_species)
@@ -302,10 +338,105 @@
 	snapshot = null
 	stored_appearance = null
 	current_target = null
+	original_held_items.Cut()
 	disguise_active = FALSE
 	
 	playsound(get_turf(user), 'sound/magic/swap.ogg', 50, TRUE)
 	to_chat(user, "<span class='warning'>Your magical disguise wears off!</span>")
+
+// Add a new verb that humans can use to break their disguise voluntarily
+/mob/proc/break_magical_disguise()
+	set name = "Break Disguise"
+	set desc = "Voluntarily break your magical disguise."
+	set category = "Abilities"
+	
+	// Find any active magical disguise spell
+	for(var/obj/effect/proc_holder/spell/self/magical_disguise/spell in src.mind.spell_list)
+		if(spell.disguise_active)
+			to_chat(src, "<span class='notice'>You dispel your magical disguise.</span>")
+			spell.remove_disguise(src)
+			return
+	
+	to_chat(src, "<span class='warning'>You don't have an active disguise to break!</span>")
+
+// Override these functions in the mob/living/carbon/human type to detect when the disguise should break
+/mob/living/carbon/human/ClickOn(atom/A, params)
+	if(HAS_TRAIT(src, TRAIT_DISGUISE_ACTIVE))
+		// Check if the user is trying to attack something
+		var/list/modifiers = params2list(params)
+		if(modifiers["shift"] || modifiers["alt"] || modifiers["ctrl"])
+			// Likely not an attack, let it proceed
+			return ..()
+		
+		if(get_dist(src, A) <= 1 && isliving(A) && A != src)
+			// This is likely an attack on a nearby living mob
+			break_disguise_effect("Attempting to attack breaks your magical disguise!")
+			return ..()
+	
+	return ..()
+
+/mob/living/carbon/human/proc/break_disguise_effect(message = "Your actions have broken your magical disguise!")
+	to_chat(src, "<span class='warning'>[message]</span>")
+	playsound(get_turf(src), 'sound/magic/swap.ogg', 50, TRUE)
+	
+	// Visual effect to indicate the disguise breaking
+	var/datum/effect_system/spark_spread/sparks = new
+	sparks.set_up(5, 0, src)
+	sparks.attach(src)
+	sparks.start()
+	
+	// Find and remove the disguise
+	for(var/obj/effect/proc_holder/spell/self/magical_disguise/spell in src.mind.spell_list)
+		if(spell.disguise_active)
+			spell.remove_disguise(src)
+			break
+
+// Hook into item equipping/unequipping
+/mob/living/carbon/human/equip_to_slot(obj/item/I, slot, initial = FALSE, redraw_mob = FALSE, silent = FALSE)
+	if(HAS_TRAIT(src, TRAIT_DISGUISE_ACTIVE) && !initial && !silent)
+		break_disguise_effect("Equipping an item breaks your magical disguise!")
+	
+	. = ..()
+
+/mob/living/carbon/human/doUnEquip(obj/item/I, force, newloc, no_move, invdrop = TRUE, silent = FALSE)
+	if(HAS_TRAIT(src, TRAIT_DISGUISE_ACTIVE) && !silent)
+		break_disguise_effect("Unequipping an item breaks your magical disguise!")
+	
+	. = ..()
+
+// Override put_in_hands to detect when items are placed in hands
+/mob/living/carbon/human/put_in_hands(obj/item/I, del_on_fail = FALSE, merge_stacks = TRUE, forced = FALSE)
+	if(HAS_TRAIT(src, TRAIT_DISGUISE_ACTIVE) && !forced && !istype(I, /obj/item/clothing/head/mob_holder))
+		break_disguise_effect("Holding an item breaks your magical disguise!")
+	
+	. = ..()
+
+// Also override put_in_hand_check which gets called before put_in_hands in some cases
+/mob/living/carbon/human/put_in_hand_check(obj/item/I, hand_index, forced = FALSE)
+	if(HAS_TRAIT(src, TRAIT_DISGUISE_ACTIVE) && !forced && !istype(I, /obj/item/clothing/head/mob_holder))
+		break_disguise_effect("Holding an item breaks your magical disguise!")
+	
+	. = ..()
+
+// Override put_in_active_hand and put_in_inactive_hand specifically
+/mob/living/carbon/human/put_in_active_hand(obj/item/I, forced = FALSE)
+	if(HAS_TRAIT(src, TRAIT_DISGUISE_ACTIVE) && !forced && !istype(I, /obj/item/clothing/head/mob_holder))
+		break_disguise_effect("Holding an item breaks your magical disguise!")
+	
+	. = ..()
+
+/mob/living/carbon/human/put_in_inactive_hand(obj/item/I, forced = FALSE)
+	if(HAS_TRAIT(src, TRAIT_DISGUISE_ACTIVE) && !forced && !istype(I, /obj/item/clothing/head/mob_holder))
+		break_disguise_effect("Holding an item breaks your magical disguise!")
+	
+	. = ..()
+
+// Instead of pickup, override attack_hand for items which is called when picking up items
+/mob/living/carbon/human/attack_hand(atom/movable/AM)
+	if(HAS_TRAIT(src, TRAIT_DISGUISE_ACTIVE) && isitem(AM))
+		break_disguise_effect("Picking up an item breaks your magical disguise!")
+	
+	. = ..()
 
 // Simplified helper datum to store original appearance information
 /datum/disguise_info
@@ -317,30 +448,34 @@
 	var/icon/original_icon
 	var/original_icon_state
 	var/list/original_overlays
-	var/target_head_flags    // Flags for target's helmet/head item
-	var/original_hair        // Original hair style
-	var/original_hair_color  // Original hair color
-	var/original_face        // Original facial hair style  
-	var/original_face_color  // Original facial hair color
-	
+	var/original_obscured_flags
+	var/disguised_as_unknown = FALSE
+	var/target_visible_name
+	var/original_name_override
+
 	// Constructor stores the original properties
 	New(mob/living/carbon/human/H)
 		src.real_name = H.real_name
 		src.name = H.name
 		src.gender = H.gender
+		src.original_name_override = H.name_override
 
-// Define a component for storing the disguised species name and descriptors
+// The component to store species and descriptor info
 /datum/component/disguised_species
 	var/species_name
 	var/list/original_descriptors
 	var/list/disguised_descriptors
 	var/list/disguised_equipment  // List to store visible equipment info
+	var/is_face_hidden = FALSE
+	var/visible_name = null
 
-/datum/component/disguised_species/Initialize(species_name, list/disguised_descriptors, list/original_descriptors, list/disguised_equipment)
+/datum/component/disguised_species/Initialize(species_name, list/disguised_descriptors, list/original_descriptors, list/disguised_equipment, is_face_hidden = FALSE, visible_name = null)
 	src.species_name = species_name
 	src.disguised_descriptors = disguised_descriptors
 	src.original_descriptors = original_descriptors
 	src.disguised_equipment = disguised_equipment
+	src.is_face_hidden = is_face_hidden
+	src.visible_name = visible_name
 	
 /datum/component/disguised_species/proc/get_species_name()
 	return species_name
@@ -353,6 +488,12 @@
 
 /datum/component/disguised_species/proc/get_disguised_equipment()
 	return disguised_equipment
+
+/datum/component/disguised_species/proc/is_identity_concealed()
+	return is_face_hidden
+
+/datum/component/disguised_species/proc/get_visible_name()
+	return visible_name
 
 // Helper function to capture visible equipment from the target
 /obj/effect/proc_holder/spell/self/magical_disguise/proc/capture_visible_equipment(mob/living/carbon/human/target)
