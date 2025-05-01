@@ -87,6 +87,8 @@
 	w_class = WEIGHT_CLASS_SMALL
 	dropshrink = 0.8
 	var/uses = 12
+	grid_width = 32
+	grid_height = 32
 
 /obj/item/polishing_cream/examine(mob/user)
 	. = ..()
@@ -120,6 +122,8 @@
 	w_class = WEIGHT_CLASS_SMALL
 	smeltresult = null
 	dropshrink = 0.8
+	grid_width = 32
+	grid_height = 32
 	var/roughness = 0 // 0  for a fine brush, 1 for a coarse brush
 
 /obj/item/armor_brush/attack_self(mob/user)
@@ -161,6 +165,8 @@
 			polished = 0
 			force -= 2
 			force_wielded -= 3
+			max_integrity -= 50
+			obj_integrity = min(obj_integrity, max_integrity)
 			var/datum/component/glint = GetComponent(/datum/component/metal_glint)
 			qdel(glint)
 		else if(polished >= 1 && polished <= 4)
@@ -172,6 +178,7 @@
 		polished = 4
 		remove_atom_colour(FIXED_COLOUR_PRIORITY)
 		add_atom_colour("#ffffff", FIXED_COLOUR_PRIORITY)
+		max_integrity += 50
 		obj_integrity += 50
 		force += 2
 		force_wielded += 3
