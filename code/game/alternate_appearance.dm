@@ -143,3 +143,87 @@ GLOBAL_LIST_EMPTY(active_alternate_appearances)
 	..(key, I, FALSE)
 	seer = M
 	add_hud_to(seer)
+
+// A more comprehensive alternate appearance that copies all visual aspects
+// including race features, hair, and customizer options
+/datum/atom_hud/alternate_appearance/comprehensive
+	var/atom/target
+	var/atom/disguise_source
+	var/mob/appearance_holder
+	var/skip_updates = FALSE
+
+/datum/atom_hud/alternate_appearance/comprehensive/New(key, atom/disguise_target, mob/living/carbon/human/holder, options = AA_TARGET_SEE_APPEARANCE)
+	..()
+	disguise_source = disguise_target
+	appearance_holder = holder
+	target = holder
+	
+	// Create a comprehensive image that copies all aspects
+	var/image/I = image(disguise_source.appearance, loc = holder)
+	I.override = TRUE
+	I.appearance_flags = KEEP_TOGETHER | TILE_BOUND | PIXEL_SCALE | LONG_GLIDE
+	
+	// Add the image to the hud
+	hud_icons = list(appearance_key)
+	add_to_hud(target, I)
+	
+	// Make the target see this appearance
+	if((options & AA_TARGET_SEE_APPEARANCE) && ismob(target))
+		add_hud_to(target)
+	
+	// Add all observers to see this appearance too
+	for(var/mob/dead/observer/observer in GLOB.dead_mob_list)
+		add_hud_to(observer)
+	
+	// Add everyone in the world to see this
+	for(var/mob/living/L in GLOB.mob_list)
+		if(!isobserver(L))
+			add_hud_to(L)
+
+/datum/atom_hud/alternate_appearance/comprehensive/proc/update_appearance()
+	if(skip_updates || !target || !disguise_source || !appearance_holder)
+		return
+	
+	// Update the image with the current source appearance
+	var/image/I = image(disguise_source.appearance, loc = appearance_holder)
+	I.override = TRUE
+	I.appearance_flags = KEEP_TOGETHER | TILE_BOUND | PIXEL_SCALE | LONG_GLIDE
+	
+	// Force the hud to update
+	LAZYINITLIST(target.hud_list)
+	target.hud_list[appearance_key] = I
+	
+	// Need to call process updates to ensure everyone sees the new appearance
+	for(var/mob/M in get_all_huds())
+		if(M.client)
+			M.client.images -= target.hud_list[appearance_key]
+			M.client.images += I
+
+/datum/atom_hud/alternate_appearance/comprehensive/proc/get_all_huds()
+	return hudusers
+
+/datum/atom_hud/alternate_appearance/comprehensive/Destroy()
+	skip_updates = TRUE
+	target = null
+	disguise_source = null
+	appearance_holder = null
+	return ..()
+
+// Extension of standard atom proc to support the comprehensive system
+/atom/proc/add_comprehensive_appearance(key, atom/disguise_source, options = AA_TARGET_SEE_APPEARANCE)
+	if(!isliving(src))
+		return FALSE
+	
+	if(!key || !disguise_source)
+		return FALSE
+		
+	if(alternate_appearances && alternate_appearances[key])
+		var/datum/atom_hud/alternate_appearance/AA = alternate_appearances[key]
+		if(istype(AA, /datum/atom_hud/alternate_appearance/comprehensive))
+			var/datum/atom_hud/alternate_appearance/comprehensive/CA = AA
+			CA.disguise_source = disguise_source
+			CA.update_appearance()
+			return CA
+			
+	var/datum/atom_hud/alternate_appearance/comprehensive/AA = new(key, disguise_source, src, options)
+	return AA

@@ -149,6 +149,9 @@
 #define TRAIT_ARCYNE_T3 "Arcyne Training (Expert)"
 #define TRAIT_ARCYNE_T4 "Arcyne Training (Master)"
 
+/// Trait for magical disguise spell
+#define TRAIT_DISGUISED_SPECIES "disguised_species"
+#define MAGICAL_DISGUISE_TRAIT "magical_disguise" 
 
 GLOBAL_LIST_INIT(roguetraits, list(
 	TRAIT_LEPROSY = span_necrosis("I'm a disgusting leper..."),

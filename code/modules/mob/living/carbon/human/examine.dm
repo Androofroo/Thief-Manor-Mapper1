@@ -6,7 +6,7 @@
 	if(user.has_flaw(/datum/charflaw/paranoid))	//We hate different species, that are stronger than us, and aren't racist themselves
 		if(dna.species.name != user.dna.species.name && (STASTR - user.STASTR) > 1 && !has_flaw(/datum/charflaw/paranoid))
 			user.add_stress(/datum/stressevent/parastr)
-	if(HAS_TRAIT(user, TRAIT_JESTERPHOBIA) && job == "Jester")
+	if(HAS_TRAIT(src, TRAIT_JESTERPHOBIA) && job == "Jester")
 		user.add_stress(/datum/stressevent/jesterphobia)
 	if(HAS_TRAIT(src, TRAIT_BEAUTIFUL))
 		user.add_stress(/datum/stressevent/beautiful)
@@ -31,6 +31,13 @@
 	if(maniac && (user != src))
 		race_name = "disgusting pig"
 
+	// Check if the person is using the magical disguise spell
+	var/datum/component/disguised_species/DS = null
+	if(HAS_TRAIT(src, TRAIT_DISGUISED_SPECIES))
+		DS = GetComponent(/datum/component/disguised_species)
+		if(DS)
+			race_name = DS.get_species_name()
+
 	var/m1 = "[t_He] [t_is]"
 	var/m2 = "[t_his]"
 	var/m3 = "[t_He] [t_has]"
@@ -38,6 +45,11 @@
 		m1 = "I am"
 		m2 = "my"
 		m3 = "I have"
+
+	// Get the disguised equipment info if available
+	var/list/disguised_equipment = null
+	if(DS)
+		disguised_equipment = DS.get_disguised_equipment()
 
 	if(isliving(user))
 		var/mob/living/L = user
@@ -180,10 +192,16 @@
 				if (THEY_THEM, THEY_THEM_F, IT_ITS)
 					. += span_redtext("[m1] repulsive!")
 
-	if(user != src && HAS_TRAIT(user, TRAIT_MATTHIOS_EYES))
-		var/atom/item = get_most_expensive()
-		if(item)
-			. += span_notice("You get the feeling [m2] most valuable possession is \a [item].")
+	if(user != src)
+		var/datum/mind/Umind = user.mind
+		if(Umind && mind)
+			for(var/datum/antagonist/aD in mind.antag_datums)
+				for(var/datum/antagonist/bD in Umind.antag_datums)
+					var/shit = bD.examine_friendorfoe(aD,user,src)
+					if(shit)
+						. += shit
+			if(user.mind.has_antag_datum(/datum/antagonist/vampirelord) || user.mind.has_antag_datum(/datum/antagonist/vampire))
+				. += span_userdanger("Blood Volume: [blood_volume]")
 
 	var/is_stupid = FALSE
 	var/is_smart = FALSE
@@ -197,22 +215,25 @@
 			is_stupid = TRUE
 		if(((H?.STAINT - 10) + (H?.STAPER - 10) + H.mind?.get_skill_level(/datum/skill/misc/reading)) >= 5)
 			is_normal = TRUE
-
-	if(user != src)
-		var/datum/mind/Umind = user.mind
-		if(Umind && mind)
-			for(var/datum/antagonist/aD in mind.antag_datums)
-				for(var/datum/antagonist/bD in Umind.antag_datums)
-					var/shit = bD.examine_friendorfoe(aD,user,src)
-					if(shit)
-						. += shit
-			if(user.mind.has_antag_datum(/datum/antagonist/vampirelord) || user.mind.has_antag_datum(/datum/antagonist/vampire))
-				. += span_userdanger("Blood Volume: [blood_volume]")
+			
+	// Add the forensics component reference
+	var/datum/component/forensics/FR = GetComponent(/datum/component/forensics)
 
 	var/list/obscured = check_obscured_slots()
 	var/skipface = (wear_mask && (wear_mask.flags_inv & HIDEFACE)) || (head && (head.flags_inv & HIDEFACE))
 
-	if(wear_shirt && !(SLOT_SHIRT in obscured))
+	// Check if we need to show the real equipment or disguised equipment
+	
+	// Shirt section
+	if(disguised_equipment && disguised_equipment["wear_shirt"] && !(SLOT_SHIRT in obscured))
+		var/item_data = disguised_equipment["wear_shirt"]
+		if(!disguised_equipment["wear_armor"])
+			. += "[m3] [item_data["name"]]."
+		else if(is_smart)
+			. += "[m3] [item_data["name"]]."
+		else if(!is_stupid && is_normal)
+			. += "[m3] [item_data["name"]]."
+	else if(wear_shirt && !(SLOT_SHIRT in obscured))
 		if(!wear_armor)
 			. += "[m3] [wear_shirt.get_examine_string(user)]."
 		else
@@ -223,8 +244,23 @@
 			else if(!is_stupid && is_normal)
 				. += "[m3] [wear_shirt.get_examine_string(user)]."
 
-	//uniform
-	if(wear_pants && !(SLOT_PANTS in obscured))
+	// Pants section
+	if(disguised_equipment && disguised_equipment["wear_pants"] && !(SLOT_PANTS in obscured))
+		var/item_data = disguised_equipment["wear_pants"]
+		var/accessory_msg = ""
+		
+		var/str = "[m3] [item_data["name"]][accessory_msg]. "
+		if(!disguised_equipment["wear_armor"])
+			if(is_normal && !is_smart)
+				// No condition display for disguised items
+				str += ""
+			else if(is_stupid)
+				str = "[m3] a pair of some pants! "
+		else if(is_smart)
+			// No condition display for disguised items
+			str += ""
+		. += str
+	else if(wear_pants && !(SLOT_PANTS in obscured))
 		//accessory
 		var/accessory_msg
 		if(istype(wear_pants, /obj/item/clothing/under))
@@ -241,9 +277,21 @@
 			str += "[wear_pants.integrity_check()]"
 		. += str
 
-
-	//head
-	if(head && !(SLOT_HEAD in obscured))
+	// Head section
+	if(disguised_equipment && disguised_equipment["head"] && !(SLOT_HEAD in obscured))
+		var/item_data = disguised_equipment["head"]
+		var/str = "[m3] [item_data["name"]] on [m2] head. "
+		if(is_smart)
+			str += "It's in decent condition."
+		else if(is_stupid)
+			if(findtext(item_data["name"], "helmet"))
+				str = "[m3] some kinda helmet!"
+			else
+				str = "[m3] some kinda hat!"
+		else
+			str += "It's in decent condition."
+		. += str
+	else if(head && !(SLOT_HEAD in obscured))
 		var/str = "[m3] [head.get_examine_string(user)] on [m2] head. "
 		if(is_smart)
 			str += head.integrity_check()
@@ -256,8 +304,26 @@
 			str += "[head.integrity_check()]"
 		. += str
 
-	//suit/armor
-	if(wear_armor && !(SLOT_ARMOR in obscured))
+	// Armor section
+	if(disguised_equipment && disguised_equipment["wear_armor"] && !(SLOT_ARMOR in obscured))
+		var/item_data = disguised_equipment["wear_armor"]
+		var/str = "[m3] [item_data["name"]]. "
+		if(is_smart)
+			str += "It's in decent condition."
+		else if (is_stupid)
+			if(findtext(item_data["name"], "armor"))
+				. += "[m3] some kind of armor!"
+			else
+				. += "[m3] some kind of outfit!"
+		else
+			str += "It's in decent condition."
+		. += str
+		
+		// Store slot for disguised armor
+		if(disguised_equipment["s_store"] && !(SLOT_S_STORE in obscured))
+			if(is_normal || is_smart)
+				. += "[m1] carrying [disguised_equipment["s_store"]["name"]] on [m2] [item_data["name"]]."
+	else if(wear_armor && !(SLOT_ARMOR in obscured))
 		var/str = "[m3] [wear_armor.get_examine_string(user)]. "
 		if(is_smart)
 			str += wear_armor.integrity_check()
@@ -280,21 +346,32 @@
 		else
 			str += "[wear_armor.integrity_check()]"
 		. += str
-		//suit/armor storage
+		
+		// Armor storage slot
 		if(s_store && !(SLOT_S_STORE in obscured))
 			if(is_normal || is_smart)
 				. += "[m1] carrying [s_store.get_examine_string(user)] on [m2] [wear_armor.name]."
-	//back
-//	if(back)
-//		. += "[m3] [back.get_examine_string(user)] on [m2] back."
 
-	//cloak
-	if(cloak && !(SLOT_CLOAK in obscured))
+	// Cloak section
+	if(disguised_equipment && disguised_equipment["cloak"] && !(SLOT_CLOAK in obscured))
+		var/item_data = disguised_equipment["cloak"]
+		if(is_smart)
+			var/str = "[m3] [item_data["name"]] on [m2] shoulders. "
+			// Don't show condition for disguised items
+			. += str
+		else if (is_stupid)
+			if(!findtext(item_data["name"], "tabard") && user.mind?.get_skill_level(/datum/skill/misc/reading))
+				. += "[m3] some kinda clothy thing on [m2] shoulders!"
+			else
+				. += "[m3] [item_data["name"]] on [m2] shoulders."
+		else
+			. += "[m3] [item_data["name"]] on [m2] shoulders."
+	else if(cloak && !(SLOT_CLOAK in obscured))
 		if(is_smart)
 			var/str = "[m3] [cloak.get_examine_string(user)] on [m2] shoulders. "
 			str += cloak.integrity_check()
 			. += str
-		else if (is_stupid)					//So they can tell the named RG tabards. If they can read them, anyway.
+		else if (is_stupid)
 			if(!istype(cloak, /obj/item/clothing/cloak/stabard) && user.mind?.get_skill_level(/datum/skill/misc/reading))
 				. += "[m3] some kinda clothy thing on [m2] shoulders!"
 			else
@@ -302,8 +379,16 @@
 		else
 			. += "[m3] [cloak.get_examine_string(user)] on [m2] shoulders."
 
-	//right back
-	if(backr && !(SLOT_BACK_R in obscured))
+	// Right back section
+	if(disguised_equipment && disguised_equipment["backr"] && !(SLOT_BACK_R in obscured))
+		var/item_data = disguised_equipment["backr"]
+		if(is_smart)
+			var/str = "[m3] [item_data["name"]] on [m2] back. "
+			// Don't show condition for disguised items
+			. += str
+		else
+			. += "[m3] [item_data["name"]] on [m2] back."
+	else if(backr && !(SLOT_BACK_R in obscured))
 		if(is_smart)
 			var/str = "[m3] [backr.get_examine_string(user)] on [m2] back. "
 			str += backr.integrity_check()
@@ -311,8 +396,16 @@
 		else
 			. += "[m3] [backr.get_examine_string(user)] on [m2] back."
 
-	//left back
-	if(backl && !(SLOT_BACK_L in obscured))
+	// Left back section
+	if(disguised_equipment && disguised_equipment["backl"] && !(SLOT_BACK_L in obscured))
+		var/item_data = disguised_equipment["backl"]
+		if(is_smart)
+			var/str = "[m3] [item_data["name"]] on [m2] back. "
+			// Don't show condition for disguised items
+			. += str
+		else
+			. += "[m3] [item_data["name"]] on [m2] back."
+	else if(backl && !(SLOT_BACK_L in obscured))
 		if(is_smart)
 			var/str = "[m3] [backl.get_examine_string(user)] on [m2] back. "
 			str += backl.integrity_check()
@@ -320,19 +413,39 @@
 		else
 			. += "[m3] [backl.get_examine_string(user)] on [m2] back."
 
-	//Hands
-	for(var/obj/item/I in held_items)
-		if(!(I.item_flags & ABSTRACT))
+	// Hands section
+	if(disguised_equipment && disguised_equipment["held_items"] && disguised_equipment["held_items"].len)
+		for(var/item_data in disguised_equipment["held_items"])
 			if(is_smart)
-				var/str = "[m1] holding [I.get_examine_string(user)] in [m2] [get_held_index_name(get_held_index_of_item(I))]."
-				str += I.integrity_check()
+				var/str = "[m1] holding [item_data["name"]] in [m2] [item_data["held_name"]]."
+				// Don't show condition for disguised items
 				. += str
 			else
-				. += "[m1] holding [I.get_examine_string(user)] in [m2] [get_held_index_name(get_held_index_of_item(I))]."
+				. += "[m1] holding [item_data["name"]] in [m2] [item_data["held_name"]]."
+	else
+		for(var/obj/item/I in held_items)
+			if(!(I.item_flags & ABSTRACT))
+				if(is_smart)
+					var/str = "[m1] holding [I.get_examine_string(user)] in [m2] [get_held_index_name(get_held_index_of_item(I))]."
+					str += I.integrity_check()
+					. += str
+				else
+					. += "[m1] holding [I.get_examine_string(user)] in [m2] [get_held_index_name(get_held_index_of_item(I))]."
 
-	var/datum/component/forensics/FR = GetComponent(/datum/component/forensics)
-	//gloves
-	if(gloves && !(SLOT_GLOVES in obscured))
+	// Gloves section
+	if(disguised_equipment && disguised_equipment["gloves"] && !(SLOT_GLOVES in obscured))
+		var/item_data = disguised_equipment["gloves"]
+		var/str = "[m3] [item_data["name"]] on [m2] hands. "
+		if(is_smart)
+			// No condition display for disguised items
+			str += ""
+		else if(!is_stupid)
+			// No condition display for disguised items
+			str += ""
+		else
+			str = "[m3] a pair of gloves of some kind!"
+		. += str
+	else if(gloves && !(SLOT_GLOVES in obscured))
 		var/str = "[m3] [gloves.get_examine_string(user)] on [m2] hands. "
 		if(is_smart)
 			str += gloves.integrity_check()
@@ -349,8 +462,16 @@
 			else
 				. += "[m3][hand_number > 1 ? "" : " a"] <span class='bloody'>blood-stained</span> hand[hand_number > 1 ? "s" : ""]!"
 
-	//belt
-	if(belt && !(SLOT_BELT in obscured))
+	// Belt section
+	if(disguised_equipment && disguised_equipment["belt"] && !(SLOT_BELT in obscured))
+		var/item_data = disguised_equipment["belt"]
+		if(is_smart)
+			var/str = "[m3] [item_data["name"]] about [m2] waist. "
+			// Don't show condition for disguised items
+			. += str
+		else
+			. += "[m3] [item_data["name"]] about [m2] waist."
+	else if(belt && !(SLOT_BELT in obscured))
 		if(is_smart)
 			var/str = "[m3] [belt.get_examine_string(user)] about [m2] waist. "
 			str += belt.integrity_check()
@@ -358,8 +479,16 @@
 		else
 			. += "[m3] [belt.get_examine_string(user)] about [m2] waist."
 
-	//right belt
-	if(beltr && !(SLOT_BELT_R in obscured))
+	// Right belt section
+	if(disguised_equipment && disguised_equipment["beltr"] && !(SLOT_BELT_R in obscured))
+		var/item_data = disguised_equipment["beltr"]
+		if(is_smart)
+			var/str = "[m3] [item_data["name"]] on [m2] belt. "
+			// Don't show condition for disguised items
+			. += str
+		else
+			. += "[m3] [item_data["name"]] on [m2] belt."
+	else if(beltr && !(SLOT_BELT_R in obscured))
 		if(is_smart)
 			var/str = "[m3] [beltr.get_examine_string(user)] on [m2] belt. "
 			str += beltr.integrity_check()
@@ -367,8 +496,16 @@
 		else
 			. += "[m3] [beltr.get_examine_string(user)] on [m2] belt."
 
-	//left belt
-	if(beltl && !(SLOT_BELT_L in obscured))
+	// Left belt section
+	if(disguised_equipment && disguised_equipment["beltl"] && !(SLOT_BELT_L in obscured))
+		var/item_data = disguised_equipment["beltl"]
+		if(is_smart)
+			var/str = "[m3] [item_data["name"]] on [m2] belt. "
+			// Don't show condition for disguised items
+			. += str
+		else
+			. += "[m3] [item_data["name"]] on [m2] belt."
+	else if(beltl && !(SLOT_BELT_L in obscured))
 		if(is_smart)
 			var/str = "[m3] [beltl.get_examine_string(user)] on [m2] belt. "
 			str += beltl.integrity_check()
@@ -376,8 +513,20 @@
 		else
 			. += "[m3] [beltl.get_examine_string(user)] on [m2] belt."
 
-	//shoes
-	if(shoes && !(SLOT_SHOES in obscured))
+	// Shoes section
+	if(disguised_equipment && disguised_equipment["shoes"] && !(SLOT_SHOES in obscured))
+		var/item_data = disguised_equipment["shoes"]
+		var/str = "[m3] [item_data["name"]] on [m2] feet. "
+		if(is_smart)
+			// No condition display for disguised items
+			str += ""
+		else if(!is_stupid)
+			// No condition display for disguised items
+			str += ""
+		else
+			str = "[m3] some shoes on [m2] feet!"
+		. += str
+	else if(shoes && !(SLOT_SHOES in obscured))
 		var/str = "[m3] [shoes.get_examine_string(user)] on [m2] feet. "
 		if(is_smart)
 			str += shoes.integrity_check()
@@ -387,8 +536,17 @@
 			str = "[m3] some shoes on [m2] feet!"
 		. += str
 
-	//mask
-	if(wear_mask && !(SLOT_WEAR_MASK in obscured))
+	// Mask section
+	if(disguised_equipment && disguised_equipment["wear_mask"] && !(SLOT_WEAR_MASK in obscured))
+		var/item_data = disguised_equipment["wear_mask"]
+		var/str = "[m3] [item_data["name"]] on [m2] face. "
+		if(is_smart)
+			// No condition display for disguised items
+			str += ""
+		else if(is_stupid)
+			str = "[m3] some kinda thing on [m2] face!"
+		. += str
+	else if(wear_mask && !(SLOT_WEAR_MASK in obscured))
 		var/str = "[m3] [wear_mask.get_examine_string(user)] on [m2] face. "
 		if(is_smart)
 			str += wear_mask.integrity_check()
@@ -398,8 +556,17 @@
 			str += wear_mask.integrity_check()
 		. += str
 
-	//mouth
-	if(mouth && !(SLOT_MOUTH in obscured))
+	// Mouth section
+	if(disguised_equipment && disguised_equipment["mouth"] && !(SLOT_MOUTH in obscured))
+		var/item_data = disguised_equipment["mouth"]
+		var/str = "[m3] [item_data["name"]] in [m2] mouth. "
+		if(is_smart)
+			// No condition display for disguised items
+			str += ""
+		else if(is_stupid)
+			str = "[m3] some kinda thing on [m2] mouth!"
+		. += str
+	else if(mouth && !(SLOT_MOUTH in obscured))
 		var/str = "[m3] [mouth.get_examine_string(user)] in [m2] mouth. "
 		if(is_smart)
 			str += mouth.integrity_check()
@@ -409,8 +576,17 @@
 			str += "[mouth.integrity_check()]"
 		. += str
 
-	//neck
-	if(wear_neck && !(SLOT_NECK in obscured))
+	// Neck section
+	if(disguised_equipment && disguised_equipment["wear_neck"] && !(SLOT_NECK in obscured))
+		var/item_data = disguised_equipment["wear_neck"]
+		var/str = "[m3] [item_data["name"]] around [m2] neck. "
+		if(is_smart)
+			// No condition display for disguised items
+			str += ""
+		else if (is_stupid)
+			str = "[m3] something on [m2] neck!"
+		. += str
+	else if(wear_neck && !(SLOT_NECK in obscured))
 		var/str = "[m3] [wear_neck.get_examine_string(user)] around [m2] neck. "
 		if(is_smart)
 			str += wear_neck.integrity_check()
@@ -420,19 +596,29 @@
 			str += "[wear_neck.integrity_check()]"
 		. += str
 
-	//eyes
+	// Eyes section
 	if(!(SLOT_GLASSES in obscured))
-		if(glasses)
+		if(disguised_equipment && disguised_equipment["glasses"])
+			. += "[m3] [disguised_equipment["glasses"]["name"]] covering [m2] eyes."
+		else if(glasses)
 			. += "[m3] [glasses.get_examine_string(user)] covering [m2] eyes."
 		else if(eye_color == BLOODCULT_EYE)
 			. += span_warning("<B>[m2] eyes are glowing an unnatural red!</B>")
 
-	//ears
-	if(ears && !(SLOT_HEAD in obscured))
+	// Ears section
+	if(disguised_equipment && disguised_equipment["ears"] && !(SLOT_HEAD in obscured))
+		. += "[m3] [disguised_equipment["ears"]["name"]] on [m2] ears."
+	else if(ears && !(SLOT_HEAD in obscured))
 		. += "[m3] [ears.get_examine_string(user)] on [m2] ears."
 
-	//ID
-	if(wear_ring && !(SLOT_RING in obscured))
+	// Ring section
+	if(disguised_equipment && disguised_equipment["wear_ring"] && !(SLOT_RING in obscured))
+		var/item_data = disguised_equipment["wear_ring"]
+		if(is_stupid)
+			. += "[m3] some sort of ring!"
+		else
+			. += "[m3] [item_data["name"]] on [m2] hands."
+	else if(wear_ring && !(SLOT_RING in obscured))
 		if(is_stupid)
 			. += "[m3] some sort of ring!"
 		else if(is_smart && istype(wear_ring, /obj/item/clothing/ring/active))
@@ -447,8 +633,17 @@
 		else
 			. += "[m3] [wear_ring.get_examine_string(user)] on [m2] hands."
 
-	//wrists
-	if(wear_wrists && !(SLOT_WRISTS in obscured))
+	// Wrists section
+	if(disguised_equipment && disguised_equipment["wear_wrists"] && !(SLOT_WRISTS in obscured))
+		var/item_data = disguised_equipment["wear_wrists"]
+		var/str = "[m3] [item_data["name"]] on [m2] wrists."
+		if(is_smart)
+			// Don't show condition for disguised items
+			str += ""
+		else if (is_stupid)
+			str = "[m3] something on [m2] wrists!"
+		. += str
+	else if(wear_wrists && !(SLOT_WRISTS in obscured))
 		var/str = "[m3] [wear_wrists.get_examine_string(user)] on [m2] wrists."
 		if(is_smart)
 			str += wear_wrists.integrity_check()
@@ -468,7 +663,7 @@
 	if(legcuffed)
 		. += "<A href='?src=[REF(src)];item=[SLOT_LEGCUFFED]'><span class='warning'>[m3] \a [legcuffed] around [m2] legs!</span></A>"
 
-	//Gets encapsulated with a warning span
+	// Gets encapsulated with a warning span
 	var/list/msg = list()
 
 	var/appears_dead = FALSE
@@ -775,6 +970,11 @@
 	if(!isnull(trait_exam))
 		. += trait_exam
 
+	if(user != src && HAS_TRAIT(user, TRAIT_MATTHIOS_EYES))
+		var/atom/item = get_most_expensive()
+		if(item)
+			. += span_notice("You get the feeling [m2] most valuable possession is \a [item].")
+
 /mob/living/proc/status_effect_examines(pronoun_replacement) //You can include this in any mob's examine() to show the examine texts of status effects!
 	var/list/dat = list()
 	if(!pronoun_replacement)
@@ -793,7 +993,7 @@
 	var/heretic_text = null
 	var/seer
 
-	if(HAS_TRAIT(src,TRAIT_DECEIVING_MEEKNESS))
+	if(HAS_TRAIT(src, TRAIT_DECEIVING_MEEKNESS))
 		return null
 
 	if(HAS_TRAIT(examiner, TRAIT_HERETIC_SEER))
