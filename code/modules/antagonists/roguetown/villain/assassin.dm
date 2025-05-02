@@ -20,7 +20,7 @@
 
 /datum/antagonist/assassin/on_gain()
 	owner.special_role = "Assassin"
-	//owner.assigned_role = "Assassin"  // Similar to bandit, commented out
+	owner.assigned_role = "Stranger"
 	forge_objectives()
 	. = ..()
 	equip_assassin()
@@ -72,6 +72,9 @@
 	
 	// Cancel advclass setup if active
 	H.advsetup = 0
+	
+	// Update job to "Stranger" for consistency
+	H.job = "Stranger"
 	
 	// Make the assassin unknown to others and vice versa
 	owner.unknow_all_people()
@@ -142,6 +145,8 @@
 	// Backpack contents
 	backpack_contents = list(
 		/obj/item/reagent_containers/glass/bottle/rogue/strongpoison = 2,
+		/obj/item/flashlight/flare/torch = 1,
+		/obj/item/rogueweapon/huntingknife/idagger/steel/poisoned = 1
 	)
 
 /datum/antagonist/assassin/roundend_report()
