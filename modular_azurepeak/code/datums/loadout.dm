@@ -342,26 +342,34 @@ GLOBAL_LIST_EMPTY(loadout_items)
 /datum/loadout_item/donator_plex
 	name = "Donator Kit - Rapier di Aliseo"
 	path = /obj/item/enchantingkit/plexiant
+	name = "Donator Kit - Rapier di Aliseo"
+	path = /obj/item/enchantingkit/plexiant
 	ckeywhitelist = list("plexiant")
 
 /datum/loadout_item/donator_sru
 	name = "Donator Kit - Emerald Dress"
 	path = /obj/item/enchantingkit/srusu
+	name = "Donator Kit - Emerald Dress"
+	path = /obj/item/enchantingkit/srusu
 	ckeywhitelist = list("cheekycrenando")
 
-/datum/loadout_item/donator_strudel
-	name = "Donator Kit - Grenzelhoftian Mage Vest"
-	path = /obj/item/enchantingkit/strudle
-	name = "Grenzelhoftian Mage Vest"
-	path = /obj/item/clothing/suit/roguetown/armor/leather/vest/sofiavest
-	ckeywhitelist = list("toasterstrudes")
 
 /datum/loadout_item/donator_bat
+	name = "Donator Kit - Handcarved Harp"
+	path = /obj/item/enchantingkit/bat
 	name = "Donator Kit - Handcarved Harp"
 	path = /obj/item/enchantingkit/bat
 	ckeywhitelist = list("kitchifox")
 
 /datum/loadout_item/donator_mansa
+	name = "Donator Kit - Wortträger"
+	path = /obj/item/enchantingkit/ryebread
+	ckeywhitelist = list("pepperoniplayboy")	//Byond maybe doesn't like spaces. If a name has a space, do it as one continious name.
+
+/datum/loadout_item/donator_rebel
+	name = "Donator Kit - Gilded Sallet"
+	path = /obj/item/enchantingkit/rebel
+	ckeywhitelist = list("rebel0")
 	name = "Donator Kit - Wortträger"
 	path = /obj/item/enchantingkit/ryebread
 	ckeywhitelist = list("pepperoniplayboy")	//Byond maybe doesn't like spaces. If a name has a space, do it as one continious name.

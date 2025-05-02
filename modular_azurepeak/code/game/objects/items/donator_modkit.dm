@@ -43,12 +43,6 @@
 	target_items = list(/obj/item/clothing/suit/roguetown/shirt/dress)	//Literally any type of dress
 	result_item = /obj/item/clothing/suit/roguetown/shirt/dress/emerald
 
-//Strudle - Custom leather vest type
-/obj/item/enchantingkit/strudle
-	name = "'Grenzelhoft Mage Vest' morphing elixir"
-	target_items = list(/obj/item/clothing/suit/roguetown/shirt/robe)
-	result_item = /obj/item/clothing/suit/roguetown/shirt/robe/sofiavest
-
 //Bat - Custom harp type
 /obj/item/enchantingkit/bat
 	name = "'Handcrafted Harp' morphing elixir"
