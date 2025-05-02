@@ -13,13 +13,13 @@
 	)
 	rogue_enabled = TRUE
 	thief_enabled = TRUE // This will make it visible in villain selection
+	var/lockpick_given = FALSE
 
 /datum/antagonist/thief/on_gain()
-	. = ..()
 	owner.special_role = name
-	equip_thief()
-	greet()
 	add_objectives()
+	. = ..()
+	equip_thief()
 	finalize_thief()
 
 	return ..()
@@ -30,16 +30,21 @@
 	ADD_TRAIT(H, TRAIT_GENERIC, TRAIT_GENERIC)
 	to_chat(H, span_alertsyndie("I am a THIEF!"))
 	to_chat(H, span_boldwarning("I've worked in the manor for years, always overlooked, always underappreciated. I know every corner, every secret passage. Now it's time to take what I deserve - the Lord's Crown. My insider knowledge gives me an advantage, but betrayal is punished harshly in these lands."))
-	to_chat(H, span_boldnotice("I've learned how to silently snuff out lights to help me move unseen. Use the Snuff Light ability to extinguish any fire or light source within reach."))
-	to_chat(H, span_boldnotice("I also possess the Magical Disguise spell that allows me to take on the appearance of any person for a short time. This can help me infiltrate restricted areas or avoid detection."))
-	to_chat(H, span_boldnotice("In my pouch, I've brought smoke bombs that create thick clouds of smoke, perfect for confusing guards or making a quick escape."))
+	to_chat(H, span_boldnotice("I've been trained in the art of the thief, and have stealthy abilities and tools to help me complete my mission."))
 
-/datum/antagonist/thief/greet()
-	owner.announce_objectives()
+	// If advsetup is already 0, give the lockpick immediately
+	if(!H.advsetup)
+		give_lockpick(H)
+
+/datum/antagonist/thief/on_life(mob/living/carbon/human/H)
+	// Check if the lockpick needs to be given and advsetup is complete
+	if(!lockpick_given && !H.advsetup)
+		give_lockpick(H)
+	
+	. = ..()
 
 /datum/antagonist/thief/proc/equip_thief()
 	var/mob/living/carbon/human/H = owner.current
-	
 	
 	// Give thief the ability to snuff lights
 	H.mind.AddSpell(new /obj/effect/proc_holder/spell/self/snuff_light)
@@ -67,6 +72,47 @@
 	
 	// Add thief traits
 	ADD_TRAIT(H, TRAIT_GENERIC, TRAIT_GENERIC)
+
+/datum/antagonist/thief/proc/give_lockpick(mob/living/carbon/human/H)
+	if(lockpick_given || !H || !istype(H))
+		return
+	
+	// Mark as given to prevent duplicates
+	lockpick_given = TRUE
+	
+	// First check if the thief has a backpack or other storage
+	var/obj/item/storage/backpack = H.back
+	if(istype(backpack))
+		new /obj/item/lockpickring/mundane(backpack)
+		to_chat(H, span_notice("You find a lockpick ring in your backpack."))
+		return
+	
+	// Try to place it in various equipment slots
+	if(H.equip_to_slot_if_possible(new /obj/item/lockpickring/mundane(), SLOT_IN_BACKPACK))
+		to_chat(H, span_notice("You find a lockpick ring tucked away in your backpack."))
+		return
+	
+	// Try belt
+	if(H.equip_to_slot_if_possible(new /obj/item/lockpickring/mundane(), SLOT_BELT))
+		to_chat(H, span_notice("You find a lockpick ring attached to your belt."))
+		return
+		
+	// Try belt left
+	if(H.equip_to_slot_if_possible(new /obj/item/lockpickring/mundane(), SLOT_BELT_L))
+		to_chat(H, span_notice("You find a lockpick ring attached to your belt."))
+		return
+		
+	// Try belt right
+	if(H.equip_to_slot_if_possible(new /obj/item/lockpickring/mundane(), SLOT_BELT_R))
+		to_chat(H, span_notice("You find a lockpick ring attached to your belt."))
+		return
+	
+	// If all else fails, drop at feet
+	new /obj/item/lockpickring/mundane(get_turf(H))
+	to_chat(H, span_notice("A lockpick ring appears at your feet."))
+
+/datum/antagonist/thief/greet()
+	owner.announce_objectives()
 
 /datum/antagonist/thief/proc/add_objectives()
 	var/datum/objective/steal/steal_obj = new
@@ -652,7 +698,6 @@
 			))
 	
 	return equipment_data
-
 /obj/effect/proc_holder/spell/self/smoke_bomb
 	name = "Smoke Bomb"
 	desc = "Release a cloud of thick smoke around you, perfect for confusing guards or making a quick escape."
@@ -675,3 +720,4 @@
 	smoke.start()
 	
 	return TRUE
+

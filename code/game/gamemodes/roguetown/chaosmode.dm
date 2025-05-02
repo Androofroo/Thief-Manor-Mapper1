@@ -604,12 +604,14 @@
 	for(var/A in GLOB.special_roles_rogue)
 		allantags |= get_players_for_role(A)
 	
-	// Select thieves
+	// First, decide if we'll have an assassin (25% chance)
+	assassin_spawned = prob(25)
+	
+	// Select thieves first
 	pick_thieves()
 	
-	// 25% chance to select an assassin
-	if(prob(25))
-		assassin_spawned = TRUE
+	// Then select assassin if applicable
+	if(assassin_spawned)
 		pick_assassin()
 	
 	return TRUE
@@ -706,7 +708,11 @@
 	// First try to get candidates from ROLE_ASSASSIN, similar to how thieves use ROLE_THIEF
 	var/list/initial_candidates = get_players_for_role(ROLE_ASSASSIN)
 	
-	message_admins("Thiefmode: Initial ROLE_ASSASSIN candidates: [initial_candidates.len]")
+	// Remove any candidates already selected as thieves
+	for(var/datum/mind/thief in pre_thieves)
+		initial_candidates -= thief
+	
+	message_admins("Thiefmode: Initial ROLE_ASSASSIN candidates (excluding thieves): [initial_candidates.len]")
 	
 	var/datum/mind/selected_assassin = null
 	
@@ -727,9 +733,12 @@
 			if(M.assigned_role && (M.assigned_role in restricted_jobs))
 				all_candidates -= M
 		
-		// Remove players already selected as thieves
+		// Ensure we don't select any thieves as assassins
 		for(var/datum/mind/T in pre_thieves)
-			all_candidates -= T
+			if(T in all_candidates)
+				all_candidates -= T
+		
+		message_admins("Thiefmode: Available assassin candidates after excluding thieves: [all_candidates.len]")
 		
 		// Second pass - select assassin from all available candidates
 		if(all_candidates.len > 0)
@@ -750,6 +759,7 @@
 		GLOB.pre_setup_antags |= selected_assassin
 	else
 		message_admins("Thiefmode: Failed to find a suitable assassin candidate")
+		assassin_spawned = FALSE
 	
 	// Reset restricted jobs list
 	restricted_jobs = list()

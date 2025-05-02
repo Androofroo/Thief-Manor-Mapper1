@@ -263,7 +263,7 @@
 			. += "[m3] [plural ? "some" : "a"] [item_data["name"]]."
 		else if(!is_stupid && is_normal)
 			. += "[m3] [plural ? "some" : "a"] [item_data["name"]]."
-	else if(wear_shirt && !(SLOT_SHIRT in obscured))
+	else if(wear_shirt && !(SLOT_SHIRT in obscured) && (!disguised_equipment || !HAS_TRAIT(src, TRAIT_DISGUISE_ACTIVE)))
 		if(!wear_armor)
 			. += "[m3] [wear_shirt.get_examine_string(user)]."
 		else
@@ -294,7 +294,7 @@
 			// No condition display for disguised items
 			str += ""
 		. += str
-	else if(wear_pants && !(SLOT_PANTS in obscured))
+	else if(wear_pants && !(SLOT_PANTS in obscured) && (!disguised_equipment || !HAS_TRAIT(src, TRAIT_DISGUISE_ACTIVE)))
 		//accessory
 		var/accessory_msg
 		if(istype(wear_pants, /obj/item/clothing/under))
@@ -324,7 +324,7 @@
 			else
 				str = "[m3] some kinda hat!"
 		. += str
-	else if(head && !(SLOT_HEAD in obscured))
+	else if(head && !(SLOT_HEAD in obscured) && (!disguised_equipment || !HAS_TRAIT(src, TRAIT_DISGUISE_ACTIVE)))
 		var/str = "[m3] [head.get_examine_string(user)] on [m2] head. "
 		if(is_smart)
 			str += head.integrity_check()
@@ -360,7 +360,7 @@
 				if(disguised_equipment["s_store"]["name"])
 					s_plural = is_plural_item(disguised_equipment["s_store"]["name"])
 				. += "[m1] carrying [s_plural ? "some" : "a"] [disguised_equipment["s_store"]["name"]] on [m2] [item_data["name"]]."
-	else if(wear_armor && !(SLOT_ARMOR in obscured))
+	else if(wear_armor && !(SLOT_ARMOR in obscured) && (!disguised_equipment || !HAS_TRAIT(src, TRAIT_DISGUISE_ACTIVE)))
 		var/str = "[m3] [wear_armor.get_examine_string(user)]. "
 		if(is_smart)
 			str += wear_armor.integrity_check()
@@ -385,7 +385,7 @@
 		. += str
 		
 		// Armor storage slot
-		if(s_store && !(SLOT_S_STORE in obscured))
+		if(s_store && !(SLOT_S_STORE in obscured) && (!disguised_equipment || !disguised_equipment["s_store"]))
 			if(is_normal || is_smart)
 				. += "[m1] carrying [s_store.get_examine_string(user)] on [m2] [wear_armor.name]."
 
@@ -404,7 +404,7 @@
 				. += "[m3] [plural ? "some" : "a"] [item_data["name"]] on [m2] shoulders."
 		else
 			. += "[m3] [plural ? "some" : "a"] [item_data["name"]] on [m2] shoulders."
-	else if(cloak && !(SLOT_CLOAK in obscured))
+	else if(cloak && !(SLOT_CLOAK in obscured) && (!disguised_equipment || !HAS_TRAIT(src, TRAIT_DISGUISE_ACTIVE)))
 		if(is_smart)
 			var/str = "[m3] [cloak.get_examine_string(user)] on [m2] shoulders. "
 			str += cloak.integrity_check()
@@ -427,7 +427,7 @@
 			. += str
 		else
 			. += "[m3] [plural ? "some" : "a"] [item_data["name"]] on [m2] back."
-	else if(backr && !(SLOT_BACK_R in obscured))
+	else if(backr && !(SLOT_BACK_R in obscured) && (!disguised_equipment || !HAS_TRAIT(src, TRAIT_DISGUISE_ACTIVE)))
 		if(is_smart)
 			var/str = "[m3] [backr.get_examine_string(user)] on [m2] back. "
 			str += backr.integrity_check()
@@ -445,7 +445,7 @@
 			. += str
 		else
 			. += "[m3] [plural ? "some" : "a"] [item_data["name"]] on [m2] back."
-	else if(backl && !(SLOT_BACK_L in obscured))
+	else if(backl && !(SLOT_BACK_L in obscured) && (!disguised_equipment || !HAS_TRAIT(src, TRAIT_DISGUISE_ACTIVE)))
 		if(is_smart)
 			var/str = "[m3] [backl.get_examine_string(user)] on [m2] back. "
 			str += backl.integrity_check()
@@ -465,7 +465,7 @@
 				. += str
 			else
 				. += "[m1] holding [plural ? "some" : "a"] [item_data["name"]] in [m2] [item_data["held_name"]]."
-	else
+	else if(!disguised_equipment || !HAS_TRAIT(src, TRAIT_DISGUISE_ACTIVE))
 		for(var/obj/item/I in held_items)
 			if(!(I.item_flags & ABSTRACT))
 				if(is_smart)
@@ -495,7 +495,7 @@
 		else
 			str = "[m3] a pair of gloves of some kind!"
 		. += str
-	else if(gloves && !(SLOT_GLOVES in obscured))
+	else if(gloves && !(SLOT_GLOVES in obscured) && (!disguised_equipment || !HAS_TRAIT(src, TRAIT_DISGUISE_ACTIVE)))
 		var/str = "[m3] [gloves.get_examine_string(user)] on [m2] hands. "
 		if(is_smart)
 			str += gloves.integrity_check()
@@ -504,7 +504,7 @@
 		else
 			str = "[m3] a pair of gloves of some kind!"
 		. += str
-	else if(FR && length(FR.blood_DNA))
+	else if(FR && length(FR.blood_DNA) && (!disguised_equipment || !disguised_equipment["gloves"]))
 		var/hand_number = get_num_arms(FALSE)
 		if(hand_number)
 			if(is_stupid)
@@ -522,7 +522,7 @@
 			. += str
 		else
 			. += "[m3] [plural ? "some" : "a"] [item_data["name"]] about [m2] waist."
-	else if(belt && !(SLOT_BELT in obscured))
+	else if(belt && !(SLOT_BELT in obscured) && (!disguised_equipment || !HAS_TRAIT(src, TRAIT_DISGUISE_ACTIVE)))
 		if(is_smart)
 			var/str = "[m3] [belt.get_examine_string(user)] about [m2] waist. "
 			str += belt.integrity_check()
@@ -540,7 +540,7 @@
 			. += str
 		else
 			. += "[m3] [plural ? "some" : "a"] [item_data["name"]] on [m2] belt."
-	else if(beltr && !(SLOT_BELT_R in obscured))
+	else if(beltr && !(SLOT_BELT_R in obscured) && (!disguised_equipment || !HAS_TRAIT(src, TRAIT_DISGUISE_ACTIVE)))
 		if(is_smart)
 			var/str = "[m3] [beltr.get_examine_string(user)] on [m2] belt. "
 			str += beltr.integrity_check()
@@ -558,7 +558,7 @@
 			. += str
 		else
 			. += "[m3] [plural ? "some" : "a"] [item_data["name"]] on [m2] belt."
-	else if(beltl && !(SLOT_BELT_L in obscured))
+	else if(beltl && !(SLOT_BELT_L in obscured) && (!disguised_equipment || !HAS_TRAIT(src, TRAIT_DISGUISE_ACTIVE)))
 		if(is_smart)
 			var/str = "[m3] [beltl.get_examine_string(user)] on [m2] belt. "
 			str += beltl.integrity_check()
@@ -581,7 +581,7 @@
 		else
 			str = "[m3] some shoes on [m2] feet!"
 		. += str
-	else if(shoes && !(SLOT_SHOES in obscured))
+	else if(shoes && !(SLOT_SHOES in obscured) && (!disguised_equipment || !HAS_TRAIT(src, TRAIT_DISGUISE_ACTIVE)))
 		var/str = "[m3] [shoes.get_examine_string(user)] on [m2] feet. "
 		if(is_smart)
 			str += shoes.integrity_check()
@@ -602,7 +602,7 @@
 		else if(is_stupid)
 			str = "[m3] some kinda thing on [m2] face!"
 		. += str
-	else if(wear_mask && !(SLOT_WEAR_MASK in obscured))
+	else if(wear_mask && !(SLOT_WEAR_MASK in obscured) && (!disguised_equipment || !HAS_TRAIT(src, TRAIT_DISGUISE_ACTIVE)))
 		var/str = "[m3] [wear_mask.get_examine_string(user)] on [m2] face. "
 		if(is_smart)
 			str += wear_mask.integrity_check()
@@ -623,7 +623,7 @@
 		else if(is_stupid)
 			str = "[m3] some kinda thing on [m2] mouth!"
 		. += str
-	else if(mouth && !(SLOT_MOUTH in obscured))
+	else if(mouth && !(SLOT_MOUTH in obscured) && (!disguised_equipment || !HAS_TRAIT(src, TRAIT_DISGUISE_ACTIVE)))
 		var/str = "[m3] [mouth.get_examine_string(user)] in [m2] mouth. "
 		if(is_smart)
 			str += mouth.integrity_check()
@@ -644,7 +644,7 @@
 		else if (is_stupid)
 			str = "[m3] something on [m2] neck!"
 		. += str
-	else if(wear_neck && !(SLOT_NECK in obscured))
+	else if(wear_neck && !(SLOT_NECK in obscured) && (!disguised_equipment || !HAS_TRAIT(src, TRAIT_DISGUISE_ACTIVE)))
 		var/str = "[m3] [wear_neck.get_examine_string(user)] around [m2] neck. "
 		if(is_smart)
 			str += wear_neck.integrity_check()
@@ -659,7 +659,7 @@
 		if(disguised_equipment && disguised_equipment["glasses"])
 			var/plural = is_plural_item(disguised_equipment["glasses"]["name"])
 			. += "[m3] [plural ? "some" : "a"] [disguised_equipment["glasses"]["name"]] covering [m2] eyes."
-		else if(glasses)
+		else if(glasses && (!disguised_equipment || !HAS_TRAIT(src, TRAIT_DISGUISE_ACTIVE)))
 			. += "[m3] [glasses.get_examine_string(user)] covering [m2] eyes."
 		else if(eye_color == BLOODCULT_EYE)
 			. += span_warning("<B>[m2] eyes are glowing an unnatural red!</B>")
@@ -668,7 +668,7 @@
 	if(disguised_equipment && disguised_equipment["ears"] && !(SLOT_HEAD in obscured))
 		var/plural = is_plural_item(disguised_equipment["ears"]["name"])
 		. += "[m3] [plural ? "some" : "a"] [disguised_equipment["ears"]["name"]] on [m2] ears."
-	else if(ears && !(SLOT_HEAD in obscured))
+	else if(ears && !(SLOT_HEAD in obscured) && (!disguised_equipment || !HAS_TRAIT(src, TRAIT_DISGUISE_ACTIVE)))
 		. += "[m3] [ears.get_examine_string(user)] on [m2] ears."
 
 	// Ring section
@@ -679,7 +679,7 @@
 			. += "[m3] some sort of ring!"
 		else
 			. += "[m3] [plural ? "some" : "a"] [item_data["name"]] on [m2] hands."
-	else if(wear_ring && !(SLOT_RING in obscured))
+	else if(wear_ring && !(SLOT_RING in obscured) && (!disguised_equipment || !HAS_TRAIT(src, TRAIT_DISGUISE_ACTIVE)))
 		if(is_stupid)
 			. += "[m3] some sort of ring!"
 		else if(is_smart && istype(wear_ring, /obj/item/clothing/ring/active))
@@ -705,7 +705,7 @@
 		else if (is_stupid)
 			str = "[m3] something on [m2] wrists!"
 		. += str
-	else if(wear_wrists && !(SLOT_WRISTS in obscured))
+	else if(wear_wrists && !(SLOT_WRISTS in obscured) && (!disguised_equipment || !HAS_TRAIT(src, TRAIT_DISGUISE_ACTIVE)))
 		var/str = "[m3] [wear_wrists.get_examine_string(user)] on [m2] wrists."
 		if(is_smart)
 			str += wear_wrists.integrity_check()
