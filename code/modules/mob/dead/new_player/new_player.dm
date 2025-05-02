@@ -200,12 +200,13 @@ GLOBAL_LIST_INIT(roleplay_readme, world.file2list("strings/rt/rp_prompt.txt"))
 		if(href_list["late_join"] == "override")
 			LateChoices()
 			return
-/*#ifdef MATURESERVER
-		if(key && (world.time < GLOB.respawntimes[key] + RESPAWNTIME))
-			to_chat(usr, span_warning("I can return in [GLOB.respawntimes[key] + RESPAWNTIME - world.time]."))
-			return
-#else*/
 
+		if(key && GLOB.respawntimes[key] && (world.time < GLOB.respawntimes[key] + RESPAWNTIME))
+			var/remaining_time = (GLOB.respawntimes[key] + RESPAWNTIME - world.time)/10
+			var/minutes = round(remaining_time/60)
+			var/seconds = round(remaining_time % 60)
+			to_chat(usr, span_warning("I can return in [minutes]:[(seconds < 10) ? "0[seconds]" : "[seconds]"]."))
+			return
 
 		var/timetojoin = 5 MINUTES
 #ifdef ALLOWPLAY

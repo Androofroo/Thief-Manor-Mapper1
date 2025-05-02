@@ -38,6 +38,14 @@
 			if(istype(G, /mob/dead/observer/rogue/arcaneeye))
 				return
 			if(alert("Travel with the boatman?", "", "Yes", "No") == "Yes")
+				// Check if respawn time has elapsed
+				if(G.key && GLOB.respawntimes[G.key] && (world.time < GLOB.respawntimes[G.key] + RESPAWNTIME))
+					var/remaining_time = (GLOB.respawntimes[G.key] + RESPAWNTIME - world.time)/10
+					var/minutes = round(remaining_time/60)
+					var/seconds = round(remaining_time % 60)
+					to_chat(G, span_warning("I can return in [minutes]:[(seconds < 10) ? "0[seconds]" : "[seconds]"]."))
+					return
+					
 				if(G.mind)
 					var/datum/job/target_job = SSjob.GetJob(G.mind.assigned_role)
 					if(target_job)

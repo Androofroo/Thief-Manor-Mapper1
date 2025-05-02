@@ -26,6 +26,14 @@ GLOBAL_LIST_INIT(ghost_verbs, list(
 			if(istype(mob, /mob/living/carbon/spirit))
 				return
 
+			// Check if respawn time has elapsed
+			if(mob.key && GLOB.respawntimes[mob.key] && (world.time < GLOB.respawntimes[mob.key] + RESPAWNTIME))
+				var/remaining_time = (GLOB.respawntimes[mob.key] + RESPAWNTIME - world.time)/10
+				var/minutes = round(remaining_time/60)
+				var/seconds = round(remaining_time % 60)
+				to_chat(mob, span_warning("I can return in [minutes]:[(seconds < 10) ? "0[seconds]" : "[seconds]"]."))
+				return
+				
 			if(istype(mob, /mob/living/carbon/human))
 				var/mob/living/carbon/human/D = mob
 				if(D.buried && D.funeral)
