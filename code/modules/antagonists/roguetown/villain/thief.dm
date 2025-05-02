@@ -32,6 +32,7 @@
 	to_chat(H, span_boldwarning("I've worked in the manor for years, always overlooked, always underappreciated. I know every corner, every secret passage. Now it's time to take what I deserve - the Lord's Crown. My insider knowledge gives me an advantage, but betrayal is punished harshly in these lands."))
 	to_chat(H, span_boldnotice("I've learned how to silently snuff out lights to help me move unseen. Use the Snuff Light ability to extinguish any fire or light source within reach."))
 	to_chat(H, span_boldnotice("I also possess the Magical Disguise spell that allows me to take on the appearance of any person for a short time. This can help me infiltrate restricted areas or avoid detection."))
+	to_chat(H, span_boldnotice("In my pouch, I've brought smoke bombs that create thick clouds of smoke, perfect for confusing guards or making a quick escape."))
 
 /datum/antagonist/thief/greet()
 	owner.announce_objectives()
@@ -44,6 +45,7 @@
 	H.mind.AddSpell(new /obj/effect/proc_holder/spell/self/snuff_light)
 	H.mind.AddSpell(new /obj/effect/proc_holder/spell/invoked/invisibility)
 	H.mind.AddSpell(new /obj/effect/proc_holder/spell/self/magical_disguise)
+	H.mind.AddSpell(new /obj/effect/proc_holder/spell/self/smoke_bomb)
 
 	// Improve stealth-related skills
 	H.mind.adjust_skillrank(/datum/skill/misc/sneaking, 5, TRUE)
@@ -118,12 +120,13 @@
 /obj/effect/proc_holder/spell/self/magical_disguise
 	name = "Magical Disguise"
 	desc = "Take on the appearance of another person."
+	overlay_state = "comedy"
 	clothes_req = FALSE
 	human_req = TRUE
 	charge_max = 600
 	cooldown_min = 400
 	action_icon = 'icons/mob/actions/roguespells.dmi'
-	action_icon_state = "comedy"
+	action_icon_state = "spell0"
 	
 	var/datum/disguise_info/stored_appearance
 	var/mob/living/carbon/human/current_target
@@ -649,3 +652,26 @@
 			))
 	
 	return equipment_data
+
+/obj/effect/proc_holder/spell/self/smoke_bomb
+	name = "Smoke Bomb"
+	desc = "Release a cloud of thick smoke around you, perfect for confusing guards or making a quick escape."
+	clothes_req = FALSE
+	human_req = TRUE
+	charge_max = 300
+	cooldown_min = 300
+	action_icon = 'icons/mob/actions/roguespells.dmi'
+	action_icon_state = "spell0"
+	
+/obj/effect/proc_holder/spell/self/smoke_bomb/cast(list/targets, mob/living/carbon/human/user)
+	var/turf/T = get_turf(user)
+	
+	playsound(T, 'sound/items/smokebomb.ogg', 100, TRUE)
+	user.visible_message(span_warning("[user] releases a cloud of smoke!"), span_notice("You release a thick cloud of smoke around yourself!"))
+	
+	// Create the smoke effect
+	var/datum/effect_system/smoke_spread/bad/smoke = new
+	smoke.set_up(8, T) // Large smoke radius of 8
+	smoke.start()
+	
+	return TRUE
