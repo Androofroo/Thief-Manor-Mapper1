@@ -15,7 +15,7 @@
 		return the_pq
 	else
 		if(the_pq >= 100)
-			return "<span style='color: #74cde0;'>TRUE AZUREAN</span>"
+			return "<span style='color: #74cde0;'>PSYDON</span>"
 		if(the_pq >= 70)
 			return "<span style='color: #00ff00;'>Magnificent!</span>"
 		if(the_pq >= 50)
@@ -35,7 +35,7 @@
 		if(the_pq >= -99)
 			return "<span style='color: #e2221d;'>Abysmal</span>"
 		if(the_pq <= -100)
-			return "<span style='color: #ff00ff;'>Shitter</span>"
+			return "<span style='color: #ff00ff;'>ZIZO</span>"
 		return "Normal"
 
 /proc/adjust_playerquality(amt, key, admin, reason)
