@@ -57,9 +57,13 @@
 	H.mind.adjust_skillrank(/datum/skill/misc/climbing, 4, TRUE)
 	H.mind.adjust_skillrank(/datum/skill/misc/stealing, 5, TRUE)
 	H.mind.adjust_skillrank(/datum/skill/misc/lockpicking, 4, TRUE)
-	H.mind.adjust_skillrank(/datum/skill/combat/knives, 3, TRUE)
+	// Only add knife skill if not a Manor Guard
+	if(H.job != "Manor Guard")
+		H.mind.adjust_skillrank(/datum/skill/combat/knives, 3, TRUE)
 	H.mind.adjust_skillrank(/datum/skill/misc/reading, 2, TRUE)
-	H.mind.adjust_skillrank(/datum/skill/misc/athletics, 3, TRUE)
+	// Only add athletics skill if not a Manor Guard
+	if(H.job != "Manor Guard")
+		H.mind.adjust_skillrank(/datum/skill/misc/athletics, 3, TRUE)
 	
 	// Servant-specific skills
 	H.mind.adjust_skillrank(/datum/skill/craft/cooking, 2, TRUE)
