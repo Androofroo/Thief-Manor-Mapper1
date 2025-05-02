@@ -28,7 +28,7 @@
 	move_to_spawnpoint()
 
 /datum/antagonist/assassin/proc/finalize_assassin()
-	owner.current.playsound_local(get_turf(owner.current), 'sound/music/traitor.ogg', 60, FALSE, pressure_affected = FALSE)
+	owner.current.playsound_local(get_turf(owner.current), 'sound/music/assassin.ogg', 60, FALSE, pressure_affected = FALSE)
 	var/mob/living/carbon/human/H = owner.current
 	ADD_TRAIT(H, TRAIT_STEELHEARTED, TRAIT_GENERIC)
 	ADD_TRAIT(H, TRAIT_OUTLANDER, TRAIT_GENERIC)
@@ -145,6 +145,7 @@
 	// Backpack contents
 	backpack_contents = list(
 		/obj/item/reagent_containers/glass/bottle/rogue/strongpoison = 2,
+		/obj/item/rope = 1,
 	)
 
 /datum/antagonist/assassin/roundend_report()
