@@ -382,7 +382,7 @@
 /datum/outfit/job/roguetown/adventurer/temple_cleric/pre_equip(mob/living/carbon/human/H)
 	..()
 	H.adjust_blindness(-3)
-	var/classes = list("Healer", "Guardian", "Crusader")
+	var/classes = list("Healer", "Crusader")
 	var/classchoice = input("Choose your archetypes", "Available archetypes") as anything in classes
 
 	switch(classchoice)
@@ -409,37 +409,13 @@
 			C.grant_spells_templar(H)
 			ADD_TRAIT(H, TRAIT_EMPATH, TRAIT_GENERIC)
 
-		if("Guardian")
-			to_chat(H, span_warning("Your protective magic forms barriers and shields to protect allies."))
-			head = /obj/item/clothing/head/roguetown/roguehood
-			shoes = /obj/item/clothing/shoes/roguetown/boots
-			pants = /obj/item/clothing/under/roguetown/trou/leather
-			shirt = /obj/item/clothing/suit/roguetown/armor/gambeson
-			armor = /obj/item/clothing/suit/roguetown/shirt/robe/priest
-			belt = /obj/item/storage/belt/rogue/leather
-			backl = /obj/item/storage/backpack/rogue/satchel
-			backpack_contents = list(/obj/item/flashlight/flare/torch = 1)
-			H.mind.adjust_skillrank(/datum/skill/misc/climbing, 1, TRUE)
-			H.mind.adjust_skillrank(/datum/skill/misc/athletics, 2, TRUE)
-			H.mind.adjust_skillrank(/datum/skill/combat/wrestling, 1, TRUE)
-			H.mind.adjust_skillrank(/datum/skill/combat/unarmed, 1, TRUE)
-			H.mind.adjust_skillrank(/datum/skill/misc/reading, 2, TRUE)
-			H.mind.adjust_skillrank(/datum/skill/magic/holy, 3, TRUE)
-			H.mind.adjust_skillrank(/datum/skill/combat/shields, 2, TRUE)
-			H.change_stat("intelligence", 1)
-			H.change_stat("constitution", 2)
-			H.change_stat("endurance", 1)
-			var/datum/devotion/C = new /datum/devotion(H, H.patron)
-			C.grant_spells_templar(H)
-			ADD_TRAIT(H, TRAIT_MEDIUMARMOR, TRAIT_GENERIC)
-
 		if("Crusader")
 			to_chat(H, span_warning("You channel divine power to oppose darkness and undeath."))
 			head = /obj/item/clothing/head/roguetown/roguehood
 			shoes = /obj/item/clothing/shoes/roguetown/boots
 			pants = /obj/item/clothing/under/roguetown/trou/leather
 			shirt = /obj/item/clothing/suit/roguetown/armor/gambeson
-			armor = /obj/item/clothing/suit/roguetown/shirt/robe/priest
+			armor = /obj/item/clothing/suit/roguetown/armor/plate/half/fluted/ornate
 			gloves = /obj/item/clothing/gloves/roguetown/fingerless_leather
 			belt = /obj/item/storage/belt/rogue/leather
 			backl = /obj/item/storage/backpack/rogue/satchel
@@ -458,6 +434,7 @@
 			var/datum/devotion/C = new /datum/devotion(H, H.patron)
 			C.grant_spells_templar(H)
 			ADD_TRAIT(H, TRAIT_MEDIUMARMOR, TRAIT_GENERIC)
+			ADD_TRAIT(H, TRAIT_HEAVYARMOR, TRAIT_GENERIC)
 
 /datum/advclass/druid_manor
 	name = "Druid"

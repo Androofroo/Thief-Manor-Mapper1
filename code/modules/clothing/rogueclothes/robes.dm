@@ -105,19 +105,11 @@
 	color = CLOTHING_WHITE
 
 /obj/item/clothing/suit/roguetown/shirt/robe/priest
-	name = "solar vestments"
-	desc = "Holy vestments sanctified by divine hands. Caution is advised if not a faithful."
+	name = "holy vestments"
+	desc = "Holy vestments sanctified by divine hands."
 	icon_state = "priestrobe"
 	color = null
 
-/obj/item/clothing/suit/roguetown/shirt/robe/priest/pickup(mob/living/user)
-	if(!HAS_TRAIT(user, TRAIT_CHOSEN))
-		to_chat(user, "<font color='yellow'>UNWORTHY HANDS TOUCH THE VESTMENTS, CEASE OR BE PUNISHED</font>")
-		spawn(30)
-			if(loc == user)
-				user.adjust_fire_stacks(5)
-				user.IgniteMob()
-	..()
 
 /obj/item/clothing/suit/roguetown/shirt/robe/courtmage
 	color = "#6c6c6c"

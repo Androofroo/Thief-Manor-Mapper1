@@ -296,7 +296,7 @@
 	wrists = /obj/item/clothing/neck/roguetown/psicross/silver
 	mask = /obj/item/clothing/head/roguetown/roguehood/psydon
 	cloak = /obj/item/clothing/cloak/psydontabard
-	shirt = /obj/item/clothing/suit/roguetown/armor/chainmail/hauberk
+	shirt = /obj/item/clothing/suit/roguetown/armor/chainmail
 	pants = /obj/item/clothing/under/roguetown/chainlegs
 
 	var/armors = list(
@@ -312,7 +312,7 @@
 	name = "Foreign Knight"
 	tutorial = "You are a noble knight from a foreign land, serving as both a dignitary and protector of the Lord. Your presence represents the diplomatic ties between your homeland and this realm, while your martial prowess ensures the safety of the manor's most important guests."
 	outfit = /datum/outfit/job/roguetown/knight/otavan
-
+	allowed_races = NON_DWARVEN_RACE_TYPES
 	category_tags = list(CTAG_ROYALGUARD)
 
 /datum/outfit/job/roguetown/knight/otavan/pre_equip(mob/living/carbon/human/H)
