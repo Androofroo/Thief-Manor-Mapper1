@@ -476,7 +476,7 @@ INITIALIZE_IMMEDIATE(/obj/effect/landmark)
 
 /obj/effect/landmark/start/assassin
 	name = "Assassin"
-	icon_state = "assassin"
+	icon_state = "arrow"
 
 /obj/effect/landmark/start/assassin/Initialize()
 	..()
