@@ -11,8 +11,8 @@
 		var/checked = Get_checked(C)
 		C.prefs.menuoptions[type] = !checked
 		winset(C, "[verbpath]", "is-checked = [!checked]")
-
-/datum/verbs/menu/Settings/verb/setup_character()
+#endif
+/*/datum/verbs/menu/Settings/verb/setup_character()
 	set name = "Game Preferences"
 	set category = "Options"
 	set desc = ""
@@ -28,6 +28,7 @@
 	if(prefs)
 		usr.client.prefs.current_tab = 1
 		usr.client.prefs.ShowChoices(usr, 4)
+*/
 
 /client/verb/toggle_fullscreen()
 	set name = "ToggleFullscreen"
@@ -49,7 +50,7 @@
 		else
 			to_chat(src, "Screen shake disabled.")
 
-/client/verb/masked_examine()
+/*/client/verb/masked_examine()
 	set category = "Options"
 	set name = "Toggle Masked Examine"
 	if(prefs)
@@ -58,9 +59,9 @@
 		if(prefs.masked_examine)
 			to_chat(src, "Your character information will be viewable when masked.")
 		else
-			to_chat(src, "Your character information will no longer be viewable when masked.")
+			to_chat(src, "Your character information will no longer be viewable when masked.") */
 
-/client/verb/mute_animal_emotes()
+/* /client/verb/mute_animal_emotes()
 	set category = "Options"
 	set name = "Toggle Animal Noise Emotes"
 	if(prefs)
@@ -69,7 +70,7 @@
 		if(prefs.mute_animal_emotes)
 			to_chat(src, "You can no longer hear animal sound emotes.")
 		else
-			to_chat(src, "You will now hear animal sound emotes.")
+			to_chat(src, "You will now hear animal sound emotes.") */
 
 /client/verb/toggle_ERP() // Alters if other people can use the ERP panel ON you.
 	set category = "Options"
@@ -97,7 +98,7 @@
 		to_chat(src, "You will no longer hear music in the lobby.")
 		mob.stop_sound_channel(CHANNEL_LOBBYMUSIC)
 
-/client/verb/toggle_roleplay_ads()
+/*/client/verb/toggle_roleplay_ads()
 	set name = "Roleplay Ads (Toggle)"
 	set category = "OOC"
 	set desc = ""
@@ -107,7 +108,7 @@
 	if(prefs.toggles & ROLEPLAY_ADS)
 		to_chat(src, "You will now be notified of new roleplay ads.")
 	else
-		to_chat(src, "You will no longer be notified of new roleplay ads.")
+		to_chat(src, "You will no longer be notified of new roleplay ads.") */
 
 /client/verb/stop_sounds_rogue()
 	set name = "StopSounds"

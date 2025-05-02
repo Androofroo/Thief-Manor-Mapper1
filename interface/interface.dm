@@ -223,7 +223,7 @@ Hotkey-Mode: (hotkey-mode must be on)
 	set name = "Commend Someone"
 	commendsomeone()
 
-/client/verb/roleplay_ad_view()
+/*/client/verb/roleplay_ad_view()
 	set category = "OOC"
 	set name = "Roleplay Ad (View)"
 	view_roleplay_ads()
@@ -251,6 +251,7 @@ Hotkey-Mode: (hotkey-mode must be on)
 		else if(has_old_ad)
 			LAZYREMOVE(GLOB.roleplay_ads,C.mobid)
 			to_chat(C, span_info("Roleplay ad removed."))
+*/
 
 /client/verb/changefps()
 	set category = "Options"

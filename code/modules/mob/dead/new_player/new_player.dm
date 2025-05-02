@@ -298,7 +298,7 @@ GLOBAL_LIST_INIT(roleplay_readme, world.file2list("strings/rt/rp_prompt.txt"))
 
 
 
-/mob/dead/new_player/verb/do_rp_prompt()
+/*/mob/dead/new_player/verb/do_rp_prompt()
 	set name = "Lore Primer"
 	set category = "Memory"
 	var/list/dat = list()
@@ -307,6 +307,7 @@ GLOBAL_LIST_INIT(roleplay_readme, world.file2list("strings/rt/rp_prompt.txt"))
 		var/datum/browser/popup = new(src, "Primer", "AZURE PEAK", 460, 550)
 		popup.set_content(dat.Join())
 		popup.open()
+*/
 
 //When you cop out of the round (NB: this HAS A SLEEP FOR PLAYER INPUT IN IT)
 /mob/dead/new_player/proc/make_me_an_observer()
