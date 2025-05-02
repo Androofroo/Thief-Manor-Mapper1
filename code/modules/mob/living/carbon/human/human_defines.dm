@@ -71,6 +71,7 @@
 	var/special_voice = "" // For changing our voice. Used by a symptom.
 
 	var/name_override //For temporary visible name changes
+	var/fake_strength = null // Used for disguises to display fake strength during examine
 
 	var/datum/physiology/physiology
 

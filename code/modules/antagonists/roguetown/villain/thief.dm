@@ -1,6 +1,3 @@
-// Villain jobs based on stealth and stealing
-#define TRAIT_DISGUISE_ACTIVE "disguise_active"
-
 /datum/antagonist/thief
 	name = "Thief"
 	roundend_category = "Thieves"
@@ -257,6 +254,92 @@
 	stored_appearance.original_overlays = user.overlays.Copy()
 	stored_appearance.original_obscured_flags = user.obscured_flags
 	stored_appearance.original_name_override = user.name_override
+	stored_appearance.original_advjob = user.advjob
+	
+	// Store fake traits for examination purposes
+	stored_appearance.fake_traits = list()
+	// Check if target has any of these traits
+	var/list/traits_to_check = list(
+		TRAIT_NOBLE, TRAIT_OUTLANDER, TRAIT_WITCH, TRAIT_BEAUTIFUL, TRAIT_UNSEEMLY, 
+		TRAIT_INQUISITION, TRAIT_COMMIE, TRAIT_CABAL, TRAIT_HORDE, TRAIT_DEPRAVED
+	)
+	for(var/trait in traits_to_check)
+		if(HAS_TRAIT(target, trait))
+			stored_appearance.fake_traits += trait
+	
+	// Store original movement sound component, if any
+	var/datum/component/disguise_sound_mimic/existing_mimic = user.GetComponent(/datum/component/disguise_sound_mimic)
+	if(existing_mimic)
+		qdel(existing_mimic)
+	
+	// Look for all equipped items on the target that have movement components
+	// and create a new sound mimicking component for the user
+	var/list/sound_parameters = list()
+	var/list/target_gear = list()
+	
+	// Add all equipped items that could potentially have movement components
+	if(target.wear_armor)
+		target_gear += target.wear_armor
+	if(target.wear_shirt)
+		target_gear += target.wear_shirt
+	if(target.wear_pants)
+		target_gear += target.wear_pants
+	if(target.head)
+		target_gear += target.head
+	if(target.shoes)
+		target_gear += target.shoes
+	if(target.gloves)
+		target_gear += target.gloves
+	if(target.cloak)
+		target_gear += target.cloak
+	if(target.wear_neck)
+		target_gear += target.wear_neck
+	if(target.belt)
+		target_gear += target.belt
+	if(target.beltl)
+		target_gear += target.beltl
+	if(target.beltr)
+		target_gear += target.beltr
+	
+	// Check each item for movement components and store their parameters
+	for(var/obj/item/gear in target_gear)
+		for(var/datum/component/item_equipped_movement_rustle/R in gear.GetComponents(/datum/component/item_equipped_movement_rustle))
+			sound_parameters += list(list(
+				"rustle_sounds" = R.rustle_sounds,
+				"move_delay" = R.move_delay,
+				"volume" = R.volume,
+				"sound_vary" = R.sound_vary,
+				"sound_extra_range" = R.sound_extra_range,
+				"sound_falloff_exponent" = R.sound_falloff_exponent,
+				"sound_falloff_distance" = R.sound_falloff_distance
+			))
+	
+	// Add a component to mimic the sounds of the target's gear
+	if(length(sound_parameters))
+		user.AddComponent(/datum/component/disguise_sound_mimic, sound_parameters)
+	
+	// Store original traits that will be copied
+	stored_appearance.original_traits = list()
+	if(HAS_TRAIT(user, TRAIT_NOBLE))
+		stored_appearance.original_traits += TRAIT_NOBLE
+	if(HAS_TRAIT(user, TRAIT_OUTLANDER))
+		stored_appearance.original_traits += TRAIT_OUTLANDER
+	if(HAS_TRAIT(user, TRAIT_WITCH))
+		stored_appearance.original_traits += TRAIT_WITCH
+	if(HAS_TRAIT(user, TRAIT_BEAUTIFUL))
+		stored_appearance.original_traits += TRAIT_BEAUTIFUL
+	if(HAS_TRAIT(user, TRAIT_UNSEEMLY))
+		stored_appearance.original_traits += TRAIT_UNSEEMLY
+	if(HAS_TRAIT(user, TRAIT_INQUISITION))
+		stored_appearance.original_traits += TRAIT_INQUISITION
+	if(HAS_TRAIT(user, TRAIT_COMMIE))
+		stored_appearance.original_traits += TRAIT_COMMIE
+	if(HAS_TRAIT(user, TRAIT_CABAL))
+		stored_appearance.original_traits += TRAIT_CABAL
+	if(HAS_TRAIT(user, TRAIT_HORDE))
+		stored_appearance.original_traits += TRAIT_HORDE
+	if(HAS_TRAIT(user, TRAIT_DEPRAVED))
+		stored_appearance.original_traits += TRAIT_DEPRAVED
 	
 	// Handle identity - check if target's face is concealed/unknown
 	var/target_visible_name = target.get_visible_name()
@@ -284,9 +367,31 @@
 	if(target.job)
 		stored_appearance.original_job = user.job
 		user.job = target.job
+		
+		// Handle advanced job title if the target has one
+		var/datum/job/T_Job = SSjob.GetJob(target.job)
+		if(T_Job?.advjob_examine && target.advjob)
+			stored_appearance.original_advjob = user.advjob
+			user.advjob = target.advjob
 	
 	// Copy gender first - this ensures descriptors will generate properly
+	stored_appearance.gender = user.gender
 	user.gender = target.gender
+	
+	// Copy pronouns - essential for proper descriptor generation
+	stored_appearance.pronouns = user.pronouns
+	user.pronouns = target.pronouns
+	
+	// Copy the target's voice type
+	stored_appearance.voice_type = user.voice_type
+	user.voice_type = target.voice_type
+	
+	// Instead of directly copying strength, add a trait that will be checked during examine
+	ADD_TRAIT(user, TRAIT_FAKE_STRENGTH, MAGICAL_DISGUISE_TRAIT)
+	user.fake_strength = target.STASTR  // Store the fake strength value to use during examine
+	
+	// Instead of directly adding traits, add a special trait for disguise and store the fake traits
+	ADD_TRAIT(user, TRAIT_HAS_FAKE_TRAITS, MAGICAL_DISGUISE_TRAIT)
 	
 	// Copy species name and descriptors for examination
 	if(istype(target) && target.dna && target.dna.species)
@@ -301,8 +406,8 @@
 		// Capture the visible equipment from the target
 		var/list/equipment_data = capture_visible_equipment(target)
 		
-		// Add our custom component that doesn't use signals
-		user.AddComponent(/datum/component/disguised_species, target.dna.species.name, target_descriptors, original_descriptors, equipment_data, stored_appearance.disguised_as_unknown, stored_appearance.target_visible_name)
+		// Add our custom component
+		user.AddComponent(/datum/component/disguised_species, target.dna.species.name, target_descriptors, original_descriptors, equipment_data, stored_appearance.disguised_as_unknown, stored_appearance.target_visible_name, stored_appearance.fake_traits)
 		
 		// Replace the user's descriptors with the target's after gender has been set
 		user.clear_mob_descriptors()
@@ -319,8 +424,17 @@
 	for(var/overlay in snapshot.overlays)
 		user.add_overlay(overlay)
 	
+	// Force an immediate appearance update by "moving" the player to their current location
+	// This is a reliable way to get BYOND to refresh the player's appearance for all clients
+	var/turf/current_loc = get_turf(user)
+	if(current_loc)
+		user.forceMove(current_loc)
+	
 	// Override attack and equip functions to break the disguise
 	ADD_TRAIT(user, TRAIT_DISGUISE_ACTIVE, MAGICAL_DISGUISE_TRAIT)
+	
+	// Add the break disguise verb to the user
+	user.verbs |= /mob/proc/break_magical_disguise
 	
 	// Set up a timer to remove the disguise
 	addtimer(CALLBACK(src, PROC_REF(remove_disguise), user), disguise_duration)
@@ -331,7 +445,7 @@
 	// Create a more detailed disguise message that includes the job if available
 	var/disguise_message = "You take on the appearance of [target_visible_name]"
 	if(target.job)
-		disguise_message += ", the [target.job]"
+		disguise_message += ", the [target.get_role_title()]"
 	disguise_message += "! Attacking, putting anything in your hands or changing your clothing will break the disguise."
 	
 	to_chat(user, "<span class='notice'>[disguise_message]</span>")
@@ -352,12 +466,43 @@
 	user.name = stored_appearance.name
 	user.gender = stored_appearance.gender
 	
+	// Restore pronouns
+	user.pronouns = stored_appearance.pronouns
+	
+	// Restore voice type
+	user.voice_type = stored_appearance.voice_type
+	
 	// Restore name_override
 	user.name_override = stored_appearance.original_name_override
 	
 	// Restore job if it was changed
 	if(stored_appearance.original_job)
 		user.job = stored_appearance.original_job
+	
+	// Restore advjob if it was changed
+	if(stored_appearance.original_advjob)
+		user.advjob = stored_appearance.original_advjob
+	
+	// Remove fake strength trait and value
+	REMOVE_TRAIT(user, TRAIT_FAKE_STRENGTH, MAGICAL_DISGUISE_TRAIT)
+	user.fake_strength = null
+	
+	// Remove fake traits indicator
+	REMOVE_TRAIT(user, TRAIT_HAS_FAKE_TRAITS, MAGICAL_DISGUISE_TRAIT)
+	
+	// Remove the disguise sound mimic component
+	var/datum/component/disguise_sound_mimic/sound_mimic = user.GetComponent(/datum/component/disguise_sound_mimic)
+	if(sound_mimic)
+		qdel(sound_mimic)
+	
+	// Restore original traits by removing disguise trait versions
+	for(var/trait in list(TRAIT_NOBLE, TRAIT_OUTLANDER, TRAIT_WITCH, TRAIT_BEAUTIFUL, TRAIT_UNSEEMLY, 
+                          TRAIT_INQUISITION, TRAIT_COMMIE, TRAIT_CABAL, TRAIT_HORDE, TRAIT_DEPRAVED))
+		REMOVE_TRAIT(user, trait, MAGICAL_DISGUISE_TRAIT)
+	
+	// Re-add original traits
+	for(var/trait in stored_appearance.original_traits)
+		ADD_TRAIT(user, trait, TRAIT_GENERIC)
 	
 	// Restore original obscured flags
 	user.obscured_flags = stored_appearance.original_obscured_flags
@@ -499,7 +644,9 @@
 	var/real_name
 	var/name
 	var/gender
+	var/pronouns
 	var/original_job
+	var/original_advjob
 	var/target_species_name
 	var/icon/original_icon
 	var/original_icon_state
@@ -508,13 +655,23 @@
 	var/disguised_as_unknown = FALSE
 	var/target_visible_name
 	var/original_name_override
+	var/original_strength
+	var/voice_type  // Store original voice type
+	var/list/original_traits
+	var/list/original_movement_components
+	var/list/target_movement_components
+	var/list/fake_traits // List of traits the target has that we want to fake having
 
 	// Constructor stores the original properties
 	New(mob/living/carbon/human/H)
 		src.real_name = H.real_name
 		src.name = H.name
 		src.gender = H.gender
+		src.pronouns = H.pronouns
 		src.original_name_override = H.name_override
+		src.original_advjob = H.advjob
+		src.original_strength = H.STASTR
+		src.voice_type = H.voice_type  // Store original voice type
 
 // The component to store species and descriptor info
 /datum/component/disguised_species
@@ -524,14 +681,16 @@
 	var/list/disguised_equipment  // List to store visible equipment info
 	var/is_face_hidden = FALSE
 	var/visible_name = null
+	var/list/fake_traits = list() // List of traits to fake having during examine
 
-/datum/component/disguised_species/Initialize(species_name, list/disguised_descriptors, list/original_descriptors, list/disguised_equipment, is_face_hidden = FALSE, visible_name = null)
+/datum/component/disguised_species/Initialize(species_name, list/disguised_descriptors, list/original_descriptors, list/disguised_equipment, is_face_hidden = FALSE, visible_name = null, list/fake_traits = list())
 	src.species_name = species_name
 	src.disguised_descriptors = disguised_descriptors
 	src.original_descriptors = original_descriptors
 	src.disguised_equipment = disguised_equipment
 	src.is_face_hidden = is_face_hidden
 	src.visible_name = visible_name
+	src.fake_traits = fake_traits
 	
 /datum/component/disguised_species/proc/get_species_name()
 	return species_name
@@ -551,6 +710,9 @@
 /datum/component/disguised_species/proc/get_visible_name()
 	return visible_name
 
+/datum/component/disguised_species/proc/get_fake_traits()
+	return fake_traits
+
 // Helper function to capture visible equipment from the target
 /obj/effect/proc_holder/spell/self/magical_disguise/proc/capture_visible_equipment(mob/living/carbon/human/target)
 	var/list/equipment_data = list()
@@ -560,133 +722,152 @@
 		equipment_data["wear_shirt"] = list(
 			"name" = target.wear_shirt.name,
 			"desc" = target.wear_shirt.desc,
-			"icon_state" = target.wear_shirt.icon_state
+			"icon_state" = target.wear_shirt.icon_state,
+			"is_rogueweapon" = istype(target.wear_shirt, /obj/item/rogueweapon)
 		)
 	
 	if(target.wear_armor)
 		equipment_data["wear_armor"] = list(
 			"name" = target.wear_armor.name,
 			"desc" = target.wear_armor.desc,
-			"icon_state" = target.wear_armor.icon_state
+			"icon_state" = target.wear_armor.icon_state,
+			"is_rogueweapon" = istype(target.wear_armor, /obj/item/rogueweapon)
 		)
 	
 	if(target.wear_pants)
 		equipment_data["wear_pants"] = list(
 			"name" = target.wear_pants.name,
 			"desc" = target.wear_pants.desc,
-			"icon_state" = target.wear_pants.icon_state
+			"icon_state" = target.wear_pants.icon_state,
+			"is_rogueweapon" = istype(target.wear_pants, /obj/item/rogueweapon)
 		)
 	
 	if(target.head)
 		equipment_data["head"] = list(
 			"name" = target.head.name,
 			"desc" = target.head.desc,
-			"icon_state" = target.head.icon_state
+			"icon_state" = target.head.icon_state,
+			"is_rogueweapon" = istype(target.head, /obj/item/rogueweapon)
 		)
 	
 	if(target.belt)
 		equipment_data["belt"] = list(
 			"name" = target.belt.name,
 			"desc" = target.belt.desc,
-			"icon_state" = target.belt.icon_state
+			"icon_state" = target.belt.icon_state,
+			"is_rogueweapon" = istype(target.belt, /obj/item/rogueweapon)
 		)
 	
 	if(target.beltr)
 		equipment_data["beltr"] = list(
 			"name" = target.beltr.name,
 			"desc" = target.beltr.desc,
-			"icon_state" = target.beltr.icon_state
+			"icon_state" = target.beltr.icon_state,
+			"is_rogueweapon" = istype(target.beltr, /obj/item/rogueweapon)
 		)
 	
 	if(target.beltl)
 		equipment_data["beltl"] = list(
 			"name" = target.beltl.name,
 			"desc" = target.beltl.desc,
-			"icon_state" = target.beltl.icon_state
+			"icon_state" = target.beltl.icon_state,
+			"is_rogueweapon" = istype(target.beltl, /obj/item/rogueweapon)
 		)
 	
 	if(target.wear_ring)
 		equipment_data["wear_ring"] = list(
 			"name" = target.wear_ring.name,
 			"desc" = target.wear_ring.desc,
-			"icon_state" = target.wear_ring.icon_state
+			"icon_state" = target.wear_ring.icon_state,
+			"is_rogueweapon" = istype(target.wear_ring, /obj/item/rogueweapon)
 		)
 	
 	if(target.gloves)
 		equipment_data["gloves"] = list(
 			"name" = target.gloves.name,
 			"desc" = target.gloves.desc,
-			"icon_state" = target.gloves.icon_state
+			"icon_state" = target.gloves.icon_state,
+			"is_rogueweapon" = istype(target.gloves, /obj/item/rogueweapon)
 		)
 	
 	if(target.wear_wrists)
 		equipment_data["wear_wrists"] = list(
 			"name" = target.wear_wrists.name,
 			"desc" = target.wear_wrists.desc,
-			"icon_state" = target.wear_wrists.icon_state
+			"icon_state" = target.wear_wrists.icon_state,
+			"is_rogueweapon" = istype(target.wear_wrists, /obj/item/rogueweapon)
 		)
 	
 	if(target.backr)
 		equipment_data["backr"] = list(
 			"name" = target.backr.name,
 			"desc" = target.backr.desc,
-			"icon_state" = target.backr.icon_state
+			"icon_state" = target.backr.icon_state,
+			"is_rogueweapon" = istype(target.backr, /obj/item/rogueweapon)
 		)
 	
 	if(target.backl)
 		equipment_data["backl"] = list(
 			"name" = target.backl.name,
 			"desc" = target.backl.desc,
-			"icon_state" = target.backl.icon_state
+			"icon_state" = target.backl.icon_state,
+			"is_rogueweapon" = istype(target.backl, /obj/item/rogueweapon)
 		)
 	
 	if(target.cloak)
 		equipment_data["cloak"] = list(
 			"name" = target.cloak.name,
 			"desc" = target.cloak.desc,
-			"icon_state" = target.cloak.icon_state
+			"icon_state" = target.cloak.icon_state,
+			"is_rogueweapon" = istype(target.cloak, /obj/item/rogueweapon)
 		)
 	
 	if(target.shoes)
 		equipment_data["shoes"] = list(
 			"name" = target.shoes.name,
 			"desc" = target.shoes.desc,
-			"icon_state" = target.shoes.icon_state
+			"icon_state" = target.shoes.icon_state,
+			"is_rogueweapon" = istype(target.shoes, /obj/item/rogueweapon)
 		)
 	
 	if(target.wear_mask)
 		equipment_data["wear_mask"] = list(
 			"name" = target.wear_mask.name,
 			"desc" = target.wear_mask.desc,
-			"icon_state" = target.wear_mask.icon_state
+			"icon_state" = target.wear_mask.icon_state,
+			"is_rogueweapon" = istype(target.wear_mask, /obj/item/rogueweapon)
 		)
 	
 	if(target.mouth)
 		equipment_data["mouth"] = list(
 			"name" = target.mouth.name,
 			"desc" = target.mouth.desc,
-			"icon_state" = target.mouth.icon_state
+			"icon_state" = target.mouth.icon_state,
+			"is_rogueweapon" = istype(target.mouth, /obj/item/rogueweapon)
 		)
 	
 	if(target.wear_neck)
 		equipment_data["wear_neck"] = list(
 			"name" = target.wear_neck.name,
 			"desc" = target.wear_neck.desc,
-			"icon_state" = target.wear_neck.icon_state
+			"icon_state" = target.wear_neck.icon_state,
+			"is_rogueweapon" = istype(target.wear_neck, /obj/item/rogueweapon)
 		)
 	
 	if(target.glasses)
 		equipment_data["glasses"] = list(
 			"name" = target.glasses.name,
 			"desc" = target.glasses.desc,
-			"icon_state" = target.glasses.icon_state
+			"icon_state" = target.glasses.icon_state,
+			"is_rogueweapon" = istype(target.glasses, /obj/item/rogueweapon)
 		)
 	
 	if(target.ears)
 		equipment_data["ears"] = list(
 			"name" = target.ears.name,
 			"desc" = target.ears.desc,
-			"icon_state" = target.ears.icon_state
+			"icon_state" = target.ears.icon_state,
+			"is_rogueweapon" = istype(target.ears, /obj/item/rogueweapon)
 		)
 
 	// Also capture any items in the target's hands
@@ -698,10 +879,12 @@
 				"desc" = I.desc,
 				"icon_state" = I.icon_state,
 				"held_index" = target.get_held_index_of_item(I),
-				"held_name" = target.get_held_index_name(target.get_held_index_of_item(I))
+				"held_name" = target.get_held_index_name(target.get_held_index_of_item(I)),
+				"is_rogueweapon" = istype(I, /obj/item/rogueweapon)
 			))
 	
 	return equipment_data
+
 /obj/effect/proc_holder/spell/self/smoke_bomb
 	name = "Smoke Bomb"
 	desc = "Release a cloud of thick smoke around you, perfect for confusing guards or making a quick escape."
@@ -724,4 +907,48 @@
 	smoke.start()
 	
 	return TRUE
+
+// New component to mimic the sounds from equipped items
+/datum/component/disguise_sound_mimic
+	var/list/sound_parameters = list()
+	var/list/sound_counters = list() // Track counters for each sound separately
+
+/datum/component/disguise_sound_mimic/Initialize(list/parameters)
+	if(!ismob(parent))
+		return COMPONENT_INCOMPATIBLE
+	
+	sound_parameters = parameters
+	
+	// Initialize counters for each sound parameter
+	sound_counters = list()
+	for(var/i in 1 to length(sound_parameters))
+		sound_counters += 0
+	
+	RegisterSignal(parent, COMSIG_MOVABLE_MOVED, PROC_REF(on_move))
+
+/datum/component/disguise_sound_mimic/proc/on_move()
+	SIGNAL_HANDLER
+	
+	if(!sound_parameters.len)
+		return
+	
+	// Check each sound individually with its own counter
+	for(var/i in 1 to length(sound_parameters))
+		var/list/params = sound_parameters[i]
+		sound_counters[i]++
+		
+		if(sound_counters[i] >= params["move_delay"])
+			sound_counters[i] = 0
+			
+			// Play this specific sound
+			playsound(parent, params["rustle_sounds"], 
+				params["volume"], 
+				params["sound_vary"], 
+				params["sound_extra_range"], 
+				params["sound_falloff_exponent"], 
+				falloff = params["sound_falloff_distance"])
+
+/datum/component/disguise_sound_mimic/Destroy()
+	UnregisterSignal(parent, COMSIG_MOVABLE_MOVED)
+	return ..()
 

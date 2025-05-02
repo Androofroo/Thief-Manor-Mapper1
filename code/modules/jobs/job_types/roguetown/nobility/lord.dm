@@ -26,7 +26,6 @@ GLOBAL_VAR(lord_selected)
 	required = TRUE
 	cmode_music = 'sound/music/combat_noble.ogg'
 	advclass_cat_rolls = list(CTAG_LORD = 20)
-	advjob_examine = TRUE
 
 /datum/job/roguetown/exlord //just used to change the lords title
 	title = "Lord Emeritus"

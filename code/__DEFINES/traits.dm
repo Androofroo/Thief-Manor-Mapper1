@@ -151,7 +151,10 @@
 
 /// Trait for magical disguise spell
 #define TRAIT_DISGUISED_SPECIES "disguised_species"
-#define MAGICAL_DISGUISE_TRAIT "magical_disguise" 
+#define MAGICAL_DISGUISE_TRAIT "magical_disguise"
+#define TRAIT_DISGUISE_ACTIVE "disguise_active"
+#define TRAIT_FAKE_STRENGTH "fake_strength"
+#define TRAIT_HAS_FAKE_TRAITS "has_fake_traits"
 
 GLOBAL_LIST_INIT(roguetraits, list(
 	TRAIT_LEPROSY = span_necrosis("I'm a disgusting leper..."),

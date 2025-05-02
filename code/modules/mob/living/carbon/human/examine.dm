@@ -123,7 +123,8 @@
 		else
 			. = list(span_info("ø ------------ ø\nThis is the <EM>[used_name]</EM>, the [race_name]."))
 
-		if(HAS_TRAIT(src, TRAIT_WITCH))
+		// For traits that appear during examination, we need to handle both real and fake traits
+		if(HAS_TRAIT(src, TRAIT_WITCH) || (HAS_TRAIT(src, TRAIT_HAS_FAKE_TRAITS) && (TRAIT_WITCH in GetComponent(/datum/component/disguised_species)?.fake_traits)))
 			if(HAS_TRAIT(user, TRAIT_NOBLE) || HAS_TRAIT(user, TRAIT_INQUISITION) || HAS_TRAIT(user, TRAIT_WITCH))
 				. += span_warning("A witch! Their presence brings an unsettling aura.")
 			else if(HAS_TRAIT(user, TRAIT_COMMIE) || HAS_TRAIT(user, TRAIT_CABAL) || HAS_TRAIT(user, TRAIT_HORDE) || HAS_TRAIT(user, TRAIT_DEPRAVED))
@@ -134,13 +135,13 @@
 		if(GLOB.lord_titles[name])
 			. += span_notice("[m3] been granted the title of \"[GLOB.lord_titles[name]]\".")
 
-		if(HAS_TRAIT(src, TRAIT_NOBLE))
+		if(HAS_TRAIT(src, TRAIT_NOBLE) || (HAS_TRAIT(src, TRAIT_HAS_FAKE_TRAITS) && (TRAIT_NOBLE in GetComponent(/datum/component/disguised_species)?.fake_traits)))
 			if(HAS_TRAIT(user, TRAIT_NOBLE))
 				. += span_notice("A fellow noble.")
 			else
 				. += span_notice("A noble!")
 
-		if (HAS_TRAIT(src, TRAIT_OUTLANDER) && !HAS_TRAIT(user, TRAIT_OUTLANDER)) 
+		if ((HAS_TRAIT(src, TRAIT_OUTLANDER) || (HAS_TRAIT(src, TRAIT_HAS_FAKE_TRAITS) && (TRAIT_OUTLANDER in GetComponent(/datum/component/disguised_species)?.fake_traits))) && !HAS_TRAIT(user, TRAIT_OUTLANDER)) 
 			. += span_phobia("A foreigner...")
 
 		if(ishuman(user))
@@ -203,7 +204,7 @@
 		if(leprosy == 1)
 			. += span_necrosis("A LEPER...")
 	
-		if (HAS_TRAIT(src, TRAIT_BEAUTIFUL))
+		if (HAS_TRAIT(src, TRAIT_BEAUTIFUL) || (HAS_TRAIT(src, TRAIT_HAS_FAKE_TRAITS) && (TRAIT_BEAUTIFUL in GetComponent(/datum/component/disguised_species)?.fake_traits)))
 			switch (pronouns)
 				if (HE_HIM)
 					. += span_beautiful_masc("[m1] handsome!")
@@ -212,7 +213,7 @@
 				if (THEY_THEM, THEY_THEM_F, IT_ITS)
 					. += span_beautiful_nb("[m1] good-looking!")
 
-		if (HAS_TRAIT(src, TRAIT_UNSEEMLY))
+		if (HAS_TRAIT(src, TRAIT_UNSEEMLY) || (HAS_TRAIT(src, TRAIT_HAS_FAKE_TRAITS) && (TRAIT_UNSEEMLY in GetComponent(/datum/component/disguised_species)?.fake_traits)))
 			switch (pronouns)
 				if (HE_HIM)
 					. += span_redtext("[m1] revolting!")
@@ -258,11 +259,20 @@
 		var/item_data = disguised_equipment["wear_shirt"]
 		var/plural = is_plural_item(item_data["name"])
 		if(!disguised_equipment["wear_armor"])
-			. += "[m3] [plural ? "some" : "a"] [item_data["name"]]."
+			if(item_data["is_rogueweapon"])
+				. += "[m3] [plural ? "some" : "a"] <b>[item_data["name"]]</b>."
+			else
+				. += "[m3] [plural ? "some" : "a"] [item_data["name"]]."
 		else if(is_smart)
-			. += "[m3] [plural ? "some" : "a"] [item_data["name"]]."
+			if(item_data["is_rogueweapon"])
+				. += "[m3] [plural ? "some" : "a"] <b>[item_data["name"]]</b>."
+			else
+				. += "[m3] [plural ? "some" : "a"] [item_data["name"]]."
 		else if(!is_stupid && is_normal)
-			. += "[m3] [plural ? "some" : "a"] [item_data["name"]]."
+			if(item_data["is_rogueweapon"])
+				. += "[m3] [plural ? "some" : "a"] <b>[item_data["name"]]</b>."
+			else
+				. += "[m3] [plural ? "some" : "a"] [item_data["name"]]."
 	else if(wear_shirt && !(SLOT_SHIRT in obscured) && (!disguised_equipment || !HAS_TRAIT(src, TRAIT_DISGUISE_ACTIVE)))
 		if(!wear_armor)
 			. += "[m3] [wear_shirt.get_examine_string(user)]."
@@ -282,7 +292,11 @@
 		var/str = ""
 		// Check if it's a plural item (pants, shorts, etc.) or a singular item
 		var/plural = is_plural_item(item_data["name"])
-		str = "[m3] [plural ? "" : "a "][item_data["name"]][accessory_msg]. "
+		
+		if(item_data["is_rogueweapon"])
+			str = "[m3] [plural ? "" : "a "]<b>[item_data["name"]]</b>[accessory_msg]. "
+		else
+			str = "[m3] [plural ? "" : "a "][item_data["name"]][accessory_msg]. "
 			
 		if(!disguised_equipment["wear_armor"])
 			if(is_normal && !is_smart)
@@ -315,7 +329,13 @@
 	if(disguised_equipment && disguised_equipment["head"] && !(SLOT_HEAD in obscured))
 		var/item_data = disguised_equipment["head"]
 		var/plural = is_plural_item(item_data["name"])
-		var/str = "[m3] [plural ? "some" : "a"] [item_data["name"]] on [m2] head. "
+		var/str = ""
+		
+		if(item_data["is_rogueweapon"])
+			str = "[m3] [plural ? "some" : "a"] <b>[item_data["name"]]</b> on [m2] head. "
+		else
+			str = "[m3] [plural ? "some" : "a"] [item_data["name"]] on [m2] head. "
+			
 		if(is_smart)
 			// No condition for disguised items
 		else if(is_stupid)
@@ -341,7 +361,13 @@
 	if(disguised_equipment && disguised_equipment["wear_armor"] && !(SLOT_ARMOR in obscured))
 		var/item_data = disguised_equipment["wear_armor"]
 		var/plural = is_plural_item(item_data["name"])
-		var/str = "[m3] [plural ? "some" : "a"] [item_data["name"]]. "
+		var/str = ""
+		
+		if(item_data["is_rogueweapon"])
+			str = "[m3] [plural ? "some" : "a"] <b>[item_data["name"]]</b>. "
+		else
+			str = "[m3] [plural ? "some" : "a"] [item_data["name"]]. "
+			
 		if(is_smart)
 			// No condition for disguised items
 		else if (is_stupid)
@@ -357,9 +383,14 @@
 		if(disguised_equipment["s_store"] && !(SLOT_S_STORE in obscured))
 			if(is_normal || is_smart)
 				var/s_plural = FALSE
-				if(disguised_equipment["s_store"]["name"])
-					s_plural = is_plural_item(disguised_equipment["s_store"]["name"])
-				. += "[m1] carrying [s_plural ? "some" : "a"] [disguised_equipment["s_store"]["name"]] on [m2] [item_data["name"]]."
+				var/s_item_data = disguised_equipment["s_store"]
+				if(s_item_data["name"])
+					s_plural = is_plural_item(s_item_data["name"])
+				
+				if(s_item_data["is_rogueweapon"])
+					. += "[m1] carrying [s_plural ? "some" : "a"] <b>[s_item_data["name"]]</b> on [m2] [item_data["name"]]."
+				else
+					. += "[m1] carrying [s_plural ? "some" : "a"] [s_item_data["name"]] on [m2] [item_data["name"]]."
 	else if(wear_armor && !(SLOT_ARMOR in obscured) && (!disguised_equipment || !HAS_TRAIT(src, TRAIT_DISGUISE_ACTIVE)))
 		var/str = "[m3] [wear_armor.get_examine_string(user)]. "
 		if(is_smart)
@@ -394,16 +425,26 @@
 		var/item_data = disguised_equipment["cloak"]
 		var/plural = is_plural_item(item_data["name"])
 		if(is_smart)
-			var/str = "[m3] [plural ? "some" : "a"] [item_data["name"]] on [m2] shoulders. "
+			var/str = ""
+			if(item_data["is_rogueweapon"])
+				str = "[m3] [plural ? "some" : "a"] <b>[item_data["name"]]</b> on [m2] shoulders. "
+			else
+				str = "[m3] [plural ? "some" : "a"] [item_data["name"]] on [m2] shoulders. "
 			// No condition for disguised items
 			. += str
 		else if (is_stupid)
 			if(!findtext(item_data["name"], "tabard") && user.mind?.get_skill_level(/datum/skill/misc/reading))
 				. += "[m3] some kinda clothy thing on [m2] shoulders!"
 			else
-				. += "[m3] [plural ? "some" : "a"] [item_data["name"]] on [m2] shoulders."
+				if(item_data["is_rogueweapon"])
+					. += "[m3] [plural ? "some" : "a"] <b>[item_data["name"]]</b> on [m2] shoulders."
+				else
+					. += "[m3] [plural ? "some" : "a"] [item_data["name"]] on [m2] shoulders."
 		else
-			. += "[m3] [plural ? "some" : "a"] [item_data["name"]] on [m2] shoulders."
+			if(item_data["is_rogueweapon"])
+				. += "[m3] [plural ? "some" : "a"] <b>[item_data["name"]]</b> on [m2] shoulders."
+			else
+				. += "[m3] [plural ? "some" : "a"] [item_data["name"]] on [m2] shoulders."
 	else if(cloak && !(SLOT_CLOAK in obscured) && (!disguised_equipment || !HAS_TRAIT(src, TRAIT_DISGUISE_ACTIVE)))
 		if(is_smart)
 			var/str = "[m3] [cloak.get_examine_string(user)] on [m2] shoulders. "
@@ -422,11 +463,18 @@
 		var/item_data = disguised_equipment["backr"]
 		var/plural = is_plural_item(item_data["name"])
 		if(is_smart)
-			var/str = "[m3] [plural ? "some" : "a"] [item_data["name"]] on [m2] back. "
+			var/str = ""
+			if(item_data["is_rogueweapon"])
+				str = "[m3] [plural ? "some" : "a"] <b>[item_data["name"]]</b> on [m2] back. "
+			else
+				str = "[m3] [plural ? "some" : "a"] [item_data["name"]] on [m2] back. "
 			// No condition for disguised items
 			. += str
 		else
-			. += "[m3] [plural ? "some" : "a"] [item_data["name"]] on [m2] back."
+			if(item_data["is_rogueweapon"])
+				. += "[m3] [plural ? "some" : "a"] <b>[item_data["name"]]</b> on [m2] back."
+			else
+				. += "[m3] [plural ? "some" : "a"] [item_data["name"]] on [m2] back."
 	else if(backr && !(SLOT_BACK_R in obscured) && (!disguised_equipment || !HAS_TRAIT(src, TRAIT_DISGUISE_ACTIVE)))
 		if(is_smart)
 			var/str = "[m3] [backr.get_examine_string(user)] on [m2] back. "
@@ -440,11 +488,18 @@
 		var/item_data = disguised_equipment["backl"]
 		var/plural = is_plural_item(item_data["name"])
 		if(is_smart)
-			var/str = "[m3] [plural ? "some" : "a"] [item_data["name"]] on [m2] back. "
+			var/str = ""
+			if(item_data["is_rogueweapon"])
+				str = "[m3] [plural ? "some" : "a"] <b>[item_data["name"]]</b> on [m2] back. "
+			else
+				str = "[m3] [plural ? "some" : "a"] [item_data["name"]] on [m2] back. "
 			// No condition for disguised items
 			. += str
 		else
-			. += "[m3] [plural ? "some" : "a"] [item_data["name"]] on [m2] back."
+			if(item_data["is_rogueweapon"])
+				. += "[m3] [plural ? "some" : "a"] <b>[item_data["name"]]</b> on [m2] back."
+			else
+				. += "[m3] [plural ? "some" : "a"] [item_data["name"]] on [m2] back."
 	else if(backl && !(SLOT_BACK_L in obscured) && (!disguised_equipment || !HAS_TRAIT(src, TRAIT_DISGUISE_ACTIVE)))
 		if(is_smart)
 			var/str = "[m3] [backl.get_examine_string(user)] on [m2] back. "
@@ -460,11 +515,18 @@
 			if(item_data["name"])
 				plural = is_plural_item(item_data["name"])
 			if(is_smart)
-				var/str = "[m1] holding [plural ? "some" : "a"] [item_data["name"]] in [m2] [item_data["held_name"]]."
+				var/str = ""
+				if(item_data["is_rogueweapon"])
+					str = "[m1] holding [plural ? "some" : "a"] <b>[item_data["name"]]</b> in [m2] [item_data["held_name"]]."
+				else
+					str = "[m1] holding [plural ? "some" : "a"] [item_data["name"]] in [m2] [item_data["held_name"]]."
 				// No condition for disguised items
 				. += str
 			else
-				. += "[m1] holding [plural ? "some" : "a"] [item_data["name"]] in [m2] [item_data["held_name"]]."
+				if(item_data["is_rogueweapon"])
+					. += "[m1] holding [plural ? "some" : "a"] <b>[item_data["name"]]</b> in [m2] [item_data["held_name"]]."
+				else
+					. += "[m1] holding [plural ? "some" : "a"] [item_data["name"]] in [m2] [item_data["held_name"]]."
 	else if(!disguised_equipment || !HAS_TRAIT(src, TRAIT_DISGUISE_ACTIVE))
 		for(var/obj/item/I in held_items)
 			if(!(I.item_flags & ABSTRACT))
@@ -482,9 +544,15 @@
 		// Check if it's a plural item (gloves usually are)
 		var/plural = is_plural_item(item_data["name"])
 		if(plural)
-			str = "[m3] some [item_data["name"]] on [m2] hands. "
+			if(item_data["is_rogueweapon"])
+				str = "[m3] some <b>[item_data["name"]]</b> on [m2] hands. "
+			else
+				str = "[m3] some [item_data["name"]] on [m2] hands. "
 		else
-			str = "[m3] a [item_data["name"]] on [m2] hands. "
+			if(item_data["is_rogueweapon"])
+				str = "[m3] a <b>[item_data["name"]]</b> on [m2] hands. "
+			else
+				str = "[m3] a [item_data["name"]] on [m2] hands. "
 			
 		if(is_smart)
 			// No condition display for disguised items
@@ -517,11 +585,18 @@
 		var/item_data = disguised_equipment["belt"]
 		var/plural = is_plural_item(item_data["name"])
 		if(is_smart)
-			var/str = "[m3] [plural ? "some" : "a"] [item_data["name"]] about [m2] waist. "
+			var/str = ""
+			if(item_data["is_rogueweapon"])
+				str = "[m3] [plural ? "some" : "a"] <b>[item_data["name"]]</b> about [m2] waist. "
+			else
+				str = "[m3] [plural ? "some" : "a"] [item_data["name"]] about [m2] waist. "
 			// No condition for disguised items
 			. += str
 		else
-			. += "[m3] [plural ? "some" : "a"] [item_data["name"]] about [m2] waist."
+			if(item_data["is_rogueweapon"])
+				. += "[m3] [plural ? "some" : "a"] <b>[item_data["name"]]</b> about [m2] waist."
+			else
+				. += "[m3] [plural ? "some" : "a"] [item_data["name"]] about [m2] waist."
 	else if(belt && !(SLOT_BELT in obscured) && (!disguised_equipment || !HAS_TRAIT(src, TRAIT_DISGUISE_ACTIVE)))
 		if(is_smart)
 			var/str = "[m3] [belt.get_examine_string(user)] about [m2] waist. "
@@ -535,11 +610,18 @@
 		var/item_data = disguised_equipment["beltr"]
 		var/plural = is_plural_item(item_data["name"])
 		if(is_smart)
-			var/str = "[m3] [plural ? "some" : "a"] [item_data["name"]] on [m2] belt. "
+			var/str = ""
+			if(item_data["is_rogueweapon"])
+				str = "[m3] [plural ? "some" : "a"] <b>[item_data["name"]]</b> on [m2] belt. "
+			else
+				str = "[m3] [plural ? "some" : "a"] [item_data["name"]] on [m2] belt. "
 			// No condition for disguised items
 			. += str
 		else
-			. += "[m3] [plural ? "some" : "a"] [item_data["name"]] on [m2] belt."
+			if(item_data["is_rogueweapon"])
+				. += "[m3] [plural ? "some" : "a"] <b>[item_data["name"]]</b> on [m2] belt."
+			else
+				. += "[m3] [plural ? "some" : "a"] [item_data["name"]] on [m2] belt."
 	else if(beltr && !(SLOT_BELT_R in obscured) && (!disguised_equipment || !HAS_TRAIT(src, TRAIT_DISGUISE_ACTIVE)))
 		if(is_smart)
 			var/str = "[m3] [beltr.get_examine_string(user)] on [m2] belt. "
@@ -553,11 +635,18 @@
 		var/item_data = disguised_equipment["beltl"]
 		var/plural = is_plural_item(item_data["name"])
 		if(is_smart)
-			var/str = "[m3] [plural ? "some" : "a"] [item_data["name"]] on [m2] belt. "
+			var/str = ""
+			if(item_data["is_rogueweapon"])
+				str = "[m3] [plural ? "some" : "a"] <b>[item_data["name"]]</b> on [m2] belt. "
+			else
+				str = "[m3] [plural ? "some" : "a"] [item_data["name"]] on [m2] belt. "
 			// Don't show condition for disguised items
 			. += str
 		else
-			. += "[m3] [plural ? "some" : "a"] [item_data["name"]] on [m2] belt."
+			if(item_data["is_rogueweapon"])
+				. += "[m3] [plural ? "some" : "a"] <b>[item_data["name"]]</b> on [m2] belt."
+			else
+				. += "[m3] [plural ? "some" : "a"] [item_data["name"]] on [m2] belt."
 	else if(beltl && !(SLOT_BELT_L in obscured) && (!disguised_equipment || !HAS_TRAIT(src, TRAIT_DISGUISE_ACTIVE)))
 		if(is_smart)
 			var/str = "[m3] [beltl.get_examine_string(user)] on [m2] belt. "
@@ -570,7 +659,12 @@
 	if(disguised_equipment && disguised_equipment["shoes"] && !(SLOT_SHOES in obscured))
 		var/item_data = disguised_equipment["shoes"]
 		var/plural = is_plural_item(item_data["name"])
-		var/str = "[m3] [plural ? "some" : "a"] [item_data["name"]] on [m2] feet. "
+		var/str = ""
+		
+		if(item_data["is_rogueweapon"])
+			str = "[m3] [plural ? "some" : "a"] <b>[item_data["name"]]</b> on [m2] feet. "
+		else
+			str = "[m3] [plural ? "some" : "a"] [item_data["name"]] on [m2] feet. "
 			
 		if(is_smart)
 			// No condition display for disguised items
@@ -595,7 +689,13 @@
 	if(disguised_equipment && disguised_equipment["wear_mask"] && !(SLOT_WEAR_MASK in obscured))
 		var/item_data = disguised_equipment["wear_mask"]
 		var/plural = is_plural_item(item_data["name"])
-		var/str = "[m3] [plural ? "some" : "a"] [item_data["name"]] on [m2] face. "
+		var/str = ""
+		
+		if(item_data["is_rogueweapon"])
+			str = "[m3] [plural ? "some" : "a"] <b>[item_data["name"]]</b> on [m2] face. "
+		else
+			str = "[m3] [plural ? "some" : "a"] [item_data["name"]] on [m2] face. "
+		
 		if(is_smart)
 			// No condition display for disguised items
 			str += ""
@@ -616,7 +716,13 @@
 	if(disguised_equipment && disguised_equipment["mouth"] && !(SLOT_MOUTH in obscured))
 		var/item_data = disguised_equipment["mouth"]
 		var/plural = is_plural_item(item_data["name"])
-		var/str = "[m3] [plural ? "some" : "a"] [item_data["name"]] in [m2] mouth. "
+		var/str = ""
+		
+		if(item_data["is_rogueweapon"])
+			str = "[m3] [plural ? "some" : "a"] <b>[item_data["name"]]</b> in [m2] mouth. "
+		else
+			str = "[m3] [plural ? "some" : "a"] [item_data["name"]] in [m2] mouth. "
+		
 		if(is_smart)
 			// No condition display for disguised items
 			str += ""
@@ -637,7 +743,13 @@
 	if(disguised_equipment && disguised_equipment["wear_neck"] && !(SLOT_NECK in obscured))
 		var/item_data = disguised_equipment["wear_neck"]
 		var/plural = is_plural_item(item_data["name"])
-		var/str = "[m3] [plural ? "some" : "a"] [item_data["name"]] around [m2] neck. "
+		var/str = ""
+		
+		if(item_data["is_rogueweapon"])
+			str = "[m3] [plural ? "some" : "a"] <b>[item_data["name"]]</b> around [m2] neck. "
+		else
+			str = "[m3] [plural ? "some" : "a"] [item_data["name"]] around [m2] neck. "
+		
 		if(is_smart)
 			// No condition display for disguised items
 			str += ""
@@ -657,8 +769,12 @@
 	// Eyes section
 	if(!(SLOT_GLASSES in obscured))
 		if(disguised_equipment && disguised_equipment["glasses"])
-			var/plural = is_plural_item(disguised_equipment["glasses"]["name"])
-			. += "[m3] [plural ? "some" : "a"] [disguised_equipment["glasses"]["name"]] covering [m2] eyes."
+			var/item_data = disguised_equipment["glasses"]
+			var/plural = is_plural_item(item_data["name"])
+			if(item_data["is_rogueweapon"])
+				. += "[m3] [plural ? "some" : "a"] <b>[item_data["name"]]</b> covering [m2] eyes."
+			else
+				. += "[m3] [plural ? "some" : "a"] [item_data["name"]] covering [m2] eyes."
 		else if(glasses && (!disguised_equipment || !HAS_TRAIT(src, TRAIT_DISGUISE_ACTIVE)))
 			. += "[m3] [glasses.get_examine_string(user)] covering [m2] eyes."
 		else if(eye_color == BLOODCULT_EYE)
@@ -666,8 +782,12 @@
 
 	// Ears section
 	if(disguised_equipment && disguised_equipment["ears"] && !(SLOT_HEAD in obscured))
-		var/plural = is_plural_item(disguised_equipment["ears"]["name"])
-		. += "[m3] [plural ? "some" : "a"] [disguised_equipment["ears"]["name"]] on [m2] ears."
+		var/item_data = disguised_equipment["ears"]
+		var/plural = is_plural_item(item_data["name"])
+		if(item_data["is_rogueweapon"])
+			. += "[m3] [plural ? "some" : "a"] <b>[item_data["name"]]</b> on [m2] ears."
+		else
+			. += "[m3] [plural ? "some" : "a"] [item_data["name"]] on [m2] ears."
 	else if(ears && !(SLOT_HEAD in obscured) && (!disguised_equipment || !HAS_TRAIT(src, TRAIT_DISGUISE_ACTIVE)))
 		. += "[m3] [ears.get_examine_string(user)] on [m2] ears."
 
@@ -678,7 +798,10 @@
 		if(is_stupid)
 			. += "[m3] some sort of ring!"
 		else
-			. += "[m3] [plural ? "some" : "a"] [item_data["name"]] on [m2] hands."
+			if(item_data["is_rogueweapon"])
+				. += "[m3] [plural ? "some" : "a"] <b>[item_data["name"]]</b> on [m2] hands."
+			else
+				. += "[m3] [plural ? "some" : "a"] [item_data["name"]] on [m2] hands."
 	else if(wear_ring && !(SLOT_RING in obscured) && (!disguised_equipment || !HAS_TRAIT(src, TRAIT_DISGUISE_ACTIVE)))
 		if(is_stupid)
 			. += "[m3] some sort of ring!"
@@ -698,7 +821,13 @@
 	if(disguised_equipment && disguised_equipment["wear_wrists"] && !(SLOT_WRISTS in obscured))
 		var/item_data = disguised_equipment["wear_wrists"]
 		var/plural = is_plural_item(item_data["name"])
-		var/str = "[m3] [plural ? "some" : "a"] [item_data["name"]] on [m2] wrists."
+		var/str = ""
+		
+		if(item_data["is_rogueweapon"])
+			str = "[m3] [plural ? "some" : "a"] <b>[item_data["name"]]</b> on [m2] wrists."
+		else
+			str = "[m3] [plural ? "some" : "a"] [item_data["name"]] on [m2] wrists."
+		
 		if(is_smart)
 			// Don't show condition for disguised items
 			str += ""
@@ -956,7 +1085,9 @@
 	if((user != src) && isliving(user))
 		var/mob/living/L = user
 		var/final_str = STASTR
-		if(HAS_TRAIT(src, TRAIT_DECEIVING_MEEKNESS))
+		if(HAS_TRAIT(src, TRAIT_FAKE_STRENGTH))
+			final_str = fake_strength // Use the fake strength value for examination
+		else if(HAS_TRAIT(src, TRAIT_DECEIVING_MEEKNESS))
 			final_str = L.STASTR - rand(1,2)
 		var/strength_diff = final_str - L.STASTR
 		switch(strength_diff)
@@ -1061,24 +1192,43 @@
 	if(HAS_TRAIT(examiner, TRAIT_HERETIC_SEER))
 		seer = TRUE
 	
-	if(HAS_TRAIT(src, TRAIT_COMMIE))
+	// Check both real traits and fake traits
+	var/has_commie = HAS_TRAIT(src, TRAIT_COMMIE)
+	var/has_cabal = HAS_TRAIT(src, TRAIT_CABAL)
+	var/has_horde = HAS_TRAIT(src, TRAIT_HORDE)
+	var/has_depraved = HAS_TRAIT(src, TRAIT_DEPRAVED)
+	
+	// Check fake traits if we have the HAS_FAKE_TRAITS trait
+	if(HAS_TRAIT(src, TRAIT_HAS_FAKE_TRAITS))
+		var/datum/component/disguised_species/DS = GetComponent(/datum/component/disguised_species)
+		if(DS && DS.fake_traits)
+			if(TRAIT_COMMIE in DS.fake_traits)
+				has_commie = TRUE
+			if(TRAIT_CABAL in DS.fake_traits)
+				has_cabal = TRUE
+			if(TRAIT_HORDE in DS.fake_traits)
+				has_horde = TRUE
+			if(TRAIT_DEPRAVED in DS.fake_traits)
+				has_depraved = TRUE
+	
+	if(has_commie)
 		if(seer)
 			heretic_text += "Matthiosan."
 			if(HAS_TRAIT(examiner, TRAIT_COMMIE))
 				heretic_text += " To share with. To take with. For all, and us."
 		else if(HAS_TRAIT(examiner, TRAIT_COMMIE))
 			heretic_text += "Comrade!"
-	else if((HAS_TRAIT(src, TRAIT_CABAL)))
+	else if(has_cabal)
 		if(seer)
 			heretic_text += "A member of Zizo's cabal."
 			if(HAS_TRAIT(examiner, TRAIT_CABAL))
 				heretic_text += " May their ambitions not interfere with mine."
-	else if((HAS_TRAIT(src, TRAIT_HORDE)))
+	else if(has_horde)
 		if(seer)
 			heretic_text += "Hardened by Graggar's Rituals."
 			if(HAS_TRAIT(examiner, TRAIT_HORDE))
 				heretic_text += " Mine were a glorious memory."
-	else if((HAS_TRAIT(src, TRAIT_DEPRAVED)))
+	else if(has_depraved)
 		if(seer)
 			heretic_text += "Baotha's Touched."
 			if(HAS_TRAIT(examiner, TRAIT_DEPRAVED))
@@ -1106,7 +1256,16 @@
 // Used for Inquisition tags
 /mob/living/proc/get_inquisition_text(mob/examiner)
 	var/inquisition_text
-	if(HAS_TRAIT(src, TRAIT_INQUISITION) && HAS_TRAIT(examiner, TRAIT_INQUISITION))
+	// Check both real traits and fake traits
+	var/has_inquisition = HAS_TRAIT(src, TRAIT_INQUISITION)
+	
+	// Check fake traits if we have the HAS_FAKE_TRAITS trait
+	if(HAS_TRAIT(src, TRAIT_HAS_FAKE_TRAITS))
+		var/datum/component/disguised_species/DS = GetComponent(/datum/component/disguised_species)
+		if(DS && DS.fake_traits && (TRAIT_INQUISITION in DS.fake_traits))
+			has_inquisition = TRUE
+	
+	if(has_inquisition && HAS_TRAIT(examiner, TRAIT_INQUISITION))
 		inquisition_text += "Fellow Member of the Inquisition"
 
 	return inquisition_text
