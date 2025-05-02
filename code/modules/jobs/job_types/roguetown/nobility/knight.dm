@@ -293,7 +293,10 @@
 	if(H.wear_neck)
 		H.wear_neck.add_atom_colour("#414143", FIXED_COLOUR_PRIORITY)
 		H.update_inv_neck()
-	
+	if(H.wear_shirt)
+		H.wear_shirt.add_atom_colour("#414143", FIXED_COLOUR_PRIORITY)
+		H.update_inv_shirt()
+
 	// Force a full update of the mob's appearance
 	H.regenerate_icons()
 
