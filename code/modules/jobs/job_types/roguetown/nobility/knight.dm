@@ -232,6 +232,36 @@
 	id = /obj/item/scomstone/bad/garrison
 	armor = /obj/item/clothing/suit/roguetown/armor/plate
 
+// This function is called after the outfit is equipped, for both players and mannequins
+/datum/outfit/job/roguetown/knight/blackguard/post_equip(mob/living/carbon/human/H, visualsOnly = FALSE)
+	..()
+	
+	// Apply black coloring to all the armor pieces
+	if(H.wear_armor)
+		H.wear_armor.add_atom_colour("#414143", FIXED_COLOUR_PRIORITY)
+		H.update_inv_armor()
+	if(H.wear_pants)
+		H.wear_pants.add_atom_colour("#414143", FIXED_COLOUR_PRIORITY)
+		H.update_inv_pants()
+	if(H.shoes)
+		H.shoes.add_atom_colour("#414143", FIXED_COLOUR_PRIORITY)
+		H.update_inv_shoes()
+	if(H.gloves)
+		H.gloves.add_atom_colour("#414143", FIXED_COLOUR_PRIORITY)
+		H.update_inv_gloves()
+	if(H.wear_wrists)
+		H.wear_wrists.add_atom_colour("#414143", FIXED_COLOUR_PRIORITY)
+		H.update_inv_wrists()
+	if(H.wear_neck)
+		H.wear_neck.add_atom_colour("#414143", FIXED_COLOUR_PRIORITY)
+		H.update_inv_neck()
+	if(H.wear_shirt)
+		H.wear_shirt.add_atom_colour("#414143", FIXED_COLOUR_PRIORITY)
+		H.update_inv_shirt()
+	
+	// Force a full update of the mob's appearance
+	H.regenerate_icons()
+
 /datum/outfit/job/roguetown/knight/blackguard/pre_equip(mob/living/carbon/human/H)
 	..()
 	if(!H || !H.mind)
@@ -261,44 +291,8 @@
 	// Basic backpack contents
 	backpack_contents = list(/obj/item/rogueweapon/huntingknife/idagger/steel/special = 1, /obj/item/rope/chain = 1, /obj/item/storage/keyring/royal = 1)
 	
-	// Handle armor coloring now
-	addtimer(CALLBACK(src, PROC_REF(color_armor_black), H), 2)
-	
 	// Handle weapon choices directly in pre_equip
 	addtimer(CALLBACK(src, PROC_REF(give_weapon_choices), H), 5)
-
-/datum/outfit/job/roguetown/knight/blackguard/proc/color_armor_black(mob/living/carbon/human/H)
-	if(!H)
-		return
-		
-	// Apply black coloring
-	if(H.head)
-		H.head.add_atom_colour("#414143", FIXED_COLOUR_PRIORITY)
-		H.update_inv_head()
-	if(H.wear_armor)
-		H.wear_armor.add_atom_colour("#414143", FIXED_COLOUR_PRIORITY)
-		H.update_inv_armor()
-	if(H.wear_pants)
-		H.wear_pants.add_atom_colour("#414143", FIXED_COLOUR_PRIORITY)
-		H.update_inv_pants()
-	if(H.shoes)
-		H.shoes.add_atom_colour("#414143", FIXED_COLOUR_PRIORITY)
-		H.update_inv_shoes()
-	if(H.gloves)
-		H.gloves.add_atom_colour("#414143", FIXED_COLOUR_PRIORITY)
-		H.update_inv_gloves()
-	if(H.wear_wrists)
-		H.wear_wrists.add_atom_colour("#414143", FIXED_COLOUR_PRIORITY)
-		H.update_inv_wrists()
-	if(H.wear_neck)
-		H.wear_neck.add_atom_colour("#414143", FIXED_COLOUR_PRIORITY)
-		H.update_inv_neck()
-	if(H.wear_shirt)
-		H.wear_shirt.add_atom_colour("#414143", FIXED_COLOUR_PRIORITY)
-		H.update_inv_shirt()
-
-	// Force a full update of the mob's appearance
-	H.regenerate_icons()
 
 /datum/outfit/job/roguetown/knight/blackguard/proc/give_weapon_choices(mob/living/carbon/human/H)
 	if(!H)
