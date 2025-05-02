@@ -298,13 +298,7 @@
 	cloak = /obj/item/clothing/cloak/psydontabard
 	shirt = /obj/item/clothing/suit/roguetown/armor/chainmail
 	pants = /obj/item/clothing/under/roguetown/chainlegs
-
-	var/armors = list(
-		"Psydonite Hauberk"		= /obj/item/clothing/suit/roguetown/armor/chainmail/hauberk/ornate,
-		"Coat of Plates"	= /obj/item/clothing/suit/roguetown/armor/brigandine/coatplates
-	)
-	var/armorchoice = input("Choose your armor.", "TAKE UP ARMOR") as anything in armors
-	armor = armors[armorchoice]
+	armor = /obj/item/clothing/suit/roguetown/armor/plate/fluted/ornate
 
 	backpack_contents = list(/obj/item/rogueweapon/huntingknife/idagger/steel/special = 1, /obj/item/rope/chain = 1, /obj/item/storage/keyring/royal = 1)
 
