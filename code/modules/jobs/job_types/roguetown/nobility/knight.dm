@@ -316,7 +316,7 @@
 	
 	if(H.client)
 		// Interactive selection for players with clients attached
-		var/weapons = list("Great Axe", "Zweihander", "Morningstar")
+		var/weapons = list("Great Axe", "Zweihander", "Grand Mace")
 		weapon_choice = input(H, "Choose your weapon.", "TAKE UP ARMS") as null|anything in weapons
 		
 		// Helmet selection
@@ -342,13 +342,13 @@
 	
 	switch(weapon_choice)
 		if("Great Axe")
-			weapon_item = new /obj/item/rogueweapon/stoneaxe/battle(get_turf(H))
+			weapon_item = new /obj/item/rogueweapon/greataxe/steel/doublehead(get_turf(H))
 			backpack_item = new /obj/item/gwstrap(get_turf(H))
 		if("Zweihander")
 			weapon_item = new /obj/item/rogueweapon/greatsword/zwei(get_turf(H))
 			backpack_item = new /obj/item/gwstrap(get_turf(H))
-		if("Morningstar")
-			weapon_item = new /obj/item/rogueweapon/mace/steel/morningstar(get_turf(H))
+		if("Grand Mace")
+			weapon_item = new /obj/item/rogueweapon/mace/goden/steel(get_turf(H))
 			backpack_item = null
 	
 	// Process helmet choice
@@ -402,7 +402,7 @@
 	armor = /obj/item/clothing/suit/roguetown/armor/plate/fluted/ornate
 	id = /obj/item/scomstone/bad/garrison
 	neck = /obj/item/clothing/neck/roguetown/bevor
-	belt = /obj/item/storage/belt/rogue/leather/steel
+	belt = /obj/item/storage/belt/rogue/leather/black
 	backr = /obj/item/storage/backpack/rogue/satchel/black
 
 /datum/outfit/job/roguetown/knight/templar/pre_equip(mob/living/carbon/human/H)
