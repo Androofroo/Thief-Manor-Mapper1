@@ -1082,6 +1082,7 @@
 #include "code\modules\antagonists\traitor\datum_traitor.dm"
 #include "code\modules\antagonists\valentines\heartbreaker.dm"
 #include "code\modules\antagonists\valentines\valentine.dm"
+#include "code\modules\antagonists\verbs\antag_verbs.dm"
 #include "code\modules\atmospherics\environmental\LINDA_fire.dm"
 #include "code\modules\awaymissions\corpse.dm"
 #include "code\modules\awaymissions\zlevel.dm"

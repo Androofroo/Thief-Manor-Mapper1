@@ -100,6 +100,9 @@ GLOBAL_LIST_EMPTY(antagonists)
 			replace_banned_player()
 		else if(owner.current.client?.holder && (CONFIG_GET(flag/auto_deadmin_antagonists) || owner.current.client.prefs?.toggles & DEADMIN_ANTAGONIST))
 			owner.current.client.holder.auto_deadmin()
+		
+		// Add the remember objectives verb to antagonists
+		owner.current.verbs += /mob/proc/remember_objectives
 
 /datum/antagonist/proc/is_banned(mob/M)
 	if(!M)
@@ -127,6 +130,12 @@ GLOBAL_LIST_EMPTY(antagonists)
 		LAZYREMOVE(owner.antag_datums, src)
 		if(!silent && owner.current)
 			farewell()
+		
+		// Check if the mob still has any other antagonist datums
+		if(owner.current && (!owner.antag_datums || !owner.antag_datums.len))
+			// If not, remove the remember objectives verb
+			owner.current.verbs -= /mob/proc/remember_objectives
+	
 	var/datum/team/team = get_team()
 	if(team)
 		team.remove_member(owner)

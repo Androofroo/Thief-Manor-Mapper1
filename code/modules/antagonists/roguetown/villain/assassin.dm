@@ -70,6 +70,9 @@
 /datum/antagonist/assassin/proc/equip_assassin()
 	var/mob/living/carbon/human/H = owner.current
 	
+	// Cancel advclass setup if active
+	H.advsetup = 0
+	
 	// Make the assassin unknown to others and vice versa
 	owner.unknow_all_people()
 	for(var/datum/mind/MF in get_minds())
@@ -81,17 +84,19 @@
 		owner.person_knows_me(MF)
 	
 	// Set assassination-related skills - direct assignment like the bandit approach
-	H.mind.adjust_skillrank(/datum/skill/misc/sneaking, 4, TRUE)
-	H.mind.adjust_skillrank(/datum/skill/misc/climbing, 3, TRUE)
-	H.mind.adjust_skillrank(/datum/skill/misc/stealing, 3, TRUE)
-	H.mind.adjust_skillrank(/datum/skill/misc/lockpicking, 3, TRUE)
+	H.mind.adjust_skillrank(/datum/skill/misc/sneaking, 5, TRUE)
+	H.mind.adjust_skillrank(/datum/skill/misc/climbing, 4, TRUE)
+	H.mind.adjust_skillrank(/datum/skill/misc/stealing, 4, TRUE)
+	H.mind.adjust_skillrank(/datum/skill/misc/lockpicking, 4, TRUE)
 	H.mind.adjust_skillrank(/datum/skill/combat/knives, 5, TRUE)
 	H.mind.adjust_skillrank(/datum/skill/combat/swords, 3, TRUE)
-	H.mind.adjust_skillrank(/datum/skill/combat/unarmed, 3, TRUE)
+	H.mind.adjust_skillrank(/datum/skill/combat/unarmed, 4, TRUE)
 	H.mind.adjust_skillrank(/datum/skill/combat/maces, 2, TRUE)
 	H.mind.adjust_skillrank(/datum/skill/misc/athletics, 4, TRUE)
-	H.mind.adjust_skillrank(/datum/skill/misc/reading, 1, TRUE)
+	H.mind.adjust_skillrank(/datum/skill/misc/reading, 2, TRUE)
 	H.mind.adjust_skillrank(/datum/skill/craft/alchemy, 3, TRUE)
+	H.mind.adjust_skillrank(/datum/skill/craft/traps, 4, TRUE)
+	H.mind.adjust_skillrank(/datum/skill/misc/tracking, 4, TRUE)
 	
 	// Set assassin stats
 	H.change_stat("dexterity", 4)
@@ -100,12 +105,44 @@
 	H.change_stat("speed", 3)
 	H.change_stat("strength", 2)
 	
+	// Outfit the assassin with gear similar to thief but with assassin-specific items
+	H.equipOutfit(/datum/outfit/job/roguetown/assassin)
+	
 	// Add special abilities
 	H.mind.AddSpell(new /obj/effect/proc_holder/spell/self/smoke_bomb)
 	H.mind.AddSpell(new /obj/effect/proc_holder/spell/self/snuff_light)
 	H.mind.AddSpell(new /obj/effect/proc_holder/spell/self/magical_disguise)
+	
+	// Add traits
+	ADD_TRAIT(H, TRAIT_DODGEEXPERT, TRAIT_GENERIC)
+	
+	// Add combat music
+	H.cmode_music = 'sound/music/combat_rogue.ogg'
 
 	return TRUE
+
+// Assassin outfit definition
+/datum/outfit/job/roguetown/assassin
+	name = "Assassin"
+	
+	// Clothing
+	pants = /obj/item/clothing/under/roguetown/trou/leather
+	armor = /obj/item/clothing/suit/roguetown/armor/leather
+	cloak = /obj/item/clothing/cloak/raincloak/mortus
+	shirt = /obj/item/clothing/suit/roguetown/armor/gambeson
+	backl = /obj/item/storage/backpack/rogue/satchel
+	belt = /obj/item/storage/belt/rogue/leather/knifebelt/iron
+	gloves = /obj/item/clothing/gloves/roguetown/fingerless
+	shoes = /obj/item/clothing/shoes/roguetown/boots
+	neck = /obj/item/storage/belt/rogue/pouch/coins/poor
+	wrists = /obj/item/clothing/wrists/roguetown/bracers/leather
+	beltl = /obj/item/lockpickring/mundane
+	beltr = /obj/item/rogueweapon/huntingknife/idagger/steel
+	
+	// Backpack contents
+	backpack_contents = list(
+		/obj/item/reagent_containers/glass/bottle/rogue/strongpoison = 2,
+	)
 
 /datum/antagonist/assassin/roundend_report()
 	if(owner?.current)
