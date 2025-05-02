@@ -96,8 +96,8 @@
 	H.verbs |= /mob/proc/haltyell
 
 	H.change_stat("strength", 2)
-	H.change_stat("constitution", 3)
-	H.change_stat("endurance", 3)
+	H.change_stat("constitution", 4)
+	H.change_stat("endurance", 4)
 	H.change_stat("intelligence", 1)
 
 	// Basic backpack contents
@@ -283,8 +283,8 @@
 	H.dna.species.soundpack_m = new /datum/voicepack/male/knight()
 	H.verbs |= /mob/proc/haltyell
 
-	H.change_stat("strength", 3)
-	H.change_stat("constitution", 2)
+	H.change_stat("strength", 4)
+	H.change_stat("constitution", 3)
 	H.change_stat("endurance", 2)
 	H.change_stat("intelligence", 1)
 
@@ -426,7 +426,7 @@
 	H.dna.species.soundpack_m = new /datum/voicepack/male/knight()
 	H.verbs |= /mob/proc/haltyell
 
-	H.change_stat("strength", 2)
+	H.change_stat("strength", 3)
 	H.change_stat("constitution", 2)
 	H.change_stat("endurance", 2)
 	H.change_stat("intelligence", 2)
@@ -532,7 +532,7 @@
 	H.dna.species.soundpack_m = new /datum/voicepack/male/knight()
 	H.verbs |= /mob/proc/haltyell
 
-	H.change_stat("strength", 2)
+	H.change_stat("strength", 3)
 	H.change_stat("endurance", 2)
 	H.change_stat("constitution", 3)
 	H.change_stat("intelligence", 2)
