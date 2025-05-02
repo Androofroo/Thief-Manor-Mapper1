@@ -28,9 +28,6 @@
 	. = ..()
 	if(ishuman(L))
 		var/mob/living/carbon/human/H = L
-		H.advsetup = 1
-		H.invisibility = INVISIBILITY_MAXIMUM
-		H.become_blind("advsetup")
 		if(istype(H.cloak, /obj/item/clothing/cloak/stabard/surcoat/guard))
 			var/obj/item/clothing/S = H.cloak
 			var/index = findtext(H.real_name, " ")
@@ -58,8 +55,18 @@
 
 	category_tags = list(CTAG_MENATARMS)
 
+/datum/outfit/job/roguetown/manorguard/footsman
+	shirt = /obj/item/clothing/suit/roguetown/armor/gambeson/lord
+	armor = /obj/item/clothing/suit/roguetown/armor/plate/scale
+	head = /obj/item/clothing/head/roguetown/helmet/sallet
+	pants = /obj/item/clothing/under/roguetown/chainlegs
+	neck = /obj/item/clothing/neck/roguetown/gorget
+
 /datum/outfit/job/roguetown/manorguard/footsman/pre_equip(mob/living/carbon/human/H)
 	..()
+	if(!H || !H.mind)
+		return
+		
 	H.mind.adjust_skillrank(/datum/skill/combat/polearms, 4, TRUE)
 	H.mind.adjust_skillrank(/datum/skill/combat/swords, 4, TRUE)
 	H.mind.adjust_skillrank(/datum/skill/combat/maces, 4, TRUE)
@@ -85,29 +92,64 @@
 	H.change_stat("constitution", 1)
 	H.change_stat("endurance", 1)
 
-	shirt = /obj/item/clothing/suit/roguetown/armor/gambeson/lord		//Bit worse shirt protection than the archer
-	armor = /obj/item/clothing/suit/roguetown/armor/plate/scale			//Makes up for worse shirt protection with kinda better armor protection
-	head = /obj/item/clothing/head/roguetown/helmet/sallet				//Better protection than kettle archer has
-	pants = /obj/item/clothing/under/roguetown/chainlegs
-	neck = /obj/item/clothing/neck/roguetown/gorget
+	// Handle weapon choices
+	addtimer(CALLBACK(src, PROC_REF(give_weapon_choices), H), 5)
 
-	H.adjust_blindness(-3)
-	var/weapons = list("Warhammer & Shield","Axe & Shield","Halberd")
-	var/weapon_choice = input("Choose your weapon.", "TAKE UP ARMS") as anything in weapons
-	H.set_blindness(0)
+	backpack_contents = list(/obj/item/rogueweapon/huntingknife/idagger/steel/special = 1, /obj/item/rope/chain = 1, /obj/item/storage/keyring/guardcastle = 1)
+	H.verbs |= /mob/proc/haltyell
+
+/datum/outfit/job/roguetown/manorguard/footsman/proc/give_weapon_choices(mob/living/carbon/human/H)
+	if(!H)
+		return
+	
+	var/weapon_choice
+	
+	if(H.client)
+		H.adjust_blindness(-3)
+		var/weapons = list("Warhammer & Shield","Axe & Shield","Halberd")
+		weapon_choice = input(H, "Choose your weapon.", "TAKE UP ARMS") as null|anything in weapons
+		H.set_blindness(0)
+	else
+		// For roundstart guards with no client attached yet, use random selection
+		var/list/weapons = list("Warhammer & Shield","Axe & Shield","Halberd")
+		weapon_choice = pick(weapons)
+	
+	if(!weapon_choice)
+		weapon_choice = "Warhammer & Shield" // Default if they cancel
+	
+	// Equip chosen weapon
 	switch(weapon_choice)
 		if("Warhammer & Shield")
-			beltr = /obj/item/rogueweapon/mace/warhammer
-			backl = /obj/item/rogueweapon/shield/wood
+			var/obj/item/weapon_item = new /obj/item/rogueweapon/mace/warhammer(get_turf(H))
+			var/obj/item/shield_item = new /obj/item/rogueweapon/shield/wood(get_turf(H))
+			
+			if(H.equip_to_slot_if_possible(weapon_item, SLOT_BELT_R))
+				to_chat(H, "<span class='notice'>You arm yourself with \a [weapon_item].</span>")
+			
+			if(H.equip_to_slot_if_possible(shield_item, SLOT_BACK_L))
+				to_chat(H, "<span class='notice'>You take up \a [shield_item].</span>")
+		
 		if("Axe & Shield")
-			beltr = /obj/item/rogueweapon/stoneaxe/woodcut/steel
-			backl = /obj/item/rogueweapon/shield/wood
+			var/obj/item/weapon_item = new /obj/item/rogueweapon/stoneaxe/woodcut/steel(get_turf(H))
+			var/obj/item/shield_item = new /obj/item/rogueweapon/shield/wood(get_turf(H))
+			
+			if(H.equip_to_slot_if_possible(weapon_item, SLOT_BELT_R))
+				to_chat(H, "<span class='notice'>You arm yourself with \a [weapon_item].</span>")
+			
+			if(H.equip_to_slot_if_possible(shield_item, SLOT_BACK_L))
+				to_chat(H, "<span class='notice'>You take up \a [shield_item].</span>")
+		
 		if("Halberd")
-			r_hand = /obj/item/rogueweapon/halberd
-			backl = /obj/item/gwstrap
-
-	backpack_contents = list(/obj/item/rogueweapon/huntingknife/idagger/steel/special = 1, /obj/item/rope/chain = 1, /obj/item/storage/keyring/guardcastle)
-	H.verbs |= /mob/proc/haltyell
+			var/obj/item/weapon_item = new /obj/item/rogueweapon/halberd(get_turf(H))
+			var/obj/item/gwstrap_item = new /obj/item/gwstrap(get_turf(H))
+			
+			if(H.put_in_r_hand(weapon_item) || H.put_in_l_hand(weapon_item))
+				to_chat(H, "<span class='notice'>You arm yourself with \a [weapon_item].</span>")
+			
+			if(H.equip_to_slot_if_possible(gwstrap_item, SLOT_BACK_L))
+				to_chat(H, "<span class='notice'>You take up \a [gwstrap_item].</span>")
+	
+	to_chat(H, "<span class='boldnotice'>Welcome, [H.real_name], valiant Footman of the Manor!</span>")
 
 // Ranged weapons and daggers on the side - lighter armor, but fleet!
 /datum/advclass/manorguard/skirmisher
@@ -117,8 +159,18 @@
 
 	category_tags = list(CTAG_MENATARMS)
 
+/datum/outfit/job/roguetown/manorguard/skirmisher
+	shirt = /obj/item/clothing/suit/roguetown/armor/gambeson/lord
+	armor = /obj/item/clothing/suit/roguetown/armor/leather/studded
+	head = /obj/item/clothing/head/roguetown/helmet/kettle
+	neck = /obj/item/clothing/neck/roguetown/chaincoif
+	pants = /obj/item/clothing/under/roguetown/trou/leather
+
 /datum/outfit/job/roguetown/manorguard/skirmisher/pre_equip(mob/living/carbon/human/H)
 	..()
+	if(!H || !H.mind)
+		return
+		
 	H.mind.adjust_skillrank(/datum/skill/combat/swords, 4, TRUE)
 	H.mind.adjust_skillrank(/datum/skill/combat/knives, 4, TRUE)
 	H.mind.adjust_skillrank(/datum/skill/combat/maces, 2, TRUE) 		// Still have a cugel.
@@ -142,30 +194,64 @@
 	H.change_stat("perception", 2)
 	H.change_stat("speed", 2)
 
-	shirt = /obj/item/clothing/suit/roguetown/armor/gambeson/lord			// Cant wear chainmail anymoooree
-	armor = /obj/item/clothing/suit/roguetown/armor/leather/studded		//Helps against arrows; makes sense for a ranged-type role.
-	head = /obj/item/clothing/head/roguetown/helmet/kettle
-	neck = /obj/item/clothing/neck/roguetown/chaincoif
-	backl = /obj/item/gun/ballistic/revolver/grenadelauncher/crossbow
-	pants = /obj/item/clothing/under/roguetown/trou/leather
+	// Handle weapon choices
+	addtimer(CALLBACK(src, PROC_REF(give_weapon_choices), H), 5)
 
-	H.adjust_blindness(-3)
-	var/weapons = list("Crossbow","Longbow","Sling")
-	var/weapon_choice = input("Choose your weapon.", "TAKE UP ARMS") as anything in weapons
-	H.set_blindness(0)
+	backpack_contents = list(/obj/item/rogueweapon/huntingknife/idagger/steel/special = 1, /obj/item/rope/chain = 1, /obj/item/storage/keyring/guardcastle = 1)
+	H.verbs |= /mob/proc/haltyell
+
+/datum/outfit/job/roguetown/manorguard/skirmisher/proc/give_weapon_choices(mob/living/carbon/human/H)
+	if(!H)
+		return
+	
+	var/weapon_choice
+	
+	if(H.client)
+		H.adjust_blindness(-3)
+		var/weapons = list("Crossbow","Longbow","Sling")
+		weapon_choice = input(H, "Choose your weapon.", "TAKE UP ARMS") as null|anything in weapons
+		H.set_blindness(0)
+	else
+		// For roundstart guards with no client attached yet, use random selection
+		var/list/weapons = list("Crossbow","Longbow","Sling")
+		weapon_choice = pick(weapons)
+	
+	if(!weapon_choice)
+		weapon_choice = "Crossbow" // Default if they cancel
+	
+	// Equip chosen weapon
 	switch(weapon_choice)
 		if("Crossbow")
-			beltr = /obj/item/quiver/bolts
-			backl = /obj/item/gun/ballistic/revolver/grenadelauncher/crossbow
-		if("Longbow") // They can head down to the armory to sideshift into one of the other bows.
-			beltr = /obj/item/quiver/arrows
-			backl = /obj/item/gun/ballistic/revolver/grenadelauncher/bow/longbow
+			var/obj/item/quiver_item = new /obj/item/quiver/bolts(get_turf(H))
+			var/obj/item/weapon_item = new /obj/item/gun/ballistic/revolver/grenadelauncher/crossbow(get_turf(H))
+			
+			if(H.equip_to_slot_if_possible(quiver_item, SLOT_BELT_R))
+				to_chat(H, "<span class='notice'>You take up \a [quiver_item].</span>")
+			
+			if(H.equip_to_slot_if_possible(weapon_item, SLOT_BACK_L))
+				to_chat(H, "<span class='notice'>You arm yourself with \a [weapon_item].</span>")
+		
+		if("Longbow")
+			var/obj/item/quiver_item = new /obj/item/quiver/arrows(get_turf(H))
+			var/obj/item/weapon_item = new /obj/item/gun/ballistic/revolver/grenadelauncher/bow/longbow(get_turf(H))
+			
+			if(H.equip_to_slot_if_possible(quiver_item, SLOT_BELT_R))
+				to_chat(H, "<span class='notice'>You take up \a [quiver_item].</span>")
+			
+			if(H.equip_to_slot_if_possible(weapon_item, SLOT_BACK_L))
+				to_chat(H, "<span class='notice'>You arm yourself with \a [weapon_item].</span>")
+		
 		if("Sling")
-			beltr = /obj/item/quiver/sling/iron
-			r_hand = /obj/item/gun/ballistic/revolver/grenadelauncher/sling // Both are belt slots and it's not worth setting where the cugel goes for everyone else, sad.
-
-	backpack_contents = list(/obj/item/rogueweapon/huntingknife/idagger/steel/special = 1, /obj/item/rope/chain = 1, /obj/item/storage/keyring/guardcastle)
-	H.verbs |= /mob/proc/haltyell
+			var/obj/item/quiver_item = new /obj/item/quiver/sling/iron(get_turf(H))
+			var/obj/item/weapon_item = new /obj/item/gun/ballistic/revolver/grenadelauncher/sling(get_turf(H))
+			
+			if(H.equip_to_slot_if_possible(quiver_item, SLOT_BELT_R))
+				to_chat(H, "<span class='notice'>You take up \a [quiver_item].</span>")
+			
+			if(H.put_in_r_hand(weapon_item) || H.put_in_l_hand(weapon_item))
+				to_chat(H, "<span class='notice'>You arm yourself with \a [weapon_item].</span>")
+	
+	to_chat(H, "<span class='boldnotice'>Welcome, [H.real_name], skilled Skirmisher of the Manor!</span>")
 
 /datum/advclass/manorguard/cavalry
 	name = "Cavalryman"
@@ -174,8 +260,18 @@
 
 	category_tags = list(CTAG_MENATARMS)
 
+/datum/outfit/job/roguetown/manorguard/cavalry
+	shirt = /obj/item/clothing/suit/roguetown/armor/gambeson/lord
+	armor = /obj/item/clothing/suit/roguetown/armor/plate/scale
+	head = /obj/item/clothing/head/roguetown/helmet/winged
+	pants = /obj/item/clothing/under/roguetown/chainlegs
+	neck = /obj/item/clothing/neck/roguetown/gorget
+
 /datum/outfit/job/roguetown/manorguard/cavalry/pre_equip(mob/living/carbon/human/H)
 	..()
+	if(!H || !H.mind)
+		return
+		
 	H.mind.adjust_skillrank(/datum/skill/combat/polearms, 4, TRUE)
 	H.mind.adjust_skillrank(/datum/skill/combat/swords, 4, TRUE)
 	H.mind.adjust_skillrank(/datum/skill/combat/knives, 2, TRUE)
@@ -201,23 +297,51 @@
 	H.change_stat("endurance", 2) // Your name is speed, and speed is running.
 	H.change_stat("intelligence", 1) // No strength to account for the nominally better weapons. We'll see.
 
-	shirt = /obj/item/clothing/suit/roguetown/armor/gambeson/lord		//Bit worse shirt protection than the archer -- as foot soldier.
-	armor = /obj/item/clothing/suit/roguetown/armor/plate/scale			//Makes up for worse shirt protection with kinda better armor protection
-	head = /obj/item/clothing/head/roguetown/helmet/winged				//Same as the sallet, but fleet!
-	pants = /obj/item/clothing/under/roguetown/chainlegs
-	neck = /obj/item/clothing/neck/roguetown/gorget
+	// Handle weapon choices
+	addtimer(CALLBACK(src, PROC_REF(give_weapon_choices), H), 5)
 
-	H.adjust_blindness(-3)
-	var/weapons = list("Bardiche","Sword & Shield")
-	var/weapon_choice = input("Choose your weapon.", "TAKE UP ARMS") as anything in weapons
-	H.set_blindness(0)
+	backpack_contents = list(/obj/item/rogueweapon/huntingknife/idagger/steel/special = 1, /obj/item/rope/chain = 1, /obj/item/storage/keyring/guardcastle = 1)
+	H.verbs |= /mob/proc/haltyell
+
+/datum/outfit/job/roguetown/manorguard/cavalry/proc/give_weapon_choices(mob/living/carbon/human/H)
+	if(!H)
+		return
+	
+	var/weapon_choice
+	
+	if(H.client)
+		H.adjust_blindness(-3)
+		var/weapons = list("Bardiche","Sword & Shield")
+		weapon_choice = input(H, "Choose your weapon.", "TAKE UP ARMS") as null|anything in weapons
+		H.set_blindness(0)
+	else
+		// For roundstart guards with no client attached yet, use random selection
+		var/list/weapons = list("Bardiche","Sword & Shield")
+		weapon_choice = pick(weapons)
+	
+	if(!weapon_choice)
+		weapon_choice = "Bardiche" // Default if they cancel
+	
+	// Equip chosen weapon
 	switch(weapon_choice)
 		if("Bardiche")
-			r_hand = /obj/item/rogueweapon/halberd/bardiche
-			backl = /obj/item/gwstrap
+			var/obj/item/weapon_item = new /obj/item/rogueweapon/halberd/bardiche(get_turf(H))
+			var/obj/item/gwstrap_item = new /obj/item/gwstrap(get_turf(H))
+			
+			if(H.put_in_r_hand(weapon_item) || H.put_in_l_hand(weapon_item))
+				to_chat(H, "<span class='notice'>You arm yourself with \a [weapon_item].</span>")
+			
+			if(H.equip_to_slot_if_possible(gwstrap_item, SLOT_BACK_L))
+				to_chat(H, "<span class='notice'>You take up \a [gwstrap_item].</span>")
+		
 		if("Sword & Shield")
-			beltr = /obj/item/rogueweapon/sword/sabre
-			backl = /obj/item/rogueweapon/shield/wood
+			var/obj/item/weapon_item = new /obj/item/rogueweapon/sword/sabre(get_turf(H))
+			var/obj/item/shield_item = new /obj/item/rogueweapon/shield/wood(get_turf(H))
+			
+			if(H.equip_to_slot_if_possible(weapon_item, SLOT_BELT_R))
+				to_chat(H, "<span class='notice'>You arm yourself with \a [weapon_item].</span>")
+			
+			if(H.equip_to_slot_if_possible(shield_item, SLOT_BACK_L))
+				to_chat(H, "<span class='notice'>You take up \a [shield_item].</span>")
 	
-	backpack_contents = list(/obj/item/rogueweapon/huntingknife/idagger/steel/special = 1, /obj/item/rope/chain = 1, /obj/item/storage/keyring/guardcastle)
-	H.verbs |= /mob/proc/haltyell
+	to_chat(H, "<span class='boldnotice'>Welcome, [H.real_name], charging Cavalryman of the Manor!</span>")

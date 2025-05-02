@@ -353,6 +353,10 @@
 	adjust_skillrank(skill, -proper_amt, silent)
 
 /datum/mind/proc/adjust_skillrank(skill, amt, silent = FALSE)
+	// Safety check - if no current mob exists or it's a preview mannequin, don't attempt to modify skills
+	if(!current || (istype(current, /mob/living/carbon/human/dummy)))
+		return
+		
 	var/datum/skill/S = GetSkillRef(skill)
 	var/amt2gain = 0
 	for(var/i in 1 to amt)

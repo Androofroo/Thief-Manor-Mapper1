@@ -53,15 +53,11 @@ GLOBAL_VAR(lord_selected)
 		else
 			SSticker.rulertype = "Lord"
 		to_chat(world, "<b><span class='notice'><span class='big'>[L.real_name] is [SSticker.rulertype] of Thief Manor.</span></span></b>")
-		
-		// Set up adv class selection
-		var/mob/living/carbon/human/H = L
-		H.advsetup = 1
-		H.invisibility = INVISIBILITY_MAXIMUM
-		H.become_blind("advsetup")
-		// Set a global var to track if the lord has already been selected to prevent treasury multiplication on respawn
+				// Set a global var to track if the lord has already been selected to prevent treasury multiplication on respawn
 		GLOB.lord_selected = FALSE
-		// Color choice will be handled by the subclass after selection
+		
+		// Add color choice after initialization
+		addtimer(CALLBACK(L, TYPE_PROC_REF(/mob, lord_color_choice)), 50)
 
 /datum/advclass/lord/standard
 	name = "Standard Lord"
@@ -145,9 +141,6 @@ GLOBAL_VAR(lord_selected)
 	ADD_TRAIT(H, TRAIT_NOBLE, TRAIT_GENERIC)
 	ADD_TRAIT(H, TRAIT_NOSEGRAB, TRAIT_GENERIC)
 	ADD_TRAIT(H, TRAIT_HEAVYARMOR, TRAIT_GENERIC)
-	
-	// Add color choice after class selection
-	addtimer(CALLBACK(H, TYPE_PROC_REF(/mob, lord_color_choice)), 50)
 
 /datum/advclass/lord/hedonist
 	name = "Hedonist Lord"
@@ -211,9 +204,6 @@ GLOBAL_VAR(lord_selected)
 	ADD_TRAIT(H, TRAIT_NOSEGRAB, TRAIT_GENERIC)
 	ADD_TRAIT(H, TRAIT_GOODLOVER, TRAIT_GENERIC)
 	ADD_TRAIT(H, TRAIT_SEEPRICES, TRAIT_GENERIC)
-	
-	// Add color choice after class selection
-	addtimer(CALLBACK(H, TYPE_PROC_REF(/mob, lord_color_choice)), 50)
 
 /datum/advclass/lord/merchant
 	name = "Merchant Prince"
@@ -271,9 +261,6 @@ GLOBAL_VAR(lord_selected)
 	ADD_TRAIT(H, TRAIT_NOBLE, TRAIT_GENERIC)
 	ADD_TRAIT(H, TRAIT_NOSEGRAB, TRAIT_GENERIC)
 	ADD_TRAIT(H, TRAIT_SEEPRICES, TRAIT_GENERIC)
-	
-	// Add color choice after class selection
-	addtimer(CALLBACK(H, TYPE_PROC_REF(/mob, lord_color_choice)), 50)
 
 /datum/advclass/lord/scholar
 	name = "Renowned Scholar"
@@ -329,9 +316,6 @@ GLOBAL_VAR(lord_selected)
 
 	ADD_TRAIT(H, TRAIT_NOBLE, TRAIT_GENERIC)
 	ADD_TRAIT(H, TRAIT_NOSEGRAB, TRAIT_GENERIC)
-	
-	// Add color choice after class selection
-	addtimer(CALLBACK(H, TYPE_PROC_REF(/mob, lord_color_choice)), 50)
 
 /datum/outfit/job/roguetown/lord/pre_equip(mob/living/carbon/human/H)
 	..() 

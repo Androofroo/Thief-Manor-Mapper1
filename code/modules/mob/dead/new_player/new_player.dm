@@ -22,6 +22,9 @@ GLOBAL_LIST_INIT(roleplay_readme, world.file2list("strings/rt/rp_prompt.txt"))
 
 	var/brohand
 
+	// Selected advclass for jobs
+	var/selected_advclass = null
+
 /mob/dead/new_player/Initialize()
 //	if(client && SSticker.state == GAME_STATE_STARTUP)
 //		var/atom/movable/screen/splash/S = new(client, TRUE, TRUE)
@@ -488,111 +491,135 @@ GLOBAL_LIST_INIT(roleplay_readme, world.file2list("strings/rt/rp_prompt.txt"))
 	return JOB_AVAILABLE
 
 /mob/dead/new_player/proc/AttemptLateSpawn(rank)
-	var/error = IsJobUnavailable(rank)
-	if(error != JOB_AVAILABLE)
-		to_chat(src, span_warning("[get_job_unavailable_error_message(error, rank)]"))
+	if(QDELETED(src))
+		return FALSE
+	if(SSticker.current_state != GAME_STATE_PLAYING)
+		to_chat(src, span_warning("The round is either not ready, or already concluded..."))
+		return FALSE
+	if(!GLOB.enter_allowed)
+		to_chat(usr, span_notice("There is an administrative lock on entering the game!"))
 		return FALSE
 
-	if(SSticker.late_join_disabled)
-		alert(src, "Something went bad.")
-		return FALSE
-/*
-	var/arrivals_docked = TRUE
-	if(SSshuttle.arrivals)
-		close_spawn_windows()	//In case we get held up
-		if(SSshuttle.arrivals.damaged && CONFIG_GET(flag/arrivals_shuttle_require_safe_latejoin))
-			src << alert("WEIRD!")
-			return FALSE
+	if(!IsJobUnavailable(rank, latejoin = TRUE))
+		// Check if the job has advclass_cat_rolls defined (excluding Adventurer)
+		var/datum/job/job_datum = SSjob.GetJob(rank)
+		if(job_datum && length(job_datum.advclass_cat_rolls) && job_datum.title != "Adventurer")
+			// We need to show the advclass selection dialog
+			var/selected_advclass = null
+			
+			// Check if we have a saved advclass for this job
+			if(client.prefs.job_advclasses && client.prefs.job_advclasses[rank])
+				selected_advclass = client.prefs.job_advclasses[rank]
+				
+				// Confirm they want to use the saved advclass
+				var/use_saved = alert(src, "You previously selected [selected_advclass] as your [rank] subclass. Do you want to use this again?", "Saved Subclass", "Yes", "Choose New Subclass", "Cancel")
+				if(use_saved == "Cancel")
+					return FALSE
+				if(use_saved == "Choose New Subclass")
+					selected_advclass = null
+			
+			if(!selected_advclass)
+				// Show advclass selection window
+				var/list/available_advclasses = list()
+				
+				for(var/ctag in job_datum.advclass_cat_rolls)
+					var/list/ctag_classes = SSrole_class_handler.sorted_class_categories[ctag]
+					for(var/datum/advclass/AC in ctag_classes)
+						if(AC.check_requirements(client.prefs.pref_species))
+							available_advclasses[AC.name] = AC
+				
+				if(!length(available_advclasses))
+					to_chat(src, span_warning("No available subclasses found for [rank]!"))
+					return FALSE
+				
+				// If there are available classes, default to the first one if the user doesn't make a selection
+				var/list/class_names = list()
+				for(var/name in available_advclasses)
+					class_names += name
+				var/selected_name = input(src, "Choose a subclass for [rank]:", "Subclass Selection") as null|anything in class_names
+				
+				// If user didn't select anything (pressed cancel), use the first available class
+				if(!selected_name)
+					selected_name = class_names[1]
+					
+				var/datum/advclass/selected_class = available_advclasses[selected_name]
+				
+				// Show the tutorial text for confirmation
+				var/confirm = alert(src, "[selected_class.name]\n\n[selected_class.tutorial]", "Confirm Subclass Selection", "Accept", "Cancel")
+				if(confirm != "Accept")
+					return FALSE
 
-		if(CONFIG_GET(flag/arrivals_shuttle_require_undocked))
-			SSshuttle.arrivals.RequireUndocked(src)
-		arrivals_docked = SSshuttle.arrivals.mode != SHUTTLE_CALL
-*/
+				// Save the selected advclass for future use
+				client.prefs.job_advclasses[rank] = selected_class.name
+				client.prefs.save_character()
+				
+				// Send the tutorial text to chat as well
+				to_chat(src, span_notice("<b>[selected_class.name]</b>: [selected_class.tutorial]"))
+				
+				selected_advclass = selected_class.name
+			
+			// Store the selected advclass for use after spawning
+			src.selected_advclass = selected_advclass
 
-	//Remove the player from the join queue if he was in one and reset the timer
-	SSticker.queued_players -= src
-	SSticker.queue_delay = 4
+		// Proceed with character spawning
+		SSjob.AssignRole(src, rank, 1)
+		var/mob/living/character = create_character(TRUE)
+		var/equip = SSjob.EquipRank(character, rank, TRUE)
+		if(isliving(equip))
+			character = equip
 
-	testing("basedtest 1")
-
-	SSjob.AssignRole(src, rank, 1)
-	testing("basedtest 2")
-	var/mob/living/character = create_character(TRUE)	//creates the human and transfers vars and mind
-	testing("basedtest 3")
-	character.islatejoin = TRUE
-	var/equip = SSjob.EquipRank(character, rank, TRUE)
-	testing("basedtest 4")
-
-	if(isliving(equip))	//Borgs get borged in the equip, so we need to make sure we handle the new mob.
-		character = equip
-
-	var/datum/job/job = SSjob.GetJob(rank)
-	testing("basedtest 5")
-
-	if(job && !job.override_latejoin_spawn(character))
-		testing("basedtest 6")
+		if(character.mind)
+			// If we selected an advclass, apply it
+			if(src.selected_advclass)
+				var/datum/advclass/AC = null
+				
+				// Find the advclass in the appropriate categories
+				for(var/ctag in job_datum.advclass_cat_rolls)
+					if(!SSrole_class_handler.sorted_class_categories[ctag])
+						continue
+					
+					// Check each class in this category
+					for(var/datum/advclass/potential_class in SSrole_class_handler.sorted_class_categories[ctag])
+						if(potential_class.name == src.selected_advclass)
+							AC = potential_class
+							break
+					
+					if(AC) // If we found the class, no need to check more categories
+						break
+						
+				if(AC)
+					AC.equipme(character)
+					character.advjob = AC.name
+		
 		SSjob.SendToLateJoin(character)
-		testing("basedtest 7")
-//		if(!arrivals_docked)
-		var/atom/movable/screen/splash/Spl = new(character.client, TRUE)
-		Spl.Fade(TRUE)
-//			character.playsound_local(get_turf(character), 'sound/blank.ogg', 25)
 
+		SSticker.minds += character.mind
+		GLOB.joined_player_list += character.ckey
 
-	SSticker.minds += character.mind
-
-	var/mob/living/carbon/human/humanc
-	if(ishuman(character))
-		humanc = character	//Let's retypecast the var to be human,
-/*
-	if(humanc)	//These procs all expect humans
-		GLOB.data_core.manifest_inject(humanc)
-		if(SSshuttle.arrivals)
-			SSshuttle.arrivals.QueueAnnounce(humanc, rank)
+		var/mob/living/carbon/human/humanc
+		if(ishuman(character))
+			humanc = character
+		
+		if(humanc)
+			var/fakekey = character.ckey
+			if(character.ckey in GLOB.anonymize)
+				fakekey = get_fake_key(character.ckey)
+			GLOB.character_list[character.mobid] = "[fakekey] was [character.real_name] ([rank])<BR>"
+			GLOB.character_ckey_list[character.real_name] = character.ckey
+			log_character("[character.ckey] ([fakekey]) - [character.real_name] - [rank]")
+		if(GLOB.respawncounts[character.ckey])
+			var/AN = GLOB.respawncounts[character.ckey]
+			AN++
+			GLOB.respawncounts[character.ckey] = AN
 		else
-			AnnounceArrival(humanc, rank)
-		AddEmploymentContract(humanc)
-		if(GLOB.highlander)
-			to_chat(humanc, span_danger("<i>THERE CAN BE ONLY ONE!!!</i>"))
-			humanc.make_scottish()
-
-		if(GLOB.summon_guns_triggered)
-			give_guns(humanc)
-		if(GLOB.summon_magic_triggered)
-			give_magic(humanc)
-		if(GLOB.curse_of_madness_triggered)
-			give_madness(humanc, GLOB.curse_of_madness_triggered)
-*/
-	GLOB.joined_player_list += character.ckey
-/*
-	if(CONFIG_GET(flag/allow_latejoin_antagonists) && humanc)	//Borgs aren't allowed to be antags. Will need to be tweaked if we get true latejoin ais.
-		if(SSshuttle.emergency)
-			switch(SSshuttle.emergency.mode)
-				if(SHUTTLE_RECALL, SHUTTLE_IDLE)
-					SSticker.mode.make_antag_chance(humanc)
-				if(SHUTTLE_CALL)
-					if(SSshuttle.emergency.timeLeft(1) > initial(SSshuttle.emergencyCallTime)*0.5)
-						SSticker.mode.make_antag_chance(humanc)
-
-	if(humanc && CONFIG_GET(flag/roundstart_traits))
-		SSquirks.AssignQuirks(humanc, humanc.client, TRUE)*/
-	if(humanc)
-		var/fakekey = character.ckey
-		if(character.ckey in GLOB.anonymize)
-			fakekey = get_fake_key(character.ckey)
-		GLOB.character_list[character.mobid] = "[fakekey] was [character.real_name] ([rank])<BR>"
-		GLOB.character_ckey_list[character.real_name] = character.ckey
-		log_character("[character.ckey] ([fakekey]) - [character.real_name] - [rank]")
-	if(GLOB.respawncounts[character.ckey])
-		var/AN = GLOB.respawncounts[character.ckey]
-		AN++
-		GLOB.respawncounts[character.ckey] = AN
-	else
-		GLOB.respawncounts[character.ckey] = 1
-//	add_roundplayed(character.ckey)
-	if(humanc)
-		try_apply_character_post_equipment(humanc)
-	log_manifest(character.mind.key,character.mind,character,latejoin = TRUE)
+			GLOB.respawncounts[character.ckey] = 1
+			
+		if(humanc)
+			try_apply_character_post_equipment(humanc)
+		log_manifest(character.mind.key,character.mind,character,latejoin = TRUE)
+		return TRUE
+	to_chat(src, span_warning("[get_job_unavailable_error_message(IsJobUnavailable(rank, latejoin = TRUE), rank)]"))
+	return FALSE
 
 /mob/dead/new_player/proc/LateChoices()
 	var/list/dat = list("<div class='notice' style='font-style: normal; font-size: 14px; margin-bottom: 2px; padding-bottom: 0px'>Round Duration: [DisplayTimeText(world.time - SSticker.round_start_time, 1)]</div>")

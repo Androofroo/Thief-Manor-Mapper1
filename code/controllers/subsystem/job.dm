@@ -713,21 +713,37 @@ SUBSYSTEM_DEF(job)
 			else
 				handle_auto_deadmin_roles(M.client, rank)
 
-//	if(job)
-//		to_chat(M, "<b>As the [rank] you answer directly to [job.supervisors]. Special circumstances may change this.</b>")
-//		job.radio_help_message(M)
-////		if(job.req_admin_notify)
-//			to_chat(M, "<b>I are playing a job that is important for Game Progression. If you have to disconnect, please notify the admins via adminhelp.</b>")
-//		if(CONFIG_GET(number/minimal_access_threshold))
-//			to_chat(M, span_notice("<B>As this station was initially staffed with a [CONFIG_GET(flag/jobs_have_minimal_access) ? "full crew, only your job's necessities" : "skeleton crew, additional access may"] have been added to your ID card.</B>"))
-//		if(job.tutorial)
-//			to_chat(M, job.tutorial)
+		// For roundstart spawns, handle advclass selection if needed
+		if(!joined_late && length(job.advclass_cat_rolls) && job.title != "Adventurer" && H.mind && M.client)
+			// Check for a saved advclass preference
+			var/selected_advclass = null
+			
+			if(M.client.prefs.job_advclasses && M.client.prefs.job_advclasses[job.title])
+				selected_advclass = M.client.prefs.job_advclasses[job.title]
+			
+			// If we have a selected advclass, try to find and apply it
+			if(selected_advclass)
+				var/datum/advclass/AC = null
+				
+				for(var/ctag in job.advclass_cat_rolls)
+					if(!SSrole_class_handler.sorted_class_categories[ctag])
+						continue
+						
+					for(var/datum/advclass/potential_class in SSrole_class_handler.sorted_class_categories[ctag])
+						if(potential_class.name == selected_advclass)
+							AC = potential_class
+							break
+							
+					if(AC)
+						break
+						
+				if(AC)
+					AC.equipme(H)
+					H.advjob = AC.name
+
 	var/related_policy = get_policy(rank)
 	if(related_policy)
 		to_chat(M,related_policy)
-//	if(ishuman(H))
-//		var/mob/living/carbon/human/wageslave = H
-//		H.add_memory("Your account ID is [wageslave.account_id].")
 	if(job && H)
 		job.after_spawn(H, M, joined_late) // note: this happens before the mob has a key! M will always have a client, H might not.
 

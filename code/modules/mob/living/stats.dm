@@ -1,4 +1,3 @@
-	
 #define STAT_STRENGTH "strength"
 #define STAT_PERCEPTION "perception"
 #define STAT_INTELLIGENCE "intelligence"
@@ -91,6 +90,10 @@
 				H.voice_color = "ff0000"
 
 /mob/living/proc/change_stat(stat, amt, index)
+	// Skip stat changes for dummy/mannequin mobs used in character previews
+	if(istype(src, /mob/living/carbon/human/dummy))
+		return
+		
 	if(!stat)
 		return
 	if(amt == 0 && index)

@@ -44,7 +44,12 @@ GLOBAL_LIST_INIT(special_traits, build_special_traits())
 
 /proc/apply_character_post_equipment(mob/living/carbon/human/character, client/player)
 	if(!player)
-		player = character.client
+		player = character?.client
+	
+	// Safely return if player is still null or if player exists but has no prefs
+	if(!player || !player.prefs)
+		return
+		
 	apply_charflaw_equipment(character, player)
 	apply_prefs_special(character, player)
 	apply_prefs_virtue(character, player)
@@ -56,11 +61,9 @@ GLOBAL_LIST_INIT(special_traits, build_special_traits())
 		character.mind.special_items[player.prefs.loadout3.name] += player.prefs.loadout3.path
 
 /proc/apply_prefs_virtue(mob/living/carbon/human/character, client/player)
-	if (!player)
-		player = character.client
-	if (!player)
-		return
-	if (!player.prefs)
+	if(!player)
+		player = character?.client
+	if(!player || !player.prefs)
 		return
 
 	var/virtuous = FALSE
@@ -92,15 +95,14 @@ GLOBAL_LIST_INIT(special_traits, build_special_traits())
 	return FALSE
 
 /proc/apply_charflaw_equipment(mob/living/carbon/human/character, client/player)
-	if(character.charflaw)
-		character.charflaw.apply_post_equipment(character)
+	if(!character || !character.charflaw)
+		return
+	character.charflaw.apply_post_equipment(character)
 
 /proc/apply_prefs_special(mob/living/carbon/human/character, client/player)
 	if(!player)
-		player = character.client
-	if(!player)
-		return
-	if(!player.prefs)
+		player = character?.client
+	if(!player || !player.prefs)
 		return
 	var/trait_type = player.prefs.next_special_trait
 	if(!trait_type)

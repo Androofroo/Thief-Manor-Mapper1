@@ -179,6 +179,9 @@ GLOBAL_LIST_EMPTY(chosen_names)
 	var/ooc_notes
 	var/ooc_notes_display
 
+	// Map of job titles to selected advclass types
+	var/list/job_advclasses = list()
+
 /datum/preferences/New(client/C)
 	parent = C
 	migrant  = new /datum/migrant_pref(src)
@@ -213,6 +216,11 @@ GLOBAL_LIST_EMPTY(chosen_names)
 		save_preferences()
 	save_character()		//let's save this new random character so it doesn't keep generating new ones.
 	menuoptions = list()
+	
+	// Make sure job_advclasses is initialized
+	if(!job_advclasses)
+		job_advclasses = list()
+		
 	return
 
 /datum/preferences/proc/set_new_race(datum/species/new_race, user)
@@ -782,7 +790,7 @@ GLOBAL_LIST_EMPTY(chosen_names)
 	popup.open(FALSE)
 	onclose(user, "capturekeypress", src)
 
-/datum/preferences/proc/SetChoices(mob/user, limit = 14, list/splitJobs = list("Court Magician", "Knight Captain", "Priest", "Merchant", "Archivist", "Towner", "Grenzelhoft Mercenary", "Beggar", "Prisoner", "Goblin King"), widthPerColumn = 295, height = 620) //295 620
+/datum/preferences/proc/SetChoices(mob/user, limit = 14, list/splitJobs = list("Court Magician", "Knight Captain", "Priest", "Merchant", "Archivist", "Towner", "Grenzelhoft Mercenary", "Beggar", "Prisoner", "Goblin King"), widthPerColumn = 500, height = 700)
 	if(!SSjob)
 		return
 
@@ -815,140 +823,49 @@ GLOBAL_LIST_EMPTY(chosen_names)
 		for(var/datum/job/job in sortList(SSjob.occupations, GLOBAL_PROC_REF(cmp_job_display_asc)))
 			if(!job.spawn_positions)
 				continue
-
 			index += 1
-//			if((index >= limit) || (job.title in splitJobs))
-			if(index >= limit)
-				width += widthPerColumn
+			if((index >= limit) || (job.title in splitJobs))
 				if((index < limit) && (lastJob != null))
 					//If the cells were broken up by a job in the splitJob list then it will fill in the rest of the cells with
 					//the last job's selection color. Creating a rather nice effect.
 					for(var/i = 0, i < (limit - index), i += 1)
-						HTML += "<tr bgcolor='#000000'><td width='60%' align='right'>&nbsp</td><td>&nbsp</td></tr>"
+						HTML += "<tr bgcolor='000000'><td width='60%' align='right'>&nbsp</td><td>&nbsp</td></tr>"
 				HTML += "</table></td><td width='20%'><table width='100%' cellpadding='1' cellspacing='0'>"
 				index = 0
 
-			if(job.title in splitJobs)
-				HTML += "<tr bgcolor='#000000'><td width='60%' align='right'><hr></td></tr>"
-
-			HTML += "<tr bgcolor='#000000'><td width='60%' align='right'>"
+			HTML += "<tr bgcolor='000000'><td width='60%' align='right'>"
 			var/rank = job.title
-			var/used_name = "[job.title]"
+			var/used_name = job.title
 			if((pronouns == SHE_HER || pronouns == THEY_THEM_F) && job.f_title)
-				used_name = "[job.f_title]"
+				used_name = job.f_title
 			lastJob = job
 			if(is_banned_from(user.ckey, rank))
-				HTML += "[used_name]</td> <td><a href='?_src_=prefs;bancheck=[rank]'> BANNED</a></td></tr>"
+				HTML += "<span class='banned'>[used_name]</span></td><td align='center'><font color='purple'><b> BANNED</b></font></td></tr>"
 				continue
-			var/required_playtime_remaining = job.required_playtime_remaining(user.client)
-			if(required_playtime_remaining)
-				HTML += "[used_name]</td> <td><font color=red> \[ [get_exp_format(required_playtime_remaining)] as [job.get_exp_req_type()] \] </font></td></tr>"
-				continue
-			if(!job.player_old_enough(user.client))
-				var/available_in_days = job.available_in_days(user.client)
-				HTML += "[used_name]</td> <td><font color=red> \[IN [(available_in_days)] DAYS\]</font></td></tr>"
-				continue
-			if(!job.required && !isnull(job.min_pq) && (get_playerquality(user.ckey) < job.min_pq))
-				HTML += "<font color=#a59461>[used_name] (Min PQ: [job.min_pq])</font></td> <td> </td></tr>"
-				continue
-			if(!job.required && !isnull(job.max_pq) && (get_playerquality(user.ckey) > job.max_pq))
-				HTML += "<font color=#a59461>[used_name] (Max PQ: [job.max_pq])</font></td> <td> </td></tr>"
-				continue
-			if(length(job.virtue_restrictions) && length(job.vice_restrictions))
-				var/name
-				if(virtue.type in job.virtue_restrictions)
-					name = virtue.name
-				if(virtuetwo?.type in job.virtue_restrictions)
-					if(name)
-						name += ", "
-						name += virtuetwo.name
-					else
-						name = virtuetwo.name
-				if(charflaw.type in job.vice_restrictions)
-					if(name)
-						name += ", "
-						name += charflaw.name
-					else
-						name += charflaw.name
-				if(!isnull(name))
-					HTML += "<font color='#a561a5'>[used_name] (Disallowed by Virtues / Vice: [name])</font></td> <td> </td></tr>"
-			if(length(job.virtue_restrictions))
-				var/name
-				if(virtue.type in job.virtue_restrictions)
-					name = virtue.name
-				if(virtuetwo?.type in job.virtue_restrictions)
-					if(name)
-						name += ", "
-						name += virtuetwo.name
-					else
-						name = virtuetwo.name
-				if(!isnull(name))
-					HTML += "<font color='#a59461'>[used_name] (Disallowed by Virtue: [name])</font></td> <td> </td></tr>"
-					continue
-			if(length(job.vice_restrictions))
-				if(charflaw.type in job.vice_restrictions)
-					HTML += "<font color='#a56161'>[used_name] (Disallowed by Vice: [charflaw.name])</font></td> <td> </td></tr>"
-					continue
-			var/job_unavailable = JOB_AVAILABLE
-			if(isnewplayer(parent?.mob))
-				var/mob/dead/new_player/new_player = parent.mob
-				job_unavailable = new_player.IsJobUnavailable(job.title, latejoin = FALSE)
-			var/static/list/acceptable_unavailables = list(
-				JOB_AVAILABLE,
-				JOB_UNAVAILABLE_SLOTFULL,
-			)
-			if(!(job_unavailable in acceptable_unavailables))
-				HTML += "<font color=#a36c63>[used_name]</font></td> <td> </td></tr>"
-				continue
-//			if((job_preferences[SSjob.overflow_role] == JP_LOW) && (rank != SSjob.overflow_role) && !is_banned_from(user.ckey, SSjob.overflow_role))
-//				HTML += "<font color=orange>[rank]</font></td><td></td></tr>"
-//				continue
-/*			if((rank in GLOB.command_positions) || (rank == "AI"))//Bold head jobs
-				HTML += "<b><span class='dark'><a href='?_src_=prefs;preference=job;task=tutorial;tut='[job.tutorial]''>[used_name]</a></span></b>"
+			else if(job.required && !isnull(job.min_pq) && (get_playerquality(user.ckey) < job.min_pq))
+				var/pqp = FLOOR(get_playerquality(user.ckey), 1)
+				if(job_preferences[job.title] == JP_LOW)
+					HTML += "<span class='lowpq'>[used_name]</span><span class='lowbadge'>[pqp]</span>"
+				else
+					HTML += "<span class='bannedpq'>[used_name]</span><span class='bannedpqbadge'>[pqp]</span>"
+			else if(!job.required && !isnull(job.min_pq) && (get_playerquality(user.ckey) < job.min_pq))
+				var/pqp = FLOOR(get_playerquality(user.ckey), 1)
+				if(job_preferences[job.title] == JP_LOW)
+					HTML += "<span class='lowpq'>[used_name]</span><span class='lowbadge'>[pqp]</span>"
+				else
+					HTML += "<span class='bannedpq'>[used_name]</span><span class='bannedpqbadge'>[pqp]</span>"
+			else if(!job.required && !isnull(job.max_pq) && (get_playerquality(user.ckey) > job.max_pq))
+				var/pqp = FLOOR(get_playerquality(user.ckey), 1)
+				if(job_preferences[job.title] == JP_LOW)
+					HTML += "<span class='lowpq'>[used_name]</span><span class='lowbadge'>[pqp]</span>"
+				else
+					HTML += "<span class='bannedpq'>[used_name]</span><span class='bannedpqbadge'>[pqp]</span>"
 			else
-				HTML += span_dark("<a href='?_src_=prefs;preference=job;task=tutorial;tut='[job.tutorial]''>[used_name]</a>")*/
-
-			HTML += {"
-
-<style>
-
-
-.tutorialhover {
-	position: relative;
-	display: inline-block;
-	border-bottom: 1px dotted black;
-}
-
-.tutorialhover .tutorial {
-
-	visibility: hidden;
-	width: 280px;
-	background-color: black;
-	color: #e3c06f;
-	text-align: center;
-	border-radius: 6px;
-	padding: 5px 0;
-
-	position: absolute;
-	z-index: 1;
-	top: 100%;
-	left: 50%;
-	margin-left: -140px;
-}
-
-.tutorialhover:hover .tutorial{
-	visibility: visible;
-}
-
-</style>
-
-<div class="tutorialhover"><font>[used_name]</font>
-<span class="tutorial">[job.tutorial]<br>
-Slots: [job.spawn_positions] [job.round_contrib_points ? "RCP: +[job.round_contrib_points]" : ""]</span>
-</div>
-
-			"}
-
+				if(job.tutorial)
+					HTML += "<span class='job' onmouseover='showTutorial(\"[replacetext(job.tutorial, "\"", "&quot;")]\")' onmouseout='hideTutorial()'>[used_name]</span>"
+				else
+					HTML += "<span class='job'>[used_name]</span>"
+			
 			HTML += "</td><td width='40%'>"
 
 			var/prefLevelLabel = "ERROR"
@@ -983,16 +900,17 @@ Slots: [job.spawn_positions] [job.round_contrib_points ? "RCP: +[job.round_contr
 
 			HTML += "<a class='white' href='?_src_=prefs;preference=job;task=setJobLevel;level=[prefUpperLevel];text=[rank]' oncontextmenu='javascript:return setJobPrefRedirect([prefLowerLevel], \"[rank]\");'>"
 
-//			if(rank == SSjob.overflow_role)//Overflow is special
-//				if(job_preferences[SSjob.overflow_role] == JP_LOW)
-//					HTML += "<font color=green>Yes</font>"
-//				else
-//					HTML += "<font color=red>No</font>"
-//				HTML += "</a></td></tr>"
-//				continue
-
 			HTML += "<font color=[prefLevelColor]>[prefLevelLabel]</font>"
 			HTML += "</a></td></tr>"
+			
+			// Add advclass selector button for jobs with advclass_cat_rolls
+			// Only show if the job has a preference set (not NEVER)
+			// Exclude the Adventurer job as it uses a different system
+			if(job.advclass_cat_rolls && job_preferences[job.title] && job.title != "Adventurer")
+				var/selected_class = "None"
+				if(job_advclasses && job_advclasses[job.title])
+					selected_class = job_advclasses[job.title]
+				HTML += "<tr bgcolor='000000'><td colspan='2' align='center'><a href='?_src_=prefs;preference=job;task=advclass;job=[job.title]' class='advclass_select'>Subclass: [selected_class]</a></td></tr>"
 
 		for(var/i = 1, i < (limit - index), i += 1) // Finish the column so it is even
 			HTML += "<tr bgcolor='000000'><td width='60%' align='right'>&nbsp</td><td>&nbsp</td></tr>"
@@ -1011,11 +929,80 @@ Slots: [job.spawn_positions] [job.round_contrib_points ? "RCP: +[job.round_contr
 		else
 			HTML += "<br>"
 		HTML += "<center><a href='?_src_=prefs;preference=job;task=reset'>Reset</a></center>"
+		
+		// Add tutorial tooltip container and JavaScript
+		HTML += "<div id='tutorial-box' style='display: none; position: absolute; max-width: 300px; background-color: #333; border: 1px solid #666; padding: 10px; color: white; z-index: 100; border-radius: 5px;'></div>"
+		HTML += {"<script type='text/javascript'>
+			function showTutorial(text) {
+				var box = document.getElementById('tutorial-box');
+				box.innerHTML = text;
+				box.style.display = 'block';
+				
+				// Position the box near the mouse
+				document.onmousemove = function(e) {
+					var x = e.clientX + 10;
+					var y = e.clientY + 10;
+					box.style.left = x + 'px';
+					box.style.top = y + 'px';
+				};
+			}
+			
+			function hideTutorial() {
+				var box = document.getElementById('tutorial-box');
+				box.style.display = 'none';
+				document.onmousemove = null;
+			}
+		</script>"}
 
 	var/datum/browser/noclose/popup = new(user, "mob_occupation", "<div align='center'>Class Selection</div>", width, height)
 	popup.set_window_options("can_close=0")
 	popup.set_content(HTML)
 	popup.open(FALSE)
+	
+// Function to handle advclass selection for jobs
+/datum/preferences/proc/SetAdvClass(mob/user, job_title)
+	var/datum/job/job = SSjob.GetJob(job_title)
+	if(!job || !job.advclass_cat_rolls)
+		to_chat(user, span_warning("Job [job_title] does not support subclasses!"))
+		return
+		
+	// Gather available advclasses for this job
+	var/list/available_advclasses = list()
+	
+	// Loop through each class category for this job
+	for(var/ctag in job.advclass_cat_rolls)
+		if(!SSrole_class_handler.sorted_class_categories[ctag])
+			continue
+			
+		// Get all classes in this category
+		var/list/ctag_classes = SSrole_class_handler.sorted_class_categories[ctag]
+		for(var/datum/advclass/AC in ctag_classes)
+			// Check if this class meets the requirements and has the correct category tag
+			if(AC.check_requirements(pref_species) && (ctag in AC.category_tags))
+				available_advclasses[AC.name] = AC
+	
+	if(length(available_advclasses) <= 0) // No options available
+		to_chat(user, span_warning("No available subclasses found for [job_title]!"))
+		return
+	
+	// Show advclass selection menu
+	var/selected_name = input(user, "Choose a subclass for [job_title]:", "Subclass Selection") as null|anything in available_advclasses
+	if(!selected_name)
+		// If canceled, keep the existing selection or do nothing if none exists
+		update_preview_icon()
+		SetChoices(user)
+		return
+	
+	// Save the selected advclass
+	job_advclasses[job_title] = selected_name
+	
+	// Show the tutorial text for reference
+	var/datum/advclass/selected_class = available_advclasses[selected_name]
+	to_chat(user, span_notice("<b>[selected_class.name]</b>: [selected_class.tutorial]"))
+	
+	// Update the preview to show the new equipment
+	update_preview_icon()
+	SetChoices(user)
 
 /datum/preferences/proc/SetJobPreferenceLevel(datum/job/job, level)
 	if (!job)
@@ -1125,7 +1112,7 @@ Slots: [job.spawn_positions] [job.round_contrib_points ? "RCP: +[job.round_contr
 					bound_key = user_binds[kb.name][bound_key_index]
 					dat += " | <a href ='?_src_=prefs;preference=keybinds;task=keybindings_capture;keybinding=[kb.name];old_key=[bound_key]'>[bound_key]</a>"
 				if(length(user_binds[kb.name]) < MAX_KEYS_PER_KEYBIND)
-					dat += "| <a href ='?_src_=prefs;preference=keybinds;task=keybindings_capture;keybinding=[kb.name]'>Add Secondary</a>"
+					dat += "| <a href ='?_src_=prefs;preference=keybindings_capture;keybinding=[kb.name]'>Add Secondary</a>"
 				dat += "<br>"
 
 	dat += "<br><br>"
@@ -1217,6 +1204,11 @@ Slots: [job.spawn_positions] [job.round_contrib_points ? "RCP: +[job.round_contr
 				SetChoices(user)
 			if("triumphthing")
 				ResetLastClass(user)
+			if("advclass")
+				// Handler for advclass selection
+				if(href_list["job"])
+					SetAdvClass(user, href_list["job"])
+					return
 			if("nojob")
 				switch(joblessrole)
 					if(RETURNTOLOBBY)

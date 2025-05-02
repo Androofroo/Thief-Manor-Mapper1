@@ -31,87 +31,32 @@
 	if(!H)
 		return FALSE
 
+	// Check if this is a preview mannequin
+	var/is_preview_mannequin = istype(H, /mob/living/carbon/human/dummy)
+
 	if(outfit)
-		// Create a temporary outfit instance to check which slots will be affected
-		var/datum/outfit/O = new outfit()
-		var/list/slots_to_clear = list()
-		
-		// Identify which slots need to be cleared based on the outfit
-		if(O.uniform || O.pants)
-			slots_to_clear += H.wear_pants
-		if(O.suit || O.armor)
-			slots_to_clear += H.wear_armor
-		if(O.back)
-			slots_to_clear += H.back
-		if(O.belt)
-			slots_to_clear += H.belt
-		if(O.gloves)
-			slots_to_clear += H.gloves
-		if(O.shoes)
-			slots_to_clear += H.shoes
-		if(O.head)
-			slots_to_clear += H.head
-		if(O.mask)
-			slots_to_clear += H.wear_mask
-		if(O.neck)
-			slots_to_clear += H.wear_neck
-		if(O.ears)
-			slots_to_clear += H.ears
-		if(O.glasses)
-			slots_to_clear += H.glasses
-		if(O.id)
-			slots_to_clear += H.wear_ring
-		if(O.wrists)
-			slots_to_clear += H.wear_wrists
-		if(O.suit_store)
-			slots_to_clear += H.s_store
-		if(O.cloak)
-			slots_to_clear += H.cloak
-		if(O.beltl)
-			slots_to_clear += H.beltl
-		if(O.beltr)
-			slots_to_clear += H.beltr
-		if(O.backr)
-			slots_to_clear += H.backr
-		if(O.backl)
-			slots_to_clear += H.backl
-		if(O.mouth)
-			slots_to_clear += H.mouth
-		if(O.shirt)
-			slots_to_clear += H.wear_shirt
-			
-		// Remove only items in slots that will be replaced
-		for(var/obj/item/I in slots_to_clear)
-			if(I)
-				qdel(I)
-				
-		// Clear hands if outfit specifies hand items
-		if(O.r_hand || O.l_hand)
-			H.drop_all_held_items()
-			
-		// Clean up the temporary outfit
-		qdel(O)
-		
-		// Apply the outfit
 		H.equipOutfit(outfit)
 	
-	post_equip(H)
+	// Only apply stat changes, traits, etc. if this is NOT a preview mannequin
+	if(!is_preview_mannequin && H.mind)
+		var/turf/TU = get_turf(H)
+		if(TU)
+			if(horse)
+				new horse(TU)
+
+		for(var/trait in traits_applied)
+			ADD_TRAIT(H, trait, ADVENTURER_TRAIT)
+
+		if(noble_income)
+			SStreasury.noble_incomes[H] = noble_income
+
+		// After the end of adv class equipping, apply a SPECIAL trait if able
+		apply_character_post_equipment(H)
+		
+		post_equip(H)
 
 	H.advjob = name
-
-	var/turf/TU = get_turf(H)
-	if(TU)
-		if(horse)
-			new horse(TU)
-
-	for(var/trait in traits_applied)
-		ADD_TRAIT(H, trait, ADVENTURER_TRAIT)
-
-	if(noble_income)
-		SStreasury.noble_incomes[H] = noble_income
-
-	// After the end of adv class equipping, apply a SPECIAL trait if able
-	apply_character_post_equipment(H)
+	return TRUE
 
 /datum/advclass/proc/post_equip(mob/living/carbon/human/H)
 	addtimer(CALLBACK(H,TYPE_PROC_REF(/mob/living/carbon/human, add_credit), TRUE), 20)
@@ -122,12 +67,45 @@
 	Whoa! we are checking requirements here!
 	On the datum! Wow!
 */
-/datum/advclass/proc/check_requirements(mob/living/carbon/human/H)
-
-	var/datum/species/pref_species = H.dna.species
+/datum/advclass/proc/check_requirements(arg)
+	var/datum/species/pref_species
+	var/gender
+	var/age
+	var/datum/patron/patron
+	var/client/client
+	
+	// Check if we were given a mob or just a species
+	if(istype(arg, /mob/living/carbon/human))
+		var/mob/living/carbon/human/H = arg
+		pref_species = H.dna.species
+		gender = H.gender
+		age = H.age
+		patron = H.patron
+		client = H.client
+	else if(istype(arg, /datum/species))
+		// We were just given a species datum directly from preferences
+		pref_species = arg
+		// Use default values since we don't have a mob
+		gender = MALE
+		age = AGE_ADULT
+		
+		// If we're coming from preferences UI, grab the client reference
+		// and relevant preference values
+		if(usr && usr.client && usr.client.prefs)
+			gender = usr.client.prefs.gender
+			age = usr.client.prefs.age
+			patron = usr.client.prefs.selected_patron
+			client = usr.client
+	else
+		// We weren't given a valid argument
+		return FALSE
+	
+	// Now do the actual checks
 	var/list/local_allowed_sexes = list()
 	if(length(allowed_sexes))
 		local_allowed_sexes |= allowed_sexes
+		
+	// Check gender swapping for species, safely
 	if(!immune_to_genderswap && pref_species?.gender_swapping)
 		if(MALE in allowed_sexes)
 			local_allowed_sexes -= MALE
@@ -135,28 +113,37 @@
 		if(FEMALE in allowed_sexes)
 			local_allowed_sexes -= FEMALE
 			local_allowed_sexes += MALE
-	if(length(local_allowed_sexes) && !(H.gender in local_allowed_sexes))
+			
+	// Only check gender if allowed_sexes is specified
+	if(length(local_allowed_sexes) && !(gender in local_allowed_sexes))
 		return FALSE
 
-	if(length(allowed_races) && !(H.dna.species.type in allowed_races))
+	// Only check race if allowed_races is specified
+	if(length(allowed_races) && pref_species && !(pref_species.type in allowed_races))
 		return FALSE
 
-	if(length(allowed_ages) && !(H.age in allowed_ages))
+	// Only check age if allowed_ages is specified
+	if(length(allowed_ages) && !(age in allowed_ages))
 		return FALSE
 
-	if(length(allowed_patrons) && !(H.patron in allowed_patrons))
-		return FALSE
+	// Only check patron if allowed_patrons is specified and patron exists
+	if(length(allowed_patrons) && patron)
+		if(!(patron.type in allowed_patrons))
+			return FALSE
 
 	if(maximum_possible_slots > -1)
 		if(total_slots_occupied >= maximum_possible_slots)
 			return FALSE
 
-	if(min_pq != -100) // If someone sets this we actually do the check.
-		if(!(get_playerquality(H.client.ckey) >= min_pq))
+	// Only check PQ if min_pq is set and client exists
+	if(min_pq != -100 && client)
+		if(!(get_playerquality(client.ckey) >= min_pq))
 			return FALSE
 
 	if(prob(pickprob))
 		return TRUE
+	
+	return FALSE
 
 // Basically the handler has a chance to plus up a class, heres a generic proc you can override to handle behavior related to it.
 // For now you just get an extra stat in everything depending on how many plusses you managed to get.

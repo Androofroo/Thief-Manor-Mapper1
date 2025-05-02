@@ -447,6 +447,10 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	_load_loadout2(S)
 	_load_loadout3(S)
 
+	// Load saved job advclasses
+	S["job_advclasses"] >> job_advclasses
+	job_advclasses = SANITIZE_LIST(job_advclasses)
+
 	if(!S["features["mcolor"]"] || S["features["mcolor"]"] == "#000")
 		WRITE_FILE(S["features["mcolor"]"]	, "#FFF")
 	if(!S["features["mcolor2"]"] || S["features["mcolor2"]"] == "#000")
@@ -661,6 +665,10 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["statpack"] , statpack.type)
 	WRITE_FILE(S["virtue"] , virtue.type)
 	WRITE_FILE(S["virtuetwo"], virtuetwo.type)
+	
+	// Save job advclasses
+	WRITE_FILE(S["job_advclasses"], job_advclasses)
+	
 	if(loadout)
 		WRITE_FILE(S["loadout"] , loadout.type)
 	else
