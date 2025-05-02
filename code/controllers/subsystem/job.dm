@@ -721,6 +721,29 @@ SUBSYSTEM_DEF(job)
 			if(M.client.prefs.job_advclasses && M.client.prefs.job_advclasses[job.title])
 				selected_advclass = M.client.prefs.job_advclasses[job.title]
 			
+			if(!selected_advclass)
+				// No saved advclass preference - select the first available one as default
+				var/list/available_advclasses = list()
+				
+				for(var/ctag in job.advclass_cat_rolls)
+					var/list/ctag_classes = SSrole_class_handler.sorted_class_categories[ctag]
+					for(var/datum/advclass/AC in ctag_classes)
+						if(AC.check_requirements(M.client.prefs.pref_species))
+							available_advclasses[AC.name] = AC
+				
+				if(length(available_advclasses))
+					var/list/class_names = list()
+					for(var/name in available_advclasses)
+						class_names += name
+					
+					if(length(class_names) > 0)
+						selected_advclass = class_names[1]
+						// Save this preference for future use
+						if(!M.client.prefs.job_advclasses)
+							M.client.prefs.job_advclasses = list()
+						M.client.prefs.job_advclasses[job.title] = selected_advclass
+						M.client.prefs.save_character()
+			
 			// If we have a selected advclass, try to find and apply it
 			if(selected_advclass)
 				var/datum/advclass/AC = null

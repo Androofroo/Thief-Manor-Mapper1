@@ -904,11 +904,31 @@ GLOBAL_LIST_EMPTY(chosen_names)
 			// Only show if the job has a preference set (not NEVER)
 			// Exclude the Adventurer job as it uses a different system
 			if(job.advclass_cat_rolls && job_preferences[job.title] && job.title != "Adventurer")
-				var/selected_class = "None"
+				var/selected_class = null
 				var/tutorial_text = ""
 				if(job_advclasses && job_advclasses[job.title])
 					selected_class = job_advclasses[job.title]
-					// Find the tutorial text for the selected advclass
+				
+				// If no saved preference exists, find the first available class
+				if(!selected_class)
+					// Get the first available subclass for display
+					for(var/ctag in job.advclass_cat_rolls)
+						if(!SSrole_class_handler.sorted_class_categories[ctag])
+							continue
+						var/list/ctag_classes = SSrole_class_handler.sorted_class_categories[ctag]
+						for(var/datum/advclass/AC in ctag_classes)
+							if(AC.check_requirements(pref_species) && (ctag in AC.category_tags))
+								selected_class = AC.name
+								break
+						if(selected_class)
+							break
+				
+				// If still no class found, fall back to "None" (shouldn't happen)
+				if(!selected_class)
+					selected_class = "None"
+					
+				// Find the tutorial text for the selected advclass
+				if(selected_class != "None")
 					for(var/ctag in job.advclass_cat_rolls)
 						if(!SSrole_class_handler.sorted_class_categories[ctag])
 							continue
@@ -1028,10 +1048,17 @@ GLOBAL_LIST_EMPTY(chosen_names)
 	// Show advclass selection menu
 	var/selected_name = input(user, "Choose a subclass for [job_title]:", "Subclass Selection") as null|anything in available_advclasses
 	if(!selected_name)
-		// If canceled, keep the existing selection or do nothing if none exists
-		update_preview_icon()
-		SetChoices(user)
-		return
+		// If canceled, default to the first subclass in the list
+		var/list/class_names = list()
+		for(var/name in available_advclasses)
+			class_names += name
+		if(length(class_names) > 0)
+			selected_name = class_names[1]
+		else
+			// This should never happen, but just in case
+			update_preview_icon()
+			SetChoices(user)
+			return
 	
 	// Save the selected advclass
 	job_advclasses[job_title] = selected_name
