@@ -13,8 +13,7 @@
 				Trained regularly in combat and siege warfare, you deal with threats - both within and without. \
 				Obey your Lord and Knight. Show the nobles and knights your respect, so that you may earn it in turn. Not as a commoner, but as a soldier.."
 	display_order = JDO_CASTLEGUARD
-	whitelist_req = TRUE
-
+	
 	outfit = /datum/outfit/job/roguetown/manorguard
 	advclass_cat_rolls = list(CTAG_MENATARMS = 20)
 

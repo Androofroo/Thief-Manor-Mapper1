@@ -11,7 +11,6 @@
 	tutorial = "The Knight is a noble warrior sworn to uphold justice and protect the manor's guests from danger.  \
 				Though clad in heavy armor and bound by a strict code of honor, their presence alone is often enough to deter foul play."
 	display_order = JDO_KNIGHT
-	whitelist_req = TRUE
 	outfit = /datum/outfit/job/roguetown/knight
 	advclass_cat_rolls = list(CTAG_ROYALGUARD = 20)
 

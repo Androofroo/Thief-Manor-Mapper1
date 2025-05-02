@@ -15,7 +15,6 @@
 		You owe your life to the Lord, for it was his coin that allowed you to continue your studies in these dark times. \
 		In return, you have proven time and time again as justicar and trusted advisor to their reign."
 	outfit = /datum/outfit/job/roguetown/magician
-	whitelist_req = TRUE
 	give_bank_account = 47
 	min_pq = 0 //High potential for abuse, lovepotion/killersice/greater fireball is not for the faint of heart
 	max_pq = null
