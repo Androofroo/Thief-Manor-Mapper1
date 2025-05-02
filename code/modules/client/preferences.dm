@@ -861,8 +861,9 @@ GLOBAL_LIST_EMPTY(chosen_names)
 				else
 					HTML += "<span class='bannedpq'>[used_name]</span><span class='bannedpqbadge'>[pqp]</span>"
 			else
-				if(job.tutorial)
-					HTML += "<span class='job' onmouseover='showTutorial(\"[replacetext(job.tutorial, "\"", "&quot;")]\")' onmouseout='hideTutorial()'>[used_name]</span>"
+				if(job.tutorial && job.tutorial != "")
+					var/sanitized_tutorial = replacetext(replacetext(job.tutorial, "\"", "&quot;"), "'", "&#39;")
+					HTML += "<span class='job' data-tutorial='[sanitized_tutorial]' onmouseover='showTutorial(this.getAttribute(\"data-tutorial\"))' onmouseout='hideTutorial()'>[used_name]</span>"
 				else
 					HTML += "<span class='job'>[used_name]</span>"
 			
@@ -908,9 +909,26 @@ GLOBAL_LIST_EMPTY(chosen_names)
 			// Exclude the Adventurer job as it uses a different system
 			if(job.advclass_cat_rolls && job_preferences[job.title] && job.title != "Adventurer")
 				var/selected_class = "None"
+				var/tutorial_text = ""
 				if(job_advclasses && job_advclasses[job.title])
 					selected_class = job_advclasses[job.title]
-				HTML += "<tr bgcolor='000000'><td colspan='2' align='center'><a href='?_src_=prefs;preference=job;task=advclass;job=[job.title]' class='advclass_select'>Subclass: [selected_class]</a></td></tr>"
+					// Find the tutorial text for the selected advclass
+					for(var/ctag in job.advclass_cat_rolls)
+						if(!SSrole_class_handler.sorted_class_categories[ctag])
+							continue
+						var/list/ctag_classes = SSrole_class_handler.sorted_class_categories[ctag]
+						for(var/datum/advclass/AC in ctag_classes)
+							if(AC.name == selected_class && AC.tutorial)
+								tutorial_text = replacetext(AC.tutorial, "\"", "&quot;")
+								break
+						if(tutorial_text)
+							break
+				
+				if(tutorial_text && tutorial_text != "")
+					var/sanitized_tutorial = replacetext(replacetext(tutorial_text, "\"", "&quot;"), "'", "&#39;")
+					HTML += "<tr bgcolor='000000'><td colspan='2' align='center'><a href='?_src_=prefs;preference=job;task=advclass;job=[job.title]' class='advclass_select' data-tutorial='[sanitized_tutorial]' onmouseover='showTutorial(this.getAttribute(\"data-tutorial\"))' onmouseout='hideTutorial()'>Subclass: [selected_class]</a></td></tr>"
+				else
+					HTML += "<tr bgcolor='000000'><td colspan='2' align='center'><a href='?_src_=prefs;preference=job;task=advclass;job=[job.title]' class='advclass_select'>Subclass: [selected_class]</a></td></tr>"
 
 		for(var/i = 1, i < (limit - index), i += 1) // Finish the column so it is even
 			HTML += "<tr bgcolor='000000'><td width='60%' align='right'>&nbsp</td><td>&nbsp</td></tr>"
@@ -931,7 +949,7 @@ GLOBAL_LIST_EMPTY(chosen_names)
 		HTML += "<center><a href='?_src_=prefs;preference=job;task=reset'>Reset</a></center>"
 		
 		// Add tutorial tooltip container and JavaScript
-		HTML += "<div id='tutorial-box' style='display: none; position: absolute; max-width: 300px; background-color: #333; border: 1px solid #666; padding: 10px; color: white; z-index: 100; border-radius: 5px;'></div>"
+		HTML += "<div id='tutorial-box' style='display: none; position: fixed; max-width: 300px; min-width: 100px; background-color: #333; border: 1px solid #666; padding: 10px; color: white; z-index: 1000; border-radius: 5px; font-size: 12px; line-height: 1.4; box-shadow: 0 2px 10px rgba(0,0,0,0.5); overflow-y: auto; max-height: 60vh;'></div>"
 		HTML += {"<script type='text/javascript'>
 			function showTutorial(text) {
 				var box = document.getElementById('tutorial-box');
@@ -940,10 +958,36 @@ GLOBAL_LIST_EMPTY(chosen_names)
 				
 				// Position the box near the mouse
 				document.onmousemove = function(e) {
-					var x = e.clientX + 10;
-					var y = e.clientY + 10;
-					box.style.left = x + 'px';
-					box.style.top = y + 'px';
+					// Get viewport dimensions
+					var windowWidth = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+					var windowHeight = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+					
+					// Default position
+					var x = e.clientX + 15;
+					var y = e.clientY + 15;
+					
+					// Wait for box to have dimensions
+					setTimeout(function() {
+						var boxWidth = box.offsetWidth;
+						var boxHeight = box.offsetHeight;
+						
+						// Adjust horizontal position if needed
+						if (x + boxWidth > windowWidth - 20) {
+							x = Math.max(20, e.clientX - boxWidth - 15);
+						}
+						
+						// Adjust vertical position if needed
+						if (y + boxHeight > windowHeight - 20) {
+							y = Math.max(20, e.clientY - boxHeight - 15);
+						}
+						
+						// Make sure box is always fully visible
+						x = Math.max(20, Math.min(windowWidth - boxWidth - 20, x));
+						y = Math.max(20, Math.min(windowHeight - boxHeight - 20, y));
+						
+						box.style.left = x + 'px';
+						box.style.top = y + 'px';
+					}, 0);
 				};
 			}
 			
@@ -1116,7 +1160,7 @@ GLOBAL_LIST_EMPTY(chosen_names)
 				dat += "<br>"
 
 	dat += "<br><br>"
-	dat += "<a href ='?_src_=prefs;preference=keybinds;task=keybindings_reset'>\[Reset to default\]</a>"
+	dat += "<a href ='?_src_=prefs;preference=keybinds;task=keybindings_set'>\[Reset to default\]</a>"
 	dat += "</body>"
 
 	var/datum/browser/noclose/popup = new(user, "keybind_setup", "<div align='center'>Keybinds</div>", 600, 600) //no reason not to reuse the occupation window, as it's cleaner that way
