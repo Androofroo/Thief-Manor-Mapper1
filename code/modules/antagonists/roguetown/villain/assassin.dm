@@ -145,8 +145,6 @@
 	// Backpack contents
 	backpack_contents = list(
 		/obj/item/reagent_containers/glass/bottle/rogue/strongpoison = 2,
-		/obj/item/flashlight/flare/torch = 1,
-		/obj/item/rogueweapon/huntingknife/idagger/steel/poisoned = 1
 	)
 
 /datum/antagonist/assassin/roundend_report()
