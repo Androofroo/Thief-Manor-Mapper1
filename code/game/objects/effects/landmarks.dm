@@ -472,7 +472,16 @@ INITIALIZE_IMMEDIATE(/obj/effect/landmark)
 /obj/effect/landmark/start/bandit/Initialize()
 	. = ..()
 	GLOB.bandit_starts += loc
+	return INITIALIZE_HINT_QDEL
 
+/obj/effect/landmark/start/assassin
+	name = "Assassin"
+	icon_state = "assassin"
+
+/obj/effect/landmark/start/assassin/Initialize()
+	..()
+	GLOB.assassin_starts += loc
+	return INITIALIZE_HINT_QDEL
 
 /obj/effect/landmark/start/delf
 	name = "delf"

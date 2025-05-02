@@ -577,6 +577,9 @@
 	
 	var/list/datum/mind/pre_thieves = list() // List to hold pre-setup thieves
 	var/list/datum/mind/thieves = list() // List to hold actual thieves
+	var/list/datum/mind/pre_assassins = list() // List to hold pre-setup assassins
+	var/list/datum/mind/assassins = list() // List to hold actual assassins
+	var/assassin_spawned = FALSE // Track if we've spawned an assassin
 
 // Override can_start to ensure it can always start
 /datum/game_mode/chaosmode/thiefmode/can_start()
@@ -603,6 +606,11 @@
 	
 	// Select thieves
 	pick_thieves()
+	
+	// 25% chance to select an assassin
+	if(prob(25))
+		assassin_spawned = TRUE
+		pick_assassin()
 	
 	return TRUE
 
@@ -688,7 +696,67 @@
 	
 	return TRUE
 
-// Override post_setup to process thieves
+// Function to select an assassin
+/datum/game_mode/chaosmode/thiefmode/proc/pick_assassin()
+	// Use the same job restrictions as thieves
+	restricted_jobs = list("Lord", "Heir", "Knight", "Lady", "Successor", "Consort")
+	
+	message_admins("Thiefmode: Starting assassin selection")
+	
+	// First try to get candidates from ROLE_ASSASSIN, similar to how thieves use ROLE_THIEF
+	var/list/initial_candidates = get_players_for_role(ROLE_ASSASSIN)
+	
+	message_admins("Thiefmode: Initial ROLE_ASSASSIN candidates: [initial_candidates.len]")
+	
+	var/datum/mind/selected_assassin = null
+	
+	// First pass - select assassin from appropriate candidates
+	if(initial_candidates.len > 0)
+		selected_assassin = pick(initial_candidates)
+		message_admins("Thiefmode: Selected [selected_assassin.key] as assassin (first pass)")
+	
+	// If we still need an assassin, get candidates from all roles
+	if(!selected_assassin)
+		message_admins("Thiefmode: Not enough ROLE_ASSASSIN candidates, getting candidates from all roles")
+		// Get all available candidates from all roles
+		var/list/all_candidates = SSticker.minds.Copy()
+		
+		// Remove nobles/restricted roles
+		for(var/datum/mind/M in all_candidates)
+			// Only check if assigned_role exists to avoid null references
+			if(M.assigned_role && (M.assigned_role in restricted_jobs))
+				all_candidates -= M
+		
+		// Remove players already selected as thieves
+		for(var/datum/mind/T in pre_thieves)
+			all_candidates -= T
+		
+		// Second pass - select assassin from all available candidates
+		if(all_candidates.len > 0)
+			selected_assassin = pick(all_candidates)
+			message_admins("Thiefmode: Selected [selected_assassin.key] as assassin (second pass)")
+	
+	// Set special_role for the selected assassin and add to pre_assassins list
+	if(selected_assassin)
+		selected_assassin.special_role = "Assassin"
+		pre_assassins += selected_assassin
+		// Try to remove from allantags if it's there
+		if(selected_assassin in allantags)
+			allantags -= selected_assassin
+		
+		message_admins("Thiefmode: Successfully selected [selected_assassin.key] as assassin")
+		
+		// Add assassin to pre_setup_antags
+		GLOB.pre_setup_antags |= selected_assassin
+	else
+		message_admins("Thiefmode: Failed to find a suitable assassin candidate")
+	
+	// Reset restricted jobs list
+	restricted_jobs = list()
+	
+	return (selected_assassin != null)
+
+// Override post_setup to process thieves and assassins
 /datum/game_mode/chaosmode/thiefmode/post_setup()
 	set waitfor = FALSE
 	
@@ -761,8 +829,68 @@
 		if(thief_mind in GLOB.pre_setup_antags)
 			GLOB.pre_setup_antags -= thief_mind
 	
-	// Clear the pre_thieves list since we've processed all valid thieves
+	// Process assassin if one was selected
+	if(assassin_spawned && pre_assassins.len > 0)
+		// Get our assassin
+		var/datum/mind/assassin_mind = pre_assassins[1]
+		
+		// Check if assassin is in a restricted role
+		var/is_restricted = FALSE
+		if(assassin_mind.assigned_role)
+			for(var/job in restricted_roles)
+				if(assassin_mind.assigned_role == job)
+					message_admins("Thiefmode: Rejecting assassin [assassin_mind.key] in post_setup - restricted job: [assassin_mind.assigned_role]")
+					is_restricted = TRUE
+					break
+		
+		// Process valid assassin
+		if(!is_restricted)
+			message_admins("Thiefmode: Processing assassin [assassin_mind.key] ([assassin_mind.assigned_role]) in post_setup")
+			var/datum/antagonist/new_antag = new /datum/antagonist/assassin()
+			assassin_mind.add_antag_datum(new_antag)
+			assassins += assassin_mind
+			
+			// Remove from pre_setup_antags if it's there
+			if(assassin_mind in GLOB.pre_setup_antags)
+				GLOB.pre_setup_antags -= assassin_mind
+		else
+			// Try to find a replacement assassin
+			message_admins("Thiefmode: Trying to find a replacement assassin")
+			
+			// Get a pool of potential replacement candidates
+			var/list/replacement_candidates = SSticker.minds.Copy()
+			
+			// Remove players already selected as thieves
+			for(var/datum/mind/T in valid_thieves)
+				replacement_candidates -= T
+			
+			// Remove players in restricted roles
+			for(var/datum/mind/M in replacement_candidates)
+				// Skip if no assigned role yet
+				if(!M.assigned_role)
+					continue
+					
+				// Remove if in restricted roles
+				for(var/job in restricted_roles)
+					if(M.assigned_role == job)
+						replacement_candidates -= M
+						break
+			
+			// Find replacement assassin
+			if(replacement_candidates.len > 0)
+				var/datum/mind/replacement = pick(replacement_candidates)
+				if(replacement)
+					message_admins("Thiefmode: Found replacement assassin [replacement.key] ([replacement.assigned_role])")
+					replacement.special_role = "Assassin"
+					var/datum/antagonist/new_antag = new /datum/antagonist/assassin()
+					replacement.add_antag_datum(new_antag)
+					assassins += replacement
+			else
+				message_admins("Thiefmode: Failed to find a replacement assassin")
+	
+	// Clear the pre-lists since we've processed all valid antagonists
 	pre_thieves.Cut()
+	pre_assassins.Cut()
 	
 	..()
 	// We're not actually ready until all antagonists are assigned
