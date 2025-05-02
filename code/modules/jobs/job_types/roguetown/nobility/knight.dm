@@ -53,7 +53,6 @@
 					H.mind.person_knows_me(MF)
 
 /datum/outfit/job/roguetown/knight
-	cloak = /obj/item/clothing/cloak/stabard/surcoat/guard
 	neck = /obj/item/clothing/neck/roguetown/bevor
 	gloves = /obj/item/clothing/gloves/roguetown/chain
 	wrists = /obj/item/clothing/wrists/roguetown/bracers
@@ -115,6 +114,7 @@
 			beltl = /obj/item/rogueweapon/mace/steel
 			backl = /obj/item/rogueweapon/shield/wood
 
+	cloak = /obj/item/clothing/cloak/cape/knight
 	shirt = /obj/item/clothing/suit/roguetown/armor/chainmail/hauberk
 	pants = /obj/item/clothing/under/roguetown/chainlegs
 
@@ -189,8 +189,9 @@
 		if("Morningstar")
 			r_hand = /obj/item/rogueweapon/mace/steel/morningstar
 
-	shirt = /obj/item/clothing/suit/roguetown/armor/chainmail/iron
+	shirt = /obj/item/clothing/suit/roguetown/armor/chainmail/hauberk
 	pants = /obj/item/clothing/under/roguetown/chainlegs
+	cloak = /obj/item/clothing/cloak/cape/blkknight
 
 	var/helmets = list(
 		"Pigface Bascinet" 	= /obj/item/clothing/head/roguetown/helmet/bascinet/pigface,
