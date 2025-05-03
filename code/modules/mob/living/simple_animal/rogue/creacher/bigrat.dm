@@ -55,7 +55,7 @@
 	AIStatus = AI_OFF
 	can_have_ai = FALSE
 	ai_controller = /datum/ai_controller/big_rat
-
+	melee_cooldown = RAT_ATTACK_SPEED
 	stat_attack = UNCONSCIOUS
 
 /obj/effect/decal/remains/bigrat

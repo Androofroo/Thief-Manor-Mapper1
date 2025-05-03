@@ -42,6 +42,8 @@
 	var/deaggroprob = 10
 	var/eat_forever
 	candodge = TRUE
+	//global cooldown for how fast these things can attack. called by /datum/ai_behavior/basic_melee_attack and checked against world time.
+	//override to make them go faster or slower.
 
 	//If the creature is doing something they should STOP MOVING.
 	var/can_act = TRUE
