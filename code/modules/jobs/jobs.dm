@@ -62,10 +62,10 @@ GLOBAL_LIST_INIT(nonhuman_positions, list(
 GLOBAL_LIST_INIT(noble_positions, list(
 	"Lord",
 	"Consort",
-	"Prince",
+	"Heir",
 	"Hand",
 	"Knight Captain",
-	"Marshal",
+	"Magistrate",
 	"Councillor",
 	"Steward",
 	"Knight",
@@ -88,7 +88,7 @@ GLOBAL_LIST_INIT(garrison_positions, list(
 ))
 
 GLOBAL_LIST_INIT(church_positions, list(
-	"Priest",
+	"Deacon",
 	"Confessor",
 	"Acolyte",
 	"Mortician",
@@ -112,7 +112,7 @@ GLOBAL_LIST_INIT(yeoman_positions, list(
 	"Weaponsmith",
 	"Tailor",
 	"Alchemist",
-	"Artificer",
+	"Engineer",
 	"Scribe",
 	"Town Elder",
 	"Bathmaster",
