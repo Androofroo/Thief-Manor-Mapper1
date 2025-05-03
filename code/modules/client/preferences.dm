@@ -2361,7 +2361,7 @@ GLOBAL_LIST_EMPTY(chosen_names)
 	character.nickname = nickname
 
 	character.eye_color = eye_color
-	if(extra_language)
+	if(extra_language && extra_language != "None")
 		character.grant_language(extra_language)
 	character.voice_color = voice_color
 	character.voice_pitch = voice_pitch
