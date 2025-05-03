@@ -396,15 +396,21 @@
 						dirry += NORTH
 						dirry += SOUTH
 				var/turf/turfy
-				for(var/x in shuffle(dirry.Copy()))
-					turfy = get_step(src,x)
-					if(turfy)
-						if(turfy.density)
-							continue
-						for(var/atom/movable/AM in turfy)
-							if(AM.density)
+				if(fixedeye)
+					var/dodgedir = turn(dir, 180)
+					var/turf/turfcheck = get_step(src, dodgedir)
+					if(turfcheck && !turfcheck.density)
+						turfy = turfcheck
+				if(!turfy)
+					for(var/x in shuffle(dirry.Copy()))
+						turfy = get_step(src,x)
+						if(turfy)
+							if(turfy.density)
 								continue
-						break
+							for(var/atom/movable/AM in turfy)
+								if(AM.density)
+									continue
+							break
 				if(pulledby)
 					return FALSE
 				if(!turfy)
@@ -611,6 +617,30 @@
 		src.visible_message(span_warning("<b>[src]</b> dodges [user]'s attack!"))
 	else
 		src.visible_message(span_warning("<b>[src]</b> easily dodges [user]'s attack!"))
+	if(get_dist(src, user) <= user.used_intent?.reach)	//We are still in range of the attacker's weapon post-dodge
+		var/probclip = 50
+		var/obj/item/IS = L.get_active_held_item()
+		var/obj/item/IU = U.get_active_held_item()
+		if(IS)
+			if(IS.wlength > WLENGTH_NORMAL)
+				probclip += (IS.wlength - WLENGTH_NORMAL) * 10	//if wlength isn't standardised this might skyrocket it to >100%
+			else
+				probclip -= (WLENGTH_NORMAL - IS.wlength) * 10
+		var/dist = (user.used_intent?.reach - get_dist(src, user)) - 1 //-1 because we already are in range and triggered this check to begin with.
+		if(dist > 0)
+			probclip += dist * 10
+		if(L.STALUC != U.STALUC)
+			var/lucmod = L.STALUC - U.STALUC
+			probclip += lucmod * 10
+		if(prob(probclip) && IS && IU)
+			var/dam2take = round((get_complex_damage(IU, user, FALSE)/2),1)
+			if(dam2take)
+				if(dam2take > 0 && IU.intdamage_factor != 0)
+					dam2take = dam2take * IU.intdamage_factor
+				IS.take_damage(max(dam2take,1), BRUTE, IU.d_type)
+
+			user.visible_message(span_warning("<b>[user]</b> clips [src]'s weapon!"))
+			playsound(user, 'sound/misc/weapon_clip.ogg', 100)
 	dodgecd = FALSE
 //		if(H)
 //			if(H.IsOffBalanced())
