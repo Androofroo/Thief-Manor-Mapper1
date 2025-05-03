@@ -2,7 +2,7 @@
     "map_name": "Thief Manor",
     "map_path": "map_files/Thief_Manor",
     "map_file": "ThiefManorWorld.dmm",
-	"traits": [{"Name": "Thief Manor", "Up": true}, {"Up": true, "Down": true}, {"Up": true, "Down": true}, {"Down": true}],
+	"traits": [{"Name": "Thief Manor", "Up": true}, {"Up": true, "Down": true}, {"Up": true, "Down": true}, {"Up": true, "Down": true}, {"Up": true, "Down": true}, {"Up": true, "Down": true}, {"Down": true}],
 	"minetype": null,
 	"space_empty_levels": 0,
 	"space_ruin_levels": 0,

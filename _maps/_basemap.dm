@@ -6,7 +6,8 @@
 	#ifdef ALL_MAPS
 		#include "map_files\Roguetown\roguetown.dmm"
 		#include "map_files\Rogueworld\Rogueworld.dmm"
-		#include "map_files\Thief_Manor\ThiefManorWorld.dmm"
+		// Don't include Thief Manor here, it will be loaded via the map_config system
+		//#include "map_files\Thief_Manor\ThiefManorWorld.dmm"
 
 		#ifdef TRAVISBUILDING
 			#include "templates.dm"

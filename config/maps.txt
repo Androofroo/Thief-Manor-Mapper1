@@ -18,8 +18,8 @@ endmap
 
 map thief_manor
 	default
+	votable
 endmap
 
 map dun_world
-	votable
 endmap
