@@ -92,7 +92,7 @@
 /datum/crafting_recipe/roguetown/ceramics/glass/bottles3
 	name = "glass bottles(3x)"
 	result = list(/obj/item/reagent_containers/glass/bottle, /obj/item/reagent_containers/glass/bottle, /obj/item/reagent_containers/glass/bottle)
-	reqs = list(/obj/item/ingot/glass = 1)
+	reqs = list(/obj/item/natural/glass = 1)
 	craftdiff = 4
 
 /datum/crafting_recipe/roguetown/ceramics/clay/claystatue
@@ -112,6 +112,6 @@
 /datum/crafting_recipe/roguetown/ceramics/glass/statue 
 	name = "glass statue"
 	result = list(/obj/item/roguestatue/glass)
-	reqs = list(/obj/item/ingot/glass = 2)
+	reqs = list(/obj/item/natural/glass = 2)
 	craftdiff = 5
 

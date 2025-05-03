@@ -235,7 +235,7 @@
 
 /obj/structure/closet/crate/chest/steward/blacksmith/Initialize()
 	. = ..()
-	new /obj/item/rogueweapon/hammer(src)
+	new /obj/item/rogueweapon/hammer/iron(src)
 	new /obj/item/rogueweapon/tongs(src)
 	new /obj/item/natural/stone(src)
 	new /obj/item/natural/stone(src)
@@ -251,6 +251,19 @@
 	new /obj/item/roguebin(src)
 	new /obj/item/reagent_containers/glass/bucket/wooden(src)
 
+/datum/roguestock/import/craftsman
+	name = "Craftsman Crate"
+	desc = "Handsaw, chisel, hammer."
+	item_type = /obj/structure/closet/crate/chest/steward/craftsman
+	export_price = 60
+	importexport_amt = 1
+
+/obj/structure/closet/crate/chest/steward/craftsman/Initialize()
+	. = ..()
+	new /obj/item/rogueweapon/hammer/wood(src)
+	new /obj/item/rogueweapon/chisel(src)
+	new /obj/item/rogueweapon/handsaw(src)
+
 /datum/roguestock/import/glasscrate
 	name = "Glass Crate"
 	desc = "A crate full of glass for windows, repairs, and works of art.."
@@ -260,11 +273,11 @@
 
 /obj/structure/closet/crate/chest/steward/glasscrate/Initialize()
 	. = ..()
-	new /obj/item/ingot/glass(src)
-	new /obj/item/ingot/glass(src)
-	new /obj/item/ingot/glass(src)
-	new /obj/item/ingot/glass(src)
-	new /obj/item/ingot/glass(src)
+	new /obj/item/natural/glass(src)
+	new /obj/item/natural/glass(src)
+	new /obj/item/natural/glass(src)
+	new /obj/item/natural/glass(src)
+	new /obj/item/natural/glass(src)
 
 
 

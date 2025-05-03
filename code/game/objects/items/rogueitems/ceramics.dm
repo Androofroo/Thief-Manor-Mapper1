@@ -79,23 +79,6 @@
 	icon_state = "claybrickraw"
 	cooked_type = /obj/item/natural/brick
 
-/obj/item/natural/brick
-	name = "brick"
-	desc = "A cooked red brick."
-	icon = 'icons/roguetown/items/cooking.dmi'
-	icon_state = "claybrickcook"
-	gripped_intents = null
-	sellprice = 3
-	dropshrink = 0.75
-	possible_item_intents = list(INTENT_GENERIC)
-	force = 14			//stronger than rock
-	throwforce = 18		//stronger than rock
-	slot_flags = ITEM_SLOT_MOUTH
-	obj_flags = null
-	w_class = WEIGHT_CLASS_TINY
-	experimental_inhand = FALSE
-	hitsound = list('sound/combat/hits/blunt/brick.ogg')
-
 //Statues - Basically cheapest version of the metal-made statues, but way easier to make given no rare material usage. Just skill. Plus, dyeable.
 /obj/item/natural/clay/claystatue
 	name = "uncooked clay statue"

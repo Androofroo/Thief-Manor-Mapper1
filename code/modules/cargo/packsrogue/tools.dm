@@ -184,6 +184,16 @@
 					/obj/item/flashlight/flare/torch/lantern,
 					/obj/item/flashlight/flare/torch/lantern)
 
+/datum/supply_pack/rogue/tools/handsaw
+	name = "Handsaw"
+	cost = 60
+	contains = list(/obj/item/rogueweapon/handsaw)
+
+/datum/supply_pack/rogue/tools/hammer
+	name = "Hammer"
+	cost = 60
+	contains = list(/obj/item/rogueweapon/hammer/iron)
+
 /datum/supply_pack/rogue/tools/fryingpan
 	name = "Frying Pan"
 	cost = 20

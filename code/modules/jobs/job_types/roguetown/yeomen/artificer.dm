@@ -51,10 +51,10 @@
 	mask = /obj/item/clothing/mask/rogue/spectacles/golden
 	backl = /obj/item/storage/backpack/rogue/backpack
 	backpack_contents = list(
-						/obj/item/rogueweapon/hammer/claw = 1,
-						/obj/item/lockpickring/mundane = 1,
-						/obj/item/clothing/cloak/apron/blacksmith = 1
-						)
+						/obj/item/rogueweapon/hammer/steel = 1,
+						/obj/item/rogueweapon/handsaw = 1,
+						/obj/item/rogueweapon/chisel = 1,
+						/obj/item/lockpickring/mundane = 1)
 	H.change_stat("strength", 1)
 	H.change_stat("intelligence", 2)
 	H.change_stat("endurance", 1)

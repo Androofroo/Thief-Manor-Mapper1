@@ -14842,7 +14842,7 @@
 	dir = 1;
 	icon_state = "borderfall"
 	},
-/obj/effect/decal/cleanable/glass,
+/obj/effect/decal/cleanable/debris/glassy,
 /turf/open/floor/rogue/dirt/road,
 /area/rogue/outdoors/mountains)
 "kzX" = (
@@ -17617,7 +17617,7 @@
 	dir = 1;
 	icon_state = "borderfall"
 	},
-/obj/effect/decal/cleanable/glass,
+/obj/effect/decal/cleanable/debris/glassy,
 /turf/open/floor/rogue/grassyel,
 /area/rogue/outdoors/mountains)
 "mrD" = (
@@ -19550,7 +19550,7 @@
 	dir = 1
 	},
 /obj/structure/flora/roguegrass,
-/obj/effect/decal/cleanable/glass,
+/obj/effect/decal/cleanable/debris/glassy,
 /turf/open/floor/rogue/grass,
 /area/rogue/indoors/town)
 "nHW" = (
@@ -25591,7 +25591,7 @@
 /obj/structure/chair/bench/church/smallbench{
 	dir = 1
 	},
-/obj/effect/decal/cleanable/glass,
+/obj/effect/decal/cleanable/debris/glassy,
 /turf/open/floor/rogue/hexstone,
 /area/rogue/indoors/town)
 "rSR" = (

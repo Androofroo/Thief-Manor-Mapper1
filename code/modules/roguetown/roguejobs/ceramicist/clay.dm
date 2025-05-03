@@ -26,7 +26,7 @@
 	name = "glass batch"
 	icon_state = "glassBatch"
 	desc = "A mixture of finely ground silica, flux and a stablizer. It glistens against the light, and could be turned into precious glass by a competent potter."
-	smeltresult = /obj/item/ingot/glass 	// Smelted in a furnace, like a ore.
+	smeltresult = /obj/item/natural/glass 	// Smelted in a furnace, like a ore.
 	grind_results = list(/datum/reagent/iron = 15)
 	sellprice = 5
 	cooktime = 0
