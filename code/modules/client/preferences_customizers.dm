@@ -150,9 +150,10 @@
 				entry.disabled = !entry.disabled
 				
 				// GENITAL RULES: Penis and testicles must be enabled/disabled together
-				// Penis and vagina cannot be enabled at the same time
+				// Penis and vagina cannot be enabled at the same time (for both males and females)
 				// Male characters can only have breasts if they have a vagina (and no penis)
-				// Having vagina+breasts sets pronouns to "she" but doesn't change gender
+				// Female characters CAN have both penis and breasts together
+				// Having vagina+breasts sets pronouns to "she/her" but doesn't change gender
 				// Having breasts disables facial hair
 				var/is_penis_customizer = FALSE
 				var/is_testicles_customizer = FALSE
@@ -194,13 +195,18 @@
 					if(is_penis_customizer && penis_entry)
 						// Penis toggled - enforce rules
 						if(!penis_entry.disabled)
-							// Penis enabled - enable testicles, disable vagina, and disable breasts
+							// Penis enabled - enable testicles
 							if(testicles_entry)
 								testicles_entry.disabled = FALSE
+							
+							// For ALL characters: Penis disables vagina
 							if(vagina_entry)
 								vagina_entry.disabled = TRUE
-							if(breasts_entry)
-								breasts_entry.disabled = TRUE
+								
+							// For MALE characters only: Penis disables breasts
+							if(gender == MALE)
+								if(breasts_entry)
+									breasts_entry.disabled = TRUE
 						else
 							// Penis disabled - disable testicles
 							if(testicles_entry)
@@ -209,13 +215,18 @@
 					if(is_testicles_customizer && testicles_entry)
 						// Testicles toggled - enforce rules
 						if(!testicles_entry.disabled)
-							// Testicles enabled - enable penis, disable vagina, and disable breasts
+							// Testicles enabled - enable penis
 							if(penis_entry)
 								penis_entry.disabled = FALSE
+							
+							// For ALL characters: Penis/testicles disable vagina 
 							if(vagina_entry)
 								vagina_entry.disabled = TRUE
-							if(breasts_entry)
-								breasts_entry.disabled = TRUE
+								
+							// For MALE characters only: Testicles disable breasts
+							if(gender == MALE)
+								if(breasts_entry)
+									breasts_entry.disabled = TRUE
 						else
 							// Testicles disabled - disable penis
 							if(penis_entry)
@@ -224,7 +235,7 @@
 					if(is_vagina_customizer && vagina_entry)
 						// Vagina toggled - enforce rules
 						if(!vagina_entry.disabled)
-							// Vagina enabled - disable penis and testicles
+							// For ALL characters: Vagina disables penis and testicles
 							if(penis_entry)
 								penis_entry.disabled = TRUE
 							if(testicles_entry)
@@ -256,15 +267,16 @@
 					if(is_breasts_customizer && breasts_entry)
 						// Breasts toggled - enforce rules
 						if(!breasts_entry.disabled)
-							// Breasts enabled - disable penis and testicles regardless of gender
-							if(penis_entry)
-								penis_entry.disabled = TRUE
-							if(testicles_entry)
-								testicles_entry.disabled = TRUE
+							// For MALE characters: Breasts disable penis and testicles, and force vagina to be enabled
+							if(gender == MALE)
+								if(penis_entry)
+									penis_entry.disabled = TRUE
+								if(testicles_entry)
+									testicles_entry.disabled = TRUE
 							
-							// Force vagina to be enabled
-							if(vagina_entry)
-								vagina_entry.disabled = FALSE
+								// Force vagina to be enabled for males
+								if(vagina_entry)
+									vagina_entry.disabled = FALSE
 							
 							// Having vagina+breasts sets pronouns to "she" (regardless of gender)
 							pronouns = SHE_HER
