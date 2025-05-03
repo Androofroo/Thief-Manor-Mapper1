@@ -97,6 +97,7 @@
 			H.change_stat("speed", 2)
 			armor = /obj/item/clothing/suit/roguetown/armor/leather
 			head = /obj/item/clothing/head/roguetown/duelhat
+			mask = /obj/item/clothing/mask/rogue/duelmask
 			cloak = /obj/item/clothing/cloak/half
 			wrists = /obj/item/clothing/wrists/roguetown/bracers/leather
 			shirt = /obj/item/clothing/suit/roguetown/shirt/undershirt/black

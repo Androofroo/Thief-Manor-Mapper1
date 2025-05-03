@@ -364,3 +364,15 @@
 /obj/item/clothing/mask/rogue/blindfold/dropped(mob/living/carbon/human/user)
 	..()
 	user.cure_blind("blindfold_[REF(src)]")
+
+/obj/item/clothing/mask/rogue/duelmask
+	name = "duelist's mask"
+	desc = "A black cloth mask for those masked duelists, doesn't grant any protection, but covers your eyes, and your identity... somehow."
+	icon_state = "duelmask"
+	flags_inv = HIDEFACE
+	body_parts_covered = EYES
+	slot_flags = ITEM_SLOT_MASK
+	color = COLOR_ALMOST_BLACK	
+	detail_tag = "_detail"
+	detail_color = COLOR_SILVER
+	sewrepair = TRUE

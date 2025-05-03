@@ -194,6 +194,13 @@
 				/obj/item/natural/fibers = 1)
 	craftdiff = 1
 
+/datum/crafting_recipe/roguetown/sewing/duelmask
+	name = "duelist's mask (1 fibers, 2 cloth)"
+	result = list(/obj/item/clothing/mask/rogue/duelmask)
+	reqs = list(/obj/item/natural/cloth = 2,
+				/obj/item/natural/fibers = 1)
+	craftdiff = 1
+
 /* craftdif of 2+ */
 
 /datum/crafting_recipe/roguetown/sewing/wrappings
