@@ -4,7 +4,7 @@ GLOBAL_VAR_INIT(year_integer, text2num(year)) // = 2013???
 /mob/living/carbon/human/Topic(href, href_list)
 	var/observer_privilege = isobserver(usr)
 
-	if(href_list["task"] == "view_headshot")
+	/*if(href_list["task"] == "view_headshot")
 		if(!ismob(usr))
 			return
 		var/mob/user = usr
@@ -46,7 +46,7 @@ GLOBAL_VAR_INIT(year_integer, text2num(year)) // = 2013???
 		var/datum/browser/popup = new(user, "[src]", nwidth = 600, nheight = 800)
 		popup.set_content(dat.Join())
 		popup.open(FALSE)
-		return
+		return*/
 
 	if(href_list["inspect_limb"] && (observer_privilege || usr.canUseTopic(src, BE_CLOSE, NO_DEXTERITY)))
 		var/list/msg = list()
