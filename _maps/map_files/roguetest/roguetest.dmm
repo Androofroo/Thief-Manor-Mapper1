@@ -79,6 +79,10 @@
 /obj/structure/roguewindow,
 /turf/open/floor/rogue/ruinedwood/herringbone,
 /area/rogue/indoors)
+"bw" = (
+/obj/effect/landmark/start/cook,
+/turf/open/floor/rogue/ruinedwood/herringbone,
+/area/rogue/indoors)
 "bQ" = (
 /obj/structure/table/wood{
 	icon_state = "longtable_mid";
@@ -412,7 +416,7 @@
 /obj/structure/roguethrone,
 /obj/structure/roguemachine/titan,
 /obj/item/roguekey/lord,
-/obj/effect/landmark/start,
+/obj/effect/landmark/start/lord,
 /turf/open/floor/rogue/carpet/lord/center,
 /area/rogue/indoors)
 "nw" = (
@@ -452,6 +456,10 @@
 /obj/machinery/light/rogue/wallfire/candle/blue,
 /obj/machinery/tanningrack,
 /turf/open/floor/rogue/blocks/stonered/tiny,
+/area/rogue/indoors)
+"pE" = (
+/obj/effect/landmark/start/manorguardsman,
+/turf/open/floor/rogue/grass,
 /area/rogue/indoors)
 "pH" = (
 /obj/structure/table/wood{
@@ -541,6 +549,7 @@
 "tk" = (
 /obj/structure/roguemachine/mail/l,
 /obj/machinery/light/rogue/wallfire/candle,
+/obj/effect/landmark/start/knight,
 /turf/open/floor/rogue/tile/masonic/single,
 /area/rogue/indoors)
 "tz" = (
@@ -675,11 +684,16 @@
 /obj/structure/fluff/walldeco/med{
 	pixel_y = 32
 	},
+/obj/effect/landmark/start/physician,
 /turf/open/floor/rogue/blocks/newstone/alt,
 /area/rogue/indoors)
 "xJ" = (
 /obj/item/flint,
 /turf/open/floor/rogue/ruinedwood,
+/area/rogue/indoors)
+"yR" = (
+/obj/effect/landmark/start/merchant,
+/turf/open/floor/rogue/dirt/road,
 /area/rogue/indoors)
 "zf" = (
 /obj/structure/roguemachine/stockpile,
@@ -712,6 +726,10 @@
 "zZ" = (
 /obj/structure/fluff/statue/tdummy,
 /turf/open/floor/rogue/grass,
+/area/rogue/outdoors)
+"Ao" = (
+/obj/effect/landmark/start/assassin,
+/turf/open/floor/rogue/dirt/road,
 /area/rogue/outdoors)
 "BF" = (
 /obj/structure/table/wood{
@@ -752,7 +770,6 @@
 /area/rogue/indoors)
 "Do" = (
 /obj/structure/table/cooling,
-/obj/item/mortar,
 /obj/item/pestle,
 /turf/open/floor/rogue/blocks/newstone/alt,
 /area/rogue/indoors)
@@ -801,6 +818,7 @@
 /turf/open/floor/rogue/cobblerock,
 /area/rogue/outdoors)
 "Fc" = (
+/obj/effect/landmark/start/prince,
 /turf/open/floor/rogue/carpet/lord/left,
 /area/rogue/indoors)
 "Fk" = (
@@ -815,6 +833,10 @@
 "Fo" = (
 /turf/open/floor/rogue/naturalstone,
 /area/rogue/indoors/cave)
+"FF" = (
+/obj/effect/landmark/start/marshal,
+/turf/open/floor/rogue/dirt/road,
+/area/rogue/indoors)
 "FP" = (
 /obj/structure/fluff/railing/wood,
 /turf/open/floor/rogue/hay,
@@ -822,6 +844,10 @@
 "Hd" = (
 /obj/machinery/tanningrack,
 /turf/open/floor/rogue/blocks/newstone/alt,
+/area/rogue/indoors)
+"Hl" = (
+/obj/effect/landmark/start/priest,
+/turf/open/floor/rogue/cobblerock,
 /area/rogue/indoors)
 "HA" = (
 /turf/open/floor/rogue/grass,
@@ -960,6 +986,10 @@
 /obj/item/rogueweapon/mace/wsword,
 /turf/open/floor/rogue/dirt/road,
 /area/rogue/indoors)
+"MC" = (
+/obj/effect/landmark/start/adventurer,
+/turf/open/floor/rogue/dirt/road,
+/area/rogue/outdoors)
 "MR" = (
 /obj/structure/table/wood{
 	icon_state = "longtable_mid";
@@ -1034,6 +1064,10 @@
 /area/rogue/indoors)
 "Og" = (
 /turf/closed/wall/mineral/rogue/decowood/vert,
+/area/rogue/indoors)
+"Ow" = (
+/obj/effect/landmark/start/councillor,
+/turf/open/floor/rogue/cobblerock,
 /area/rogue/indoors)
 "OI" = (
 /obj/structure/table/wood{
@@ -1134,6 +1168,7 @@
 	dir = 1;
 	icon_state = "borderfall"
 	},
+/obj/effect/landmark/start/lady,
 /turf/open/floor/rogue/tile/masonic/single,
 /area/rogue/indoors)
 "So" = (
@@ -1219,6 +1254,7 @@
 /obj/structure/stairs/fancy/r{
 	dir = 1
 	},
+/obj/effect/landmark/start/jester,
 /turf/open/floor/rogue/carpet/lord{
 	icon_state = "carpet_r"
 	},
@@ -1769,7 +1805,7 @@ oz
 Th
 Og
 LC
-Zp
+bw
 Zp
 ai
 Og
@@ -2758,7 +2794,7 @@ YV
 lC
 tk
 Sm
-qA
+Ow
 qA
 BJ
 al
@@ -2766,7 +2802,7 @@ al
 BJ
 HA
 BJ
-BJ
+MC
 BJ
 BJ
 BJ
@@ -2818,7 +2854,7 @@ al
 al
 BJ
 BJ
-BJ
+Ao
 BJ
 BJ
 BJ
@@ -2966,7 +3002,7 @@ YV
 lC
 Fk
 nK
-qA
+Hl
 qA
 Dm
 Dm
@@ -3071,7 +3107,7 @@ nz
 ck
 Dm
 Dm
-Dm
+FF
 MX
 Dm
 aP
@@ -3123,7 +3159,7 @@ nz
 ck
 ax
 Vf
-Vf
+pE
 UM
 Dm
 pH
@@ -3177,7 +3213,7 @@ aF
 Dm
 Vf
 zH
-Dm
+yR
 nP
 Vf
 jp
