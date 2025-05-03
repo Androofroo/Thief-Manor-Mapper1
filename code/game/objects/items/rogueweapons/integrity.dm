@@ -49,8 +49,10 @@
 /obj/item/attackby(obj/item/I, mob/user, params)
 	user.changeNext_move(user.used_intent.clickcd)
 	if(max_blade_int)
-		if(istype(I, /obj/item/natural/stone))
-			var/obj/item/natural/stone/ST = I
+		if(istype(I, /obj/item/natural))
+			var/obj/item/natural/ST = I
+			if(!ST.sharpening_factor)
+				return
 			playsound(src.loc, pick('sound/items/sharpen_long1.ogg','sound/items/sharpen_long2.ogg'), 100)
 			user.visible_message(span_notice("[user] sharpens [src]!"))
 			degrade_bintegrity(0.5)
