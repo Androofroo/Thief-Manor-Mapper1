@@ -138,7 +138,6 @@
 		customizer_choice.apply_customizer_to_character(human, src, entry)
 
 /datum/preferences/proc/handle_customizer_topic(mob/user, href_list)
-	//needs_update = TRUE
 	var/customizer_type = text2path(href_list["customizer"])
 	var/datum/customizer_entry/entry = get_customizer_entry_for_customizer_type(customizer_type)
 	if(!entry)
@@ -149,6 +148,146 @@
 		if("toggle_missing")
 			if(customizer.allows_disabling)
 				entry.disabled = !entry.disabled
+				
+				// GENITAL RULES: Penis and testicles must be enabled/disabled together
+				// Penis and vagina cannot be enabled at the same time
+				// Male characters can only have breasts if they have a vagina (and no penis)
+				// Having vagina+breasts sets pronouns to "she" but doesn't change gender
+				// Having breasts disables facial hair
+				var/is_penis_customizer = FALSE
+				var/is_testicles_customizer = FALSE
+				var/is_vagina_customizer = FALSE
+				var/is_breasts_customizer = FALSE
+				
+				// Check if this is a genital customizer by checking if it's a subtype of the abstract types
+				if(ispath(customizer.type, /datum/customizer/organ/penis))
+					is_penis_customizer = TRUE
+				else if(ispath(customizer.type, /datum/customizer/organ/testicles))
+					is_testicles_customizer = TRUE
+				else if(ispath(customizer.type, /datum/customizer/organ/vagina))
+					is_vagina_customizer = TRUE
+				else if(ispath(customizer.type, /datum/customizer/organ/breasts))
+					is_breasts_customizer = TRUE
+				
+				if(is_penis_customizer || is_testicles_customizer || is_vagina_customizer || is_breasts_customizer)
+					// Get all genital customizer entries of all subtypes
+					var/datum/customizer_entry/penis_entry = null
+					var/datum/customizer_entry/testicles_entry = null
+					var/datum/customizer_entry/vagina_entry = null
+					var/datum/customizer_entry/breasts_entry = null
+					var/datum/customizer_entry/facial_hair_entry = null
+					
+					// Find all relevant entries
+					for(var/datum/customizer_entry/genital_entry as anything in customizer_entries)
+						var/datum/customizer/genital_customizer = CUSTOMIZER(genital_entry.customizer_type)
+						if(ispath(genital_customizer.type, /datum/customizer/organ/penis))
+							penis_entry = genital_entry
+						else if(ispath(genital_customizer.type, /datum/customizer/organ/testicles))
+							testicles_entry = genital_entry
+						else if(ispath(genital_customizer.type, /datum/customizer/organ/vagina))
+							vagina_entry = genital_entry
+						else if(ispath(genital_customizer.type, /datum/customizer/organ/breasts))
+							breasts_entry = genital_entry
+						else if(ispath(genital_customizer.type, /datum/customizer/bodypart_feature/hair/facial))
+							facial_hair_entry = genital_entry
+					
+					if(is_penis_customizer && penis_entry)
+						// Penis toggled - enforce rules
+						if(!penis_entry.disabled)
+							// Penis enabled - enable testicles, disable vagina, and disable breasts
+							if(testicles_entry)
+								testicles_entry.disabled = FALSE
+							if(vagina_entry)
+								vagina_entry.disabled = TRUE
+							if(breasts_entry)
+								breasts_entry.disabled = TRUE
+						else
+							// Penis disabled - disable testicles
+							if(testicles_entry)
+								testicles_entry.disabled = TRUE
+					
+					if(is_testicles_customizer && testicles_entry)
+						// Testicles toggled - enforce rules
+						if(!testicles_entry.disabled)
+							// Testicles enabled - enable penis, disable vagina, and disable breasts
+							if(penis_entry)
+								penis_entry.disabled = FALSE
+							if(vagina_entry)
+								vagina_entry.disabled = TRUE
+							if(breasts_entry)
+								breasts_entry.disabled = TRUE
+						else
+							// Testicles disabled - disable penis
+							if(penis_entry)
+								penis_entry.disabled = TRUE
+					
+					if(is_vagina_customizer && vagina_entry)
+						// Vagina toggled - enforce rules
+						if(!vagina_entry.disabled)
+							// Vagina enabled - disable penis and testicles
+							if(penis_entry)
+								penis_entry.disabled = TRUE
+							if(testicles_entry)
+								testicles_entry.disabled = TRUE
+								
+							// For male characters, disable facial hair when vagina is enabled (regardless of breasts)
+							if(gender == MALE && facial_hair_entry)
+								facial_hair_entry.disabled = TRUE
+								// Force shaved facial hair style
+								facial_hair_entry.accessory_type = /datum/sprite_accessory/hair/facial/shaved
+								to_chat(user, "<span class='notice'>Facial hair customization has been disabled.</span>")
+							
+							// Having vagina+breasts sets pronouns to "she" (regardless of gender)
+							if(breasts_entry && !breasts_entry.disabled)
+								pronouns = SHE_HER
+								// Notify the user of the pronoun change
+								to_chat(user, "<span class='notice'>Your character's pronouns have been set to 'she/her'.</span>")
+						else
+							// Vagina disabled - reset pronouns to match gender if breasts are also disabled
+							if(breasts_entry && breasts_entry.disabled && gender == MALE && pronouns == SHE_HER)
+								pronouns = HE_HIM
+								to_chat(user, "<span class='notice'>Your character's pronouns have been reset to 'he/him'.</span>")
+								
+								// Re-enable facial hair for male characters when vagina is disabled
+								if(facial_hair_entry && gender == MALE)
+									facial_hair_entry.disabled = FALSE
+									to_chat(user, "<span class='notice'>Facial hair customization has been re-enabled.</span>")
+					
+					if(is_breasts_customizer && breasts_entry)
+						// Breasts toggled - enforce rules
+						if(!breasts_entry.disabled)
+							// Breasts enabled - disable penis and testicles regardless of gender
+							if(penis_entry)
+								penis_entry.disabled = TRUE
+							if(testicles_entry)
+								testicles_entry.disabled = TRUE
+							
+							// Force vagina to be enabled
+							if(vagina_entry)
+								vagina_entry.disabled = FALSE
+							
+							// Having vagina+breasts sets pronouns to "she" (regardless of gender)
+							pronouns = SHE_HER
+							
+							// Disable facial hair
+							if(facial_hair_entry)
+								facial_hair_entry.disabled = TRUE
+								// Force shaved facial hair style
+								facial_hair_entry.accessory_type = /datum/sprite_accessory/hair/facial/shaved
+							
+							// Notify the user of the pronoun change
+							to_chat(user, "<span class='notice'>Your character's pronouns have been set to 'she/her'.</span>")
+						else
+							// Breasts disabled - reset pronouns to match gender for male characters
+							if(gender == MALE && pronouns == SHE_HER)
+								// Only reset if vagina is also disabled
+								if(vagina_entry && vagina_entry.disabled)
+									pronouns = HE_HIM
+									to_chat(user, "<span class='notice'>Your character's pronouns have been reset to 'he/him'.</span>")
+									
+									// Allow facial hair again
+									if(facial_hair_entry)
+										facial_hair_entry.disabled = FALSE
 		if("change_choice")
 			var/list/choice_list = list()
 			for(var/choice_type in customizer.customizer_choices)

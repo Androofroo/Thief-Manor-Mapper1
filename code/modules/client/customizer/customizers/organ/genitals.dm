@@ -15,7 +15,7 @@
 	organ_dna_type = /datum/organ_dna/penis
 	customizer_entry_type = /datum/customizer_entry/organ/penis
 	organ_slot = ORGAN_SLOT_PENIS
-	allows_accessory_color_customization = FALSE
+	allows_accessory_color_customization = FALSE // All penis types will use skin color by default
 
 /datum/customizer_choice/organ/penis/validate_entry(datum/preferences/prefs, datum/customizer_entry/entry)
 	..()
@@ -185,7 +185,7 @@
 	customizer_entry_type = /datum/customizer_entry/organ/testicles
 	organ_slot = ORGAN_SLOT_TESTICLES
 	var/can_customize_size = TRUE
-	allows_accessory_color_customization = FALSE
+	allows_accessory_color_customization = FALSE // All testicles will use skin color by default
 
 /datum/customizer_choice/organ/testicles/validate_entry(datum/preferences/prefs, datum/customizer_entry/entry)
 	..()
