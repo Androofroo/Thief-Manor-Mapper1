@@ -104,7 +104,7 @@
 	backpack_contents = list(/obj/item/rogueweapon/huntingknife/idagger/steel/special = 1, /obj/item/rope/chain = 1, /obj/item/storage/keyring/royal = 1)
 	
 	// Handle weapon choices directly in pre_equip
-	addtimer(CALLBACK(src, PROC_REF(give_weapon_choices), H), 5)
+	addtimer(CALLBACK(src, PROC_REF(give_weapon_choices), H), 1)
 
 /datum/outfit/job/roguetown/knight/valiant/proc/give_weapon_choices(mob/living/carbon/human/H)
 	if(!H)
@@ -145,7 +145,7 @@
 		// Armor selection
 		armorchoice = input(H, "Choose your armor.", "TAKE UP ARMOR") as null|anything in armors
 	else
-		// For roundstart knights with no client attached yet, use random selection
+		// For knights with no client attached, use random selection
 		var/list/weapons = list("Longsword + Tower Shield", "Warhammer + Buckler", "Steel Mace + Wooden Shield")
 		weapon_choice = pick(weapons)
 		
@@ -292,7 +292,7 @@
 	backpack_contents = list(/obj/item/rogueweapon/huntingknife/idagger/steel/special = 1, /obj/item/rope/chain = 1, /obj/item/storage/keyring/royal = 1)
 	
 	// Handle weapon choices directly in pre_equip
-	addtimer(CALLBACK(src, PROC_REF(give_weapon_choices), H), 5)
+	addtimer(CALLBACK(src, PROC_REF(give_weapon_choices), H), 1)
 
 /datum/outfit/job/roguetown/knight/blackguard/proc/give_weapon_choices(mob/living/carbon/human/H)
 	if(!H)
@@ -322,7 +322,7 @@
 		// Helmet selection
 		helmchoice = input(H, "Choose your Helm.", "TAKE UP HELMS") as null|anything in helmets
 	else
-		// For roundstart knights with no client attached yet, use random selection
+		// For knights with no client attached, use random selection
 		var/list/weapons = list("Great Axe", "Zweihander", "Morningstar")
 		weapon_choice = pick(weapons)
 		
@@ -374,12 +374,10 @@
 	else
 		to_chat(H, "<span class='warning'>You couldn't equip \a [weapon_item], so it's on the ground.</span>")
 	
-	// Equip the gwstrap if needed
+	// Equip the gwstrap if needed - equip instantly
 	if(backpack_item)
-		if(H.equip_to_slot_if_possible(backpack_item, SLOT_BACK_L))
-			to_chat(H, "<span class='notice'>You equip \a [backpack_item] to carry your weapon when not in use.</span>")
-		else
-			to_chat(H, "<span class='warning'>You couldn't equip \a [backpack_item], so it's on the ground.</span>")
+		H.equip_to_slot_or_del(backpack_item, SLOT_BACK_L)
+		to_chat(H, "<span class='notice'>You equip \a [backpack_item] to carry your weapon when not in use.</span>")
 		
 	to_chat(H, "<span class='boldnotice'>Welcome, [H.real_name], fearsome Blackguard!</span>")
 
@@ -435,7 +433,7 @@
 	backpack_contents = list(/obj/item/rogueweapon/huntingknife/idagger/steel/special = 1, /obj/item/rope/chain = 1, /obj/item/storage/keyring/royal = 1)
 	
 	// Handle weapon choices directly in pre_equip
-	addtimer(CALLBACK(src, PROC_REF(give_weapon_choices), H), 5)
+	addtimer(CALLBACK(src, PROC_REF(give_weapon_choices), H), 1)
 
 /datum/outfit/job/roguetown/knight/templar/proc/give_weapon_choices(mob/living/carbon/human/H)
 	if(!H)
@@ -448,7 +446,7 @@
 		var/weapons = list("Longsword + Kite Shield","Steel Mace + Buckler","Warhammer + Wooden Shield")
 		weapon_choice = input(H, "Choose your weapon.", "TAKE UP ARMS") as null|anything in weapons
 	else
-		// For roundstart knights with no client attached yet, use random selection
+		// For knights with no client attached, use random selection
 		var/list/weapons = list("Longsword + Kite Shield","Steel Mace + Buckler","Warhammer + Wooden Shield")
 		weapon_choice = pick(weapons)
 	
@@ -546,7 +544,7 @@
 	backpack_contents = list(/obj/item/rogueweapon/huntingknife/idagger/steel/special = 1, /obj/item/rope/chain = 1, /obj/item/storage/keyring/royal = 1)
 	
 	// Handle weapon choices directly in pre_equip
-	addtimer(CALLBACK(src, PROC_REF(give_weapon_choices), H), 5)
+	addtimer(CALLBACK(src, PROC_REF(give_weapon_choices), H), 1)
 
 /datum/outfit/job/roguetown/knight/otavan/proc/give_weapon_choices(mob/living/carbon/human/H)
 	if(!H)
@@ -559,7 +557,6 @@
 		var/classes = list("Swordsman", "Macebearer", "Flailman")
 		classchoice = input(H, "Choose your archetype", "Available archetypes") as null|anything in classes
 	else
-		// For roundstart knights with no client attached yet, use random selection
 		var/list/classes = list("Swordsman", "Macebearer", "Flailman")
 		classchoice = pick(classes)
 	
