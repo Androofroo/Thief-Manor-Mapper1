@@ -16,10 +16,10 @@ endmap
 map roguetest
 endmap
 
-map dun_manor
+map thief_manor
+	default
 endmap
 
 map dun_world
-	default
 	votable
 endmap

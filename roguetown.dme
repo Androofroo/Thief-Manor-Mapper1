@@ -8,7 +8,9 @@
 // END_PREFERENCES
 // BEGIN_INCLUDE
 #include "_maps\_basemap.dm"
+#include "_maps\thief_manor.dm"
 #include "_maps\map_files\generic\CentCom.dmm"
+#include "_maps\map_files\Thief_Manor\ThiefManorWorld.dmm"
 #include "_maps\templates\bog_shack_small.dm"
 #include "_maps\templates\sewers.dm"
 #include "_maps\templates\smalldungeons.dm"
