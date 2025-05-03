@@ -66,6 +66,7 @@ There are several things that need to be remembered:
 
 /mob/living/carbon/human/update_body()
 	dna.species.handle_body(src)
+	update_genital_colors()
 	..()
 
 /mob/living/carbon/human/update_fire()

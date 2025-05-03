@@ -17,6 +17,7 @@
 /datum/organ_dna/proc/create_organ(atom/location)
 	var/obj/item/organ/new_organ = new organ_type(location)
 	imprint_organ(new_organ)
+	new_organ.update_accessory_colors()
 	return new_organ
 
 /// Imprints information on the organ.

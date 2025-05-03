@@ -3,10 +3,7 @@
 #define PENIS_SKIN_COLOR "penis_skin_color"
 #define TESTICLES_COLOR "testicles_color"
 #define BREASTS_COLOR "breasts_color"
-
-// Utility defines for skin tone conversion
-// Key is already defined elsewhere in the codebase
-#define SKINTONE2HEX(tone) (GLOB.skin_tones[tone] || "#a57d50")
+#define VAGINA_COLOR "vagina_color"  // Add a color key constant for vagina
 
 /datum/sprite_accessory/penis
 	icon = 'icons/mob/sprite_accessory/genitals/pintle.dmi'
@@ -34,7 +31,15 @@
 	var/skin_color = "#a57d50"
 	if(H.dna && H.dna.species)
 		if(H.dna.species.use_skintones && H.skin_tone)
-			skin_color = SKINTONE2HEX(H.skin_tone)
+			// skin_tone is already a hex color value like "a57d50" in many cases
+			if(H.skin_tone in GLOB.skin_tones)
+				skin_color = "#" + GLOB.skin_tones[H.skin_tone]
+			else if(GLOB.skin_tones[H.skin_tone]) // If it's a key in the list
+				skin_color = "#" + GLOB.skin_tones[H.skin_tone]
+			else if(findtext(H.skin_tone, "#")) // If it already has a # prefix
+				skin_color = H.skin_tone
+			else // Otherwise assume it's directly a hex color without #
+				skin_color = "#" + H.skin_tone
 		else if(length(H.dna.species.species_traits) > 0 && H.dna.features["mcolor"])
 			// For non-human species that use mutant colors
 			skin_color = "#[H.dna.features["mcolor"]]"
@@ -185,6 +190,8 @@
 
 /datum/sprite_accessory/vagina/adjust_appearance_list(list/appearance_list, obj/item/organ/organ, obj/item/bodypart/bodypart, mob/living/carbon/owner)
 	generic_gender_feature_adjust(appearance_list, organ, bodypart, owner, OFFSET_BELT, OFFSET_BELT_F)
+	// Use fixed color instead of skin tone
+	appearance_list[VAGINA_COLOR] = "#ea6767"
 
 /datum/sprite_accessory/vagina/is_visible(obj/item/organ/organ, obj/item/bodypart/bodypart, mob/living/carbon/owner)
 	if(owner.underwear)

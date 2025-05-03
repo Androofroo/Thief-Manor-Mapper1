@@ -29,8 +29,22 @@
 	penis_dna.penis_size = penis_entry.penis_size
 	penis_dna.functional = penis_entry.functional
 	
-	// Set default skin-colored genitals
-	penis_dna.accessory_colors = list("#a57d50", "#a57d50")
+	// Get proper skin color from preferences
+	var/skin_color = "#a57d50" // Default fallback
+	if(MUTCOLORS in prefs.pref_species.species_traits && prefs.features["mcolor"])
+		skin_color = "#[prefs.features["mcolor"]]"
+	else if(prefs.skin_tone)
+		// skin_tone can be a direct hex color value or a key in GLOB.skin_tones
+		if(prefs.skin_tone in GLOB.skin_tones)
+			skin_color = "#" + GLOB.skin_tones[prefs.skin_tone]
+		else if(GLOB.skin_tones[prefs.skin_tone]) 
+			skin_color = "#" + GLOB.skin_tones[prefs.skin_tone]
+		else if(findtext(prefs.skin_tone, "#")) 
+			skin_color = prefs.skin_tone
+		else 
+			skin_color = "#" + prefs.skin_tone
+	
+	penis_dna.accessory_colors = list(skin_color, skin_color)
 
 /datum/customizer_choice/organ/penis/generate_pref_choices(list/dat, datum/preferences/prefs, datum/customizer_entry/entry, customizer_type)
 	..()
@@ -198,17 +212,31 @@
 	var/datum/customizer_entry/organ/testicles/testicles_entry = entry
 	if(can_customize_size)
 		testicles_dna.ball_size = testicles_entry.ball_size
-	testicles_dna.virility = testicles_entry.virility
+	testicles_dna.virility = testicles_entry.virile
 	
-	// Set default skin-colored genitals
-	testicles_dna.accessory_colors = list("#a57d50")
+	// Get proper skin color from preferences
+	var/skin_color = "#a57d50" // Default fallback
+	if(MUTCOLORS in prefs.pref_species.species_traits && prefs.features["mcolor"])
+		skin_color = "#[prefs.features["mcolor"]]"
+	else if(prefs.skin_tone)
+		// skin_tone can be a direct hex color value or a key in GLOB.skin_tones
+		if(prefs.skin_tone in GLOB.skin_tones)
+			skin_color = "#" + GLOB.skin_tones[prefs.skin_tone]
+		else if(GLOB.skin_tones[prefs.skin_tone]) 
+			skin_color = "#" + GLOB.skin_tones[prefs.skin_tone]
+		else if(findtext(prefs.skin_tone, "#")) 
+			skin_color = prefs.skin_tone
+		else 
+			skin_color = "#" + prefs.skin_tone
+	
+	testicles_dna.accessory_colors = list(skin_color)
 
 /datum/customizer_choice/organ/testicles/generate_pref_choices(list/dat, datum/preferences/prefs, datum/customizer_entry/entry, customizer_type)
 	..()
 	var/datum/customizer_entry/organ/testicles/testicles_entry = entry
 	if(can_customize_size)
 		dat += "<br>Ball size: <a href='?_src_=prefs;task=change_customizer;customizer=[customizer_type];customizer_task=ball_size''>[find_key_by_value(GLOB.named_ball_sizes, testicles_entry.ball_size)]</a>"
-	dat += "<br>Virile: <a href='?_src_=prefs;task=change_customizer;customizer=[customizer_type];customizer_task=virile''>[testicles_entry.virility ? "Virile" : "Sterile"]</a>"
+	dat += "<br>Virile: <a href='?_src_=prefs;task=change_customizer;customizer=[customizer_type];customizer_task=virile''>[testicles_entry.virile ? "Virile" : "Sterile"]</a>"
 
 /datum/customizer_choice/organ/testicles/handle_topic(mob/user, list/href_list, datum/preferences/prefs, datum/customizer_entry/entry, customizer_type)
 	..()
@@ -221,7 +249,7 @@
 			var/new_size = GLOB.named_ball_sizes[named_size]
 			testicles_entry.ball_size = sanitize_integer(new_size, MIN_TESTICLES_SIZE, MAX_TESTICLES_SIZE, DEFAULT_TESTICLES_SIZE)
 		if("virile")
-			testicles_entry.virility = !testicles_entry.virility
+			testicles_entry.virile = !testicles_entry.virile
 
 /datum/customizer/organ/testicles/external
 	customizer_choices = list(/datum/customizer_choice/organ/testicles/external)
@@ -245,7 +273,8 @@
 
 /datum/customizer_entry/organ/testicles
 	var/ball_size = DEFAULT_TESTICLES_SIZE
-	var/virility = TRUE
+	var/fluid_mult = 1
+	var/virile = TRUE
 
 /datum/customizer/organ/breasts
 	abstract_type = /datum/customizer/organ/breasts
@@ -278,8 +307,22 @@
 	breasts_dna.breast_size = breasts_entry.breast_size
 	breasts_dna.lactating = breasts_entry.lactating
 	
-	// Set default skin-colored genitals
-	breasts_dna.accessory_colors = list("#a57d50")
+	// Get proper skin color from preferences
+	var/skin_color = "#a57d50" // Default fallback
+	if(MUTCOLORS in prefs.pref_species.species_traits && prefs.features["mcolor"])
+		skin_color = "#[prefs.features["mcolor"]]"
+	else if(prefs.skin_tone)
+		// skin_tone can be a direct hex color value or a key in GLOB.skin_tones
+		if(prefs.skin_tone in GLOB.skin_tones)
+			skin_color = "#" + GLOB.skin_tones[prefs.skin_tone]
+		else if(GLOB.skin_tones[prefs.skin_tone]) 
+			skin_color = "#" + GLOB.skin_tones[prefs.skin_tone]
+		else if(findtext(prefs.skin_tone, "#")) 
+			skin_color = prefs.skin_tone
+		else 
+			skin_color = "#" + prefs.skin_tone
+	
+	breasts_dna.accessory_colors = list(skin_color)
 
 /datum/customizer_choice/organ/breasts/generate_pref_choices(list/dat, datum/preferences/prefs, datum/customizer_entry/entry, customizer_type)
 	..()
@@ -302,7 +345,9 @@
 
 /datum/customizer_entry/organ/breasts
 	var/breast_size = DEFAULT_BREASTS_SIZE
+	var/breast_fluid_type = "Milk"
 	var/lactating = FALSE
+	var/functional = TRUE
 
 /datum/customizer/organ/breasts/human
 	customizer_choices = list(/datum/customizer_choice/organ/breasts/human)
@@ -346,6 +391,9 @@
 	var/datum/organ_dna/vagina/vagina_dna = organ_dna
 	var/datum/customizer_entry/organ/vagina/vagina_entry = entry
 	vagina_dna.fertility = vagina_entry.fertility
+	
+	// Vagina uses a fixed color instead of matching skin tone
+	vagina_dna.accessory_colors = list("#ea6767")
 
 /datum/customizer_choice/organ/vagina/generate_pref_choices(list/dat, datum/preferences/prefs, datum/customizer_entry/entry, customizer_type)
 	..()

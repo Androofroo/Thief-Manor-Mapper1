@@ -889,3 +889,42 @@
 
 /mob/living/carbon/human/Topic(href, href_list)
 	..()
+
+/mob/living/carbon/human/proc/update_genital_colors()
+	// Update genital colors to match skin tone
+	var/skin_color = "#a57d50" // Default fallback
+	if(dna && dna.species)
+		if(dna.species.use_skintones && skin_tone)
+			// skin_tone is already a hex color value like "a57d50" in many cases
+			if(skin_tone in GLOB.skin_tones)
+				skin_color = "#" + GLOB.skin_tones[skin_tone]
+			else if(GLOB.skin_tones[skin_tone]) // If it's a key in the list
+				skin_color = "#" + GLOB.skin_tones[skin_tone]
+			else if(findtext(skin_tone, "#")) // If it already has a # prefix
+				skin_color = skin_tone
+			else // Otherwise assume it's directly a hex color without #
+				skin_color = "#" + skin_tone
+		else if(length(dna.species.species_traits) > 0 && dna.features["mcolor"])
+			// For non-human species that use mutant colors
+			skin_color = "#[dna.features["mcolor"]]"
+			
+	// Update all genital organs to use the skin color
+	var/obj/item/organ/penis/penis = getorganslot(ORGAN_SLOT_PENIS)
+	if(penis && penis.accessory_type)
+		penis.accessory_colors = list(skin_color, skin_color)
+		penis.update_accessory_colors()
+		
+	var/obj/item/organ/testicles/testicles = getorganslot(ORGAN_SLOT_TESTICLES) 
+	if(testicles && testicles.accessory_type)
+		testicles.accessory_colors = list(skin_color)
+		testicles.update_accessory_colors()
+		
+	var/obj/item/organ/breasts/breasts = getorganslot(ORGAN_SLOT_BREASTS)
+	if(breasts && breasts.accessory_type)
+		breasts.accessory_colors = list(skin_color)
+		breasts.update_accessory_colors()
+	
+	// Vagina uses a fixed color, not skin tone, so we don't update it here
+		
+	// Update body parts to show the changes
+	update_body_parts(TRUE)

@@ -33,6 +33,32 @@
 	if(oldstate != erect_state && owner)
 		owner.update_body_parts(TRUE)
 
+/obj/item/organ/penis/update_accessory_colors()
+	if(!owner || !accessory_type)
+		return
+	
+	// Get skin color from owner
+	var/skin_color = "#a57d50" // Default fallback
+	if(ishuman(owner))
+		var/mob/living/carbon/human/H = owner
+		if(H.dna && H.dna.species)
+			if(H.dna.species.use_skintones && H.skin_tone)
+				// skin_tone is already a hex color value like "a57d50" in many cases
+				if(H.skin_tone in GLOB.skin_tones)
+					skin_color = "#" + GLOB.skin_tones[H.skin_tone]
+				else if(GLOB.skin_tones[H.skin_tone]) // If it's a key in the list
+					skin_color = "#" + GLOB.skin_tones[H.skin_tone]
+				else if(findtext(H.skin_tone, "#")) // If it already has a # prefix
+					skin_color = H.skin_tone
+				else // Otherwise assume it's directly a hex color without #
+					skin_color = "#" + H.skin_tone
+			else if(length(H.dna.species.species_traits) > 0 && H.dna.features["mcolor"])
+				// For non-human species that use mutant colors
+				skin_color = "#[H.dna.features["mcolor"]]"
+	
+	// Update colors - penis uses two color entries
+	accessory_colors = color_list_to_string(list(skin_color, skin_color))
+
 /obj/item/organ/penis/knotted
 	name = "knotted penis"
 	penis_type = PENIS_TYPE_KNOTTED
@@ -99,8 +125,15 @@
 		return
 	if(owner.stat == DEAD)
 		return
-	to_chat(owner, span_love("I feel a surge of warmth in my belly, I’m definitely pregnant!"))
+	to_chat(owner, span_love("I feel a surge of warmth in my belly, I'm definitely pregnant!"))
 	pregnant = TRUE
+
+/obj/item/organ/vagina/update_accessory_colors()
+	if(!owner || !accessory_type)
+		return
+	
+	// Vagina uses a fixed color instead of matching skin tone
+	accessory_colors = color_list_to_string(list("#ea6767"))
 
 /obj/item/organ/breasts
 	name = "breasts"
@@ -119,6 +152,32 @@
 	..()
 	milk_max = max(75, breast_size * 100)
 
+/obj/item/organ/breasts/update_accessory_colors()
+	if(!owner || !accessory_type)
+		return
+	
+	// Get skin color from owner
+	var/skin_color = "#a57d50" // Default fallback
+	if(ishuman(owner))
+		var/mob/living/carbon/human/H = owner
+		if(H.dna && H.dna.species)
+			if(H.dna.species.use_skintones && H.skin_tone)
+				// skin_tone is already a hex color value like "a57d50" in many cases
+				if(H.skin_tone in GLOB.skin_tones)
+					skin_color = "#" + GLOB.skin_tones[H.skin_tone]
+				else if(GLOB.skin_tones[H.skin_tone]) // If it's a key in the list
+					skin_color = "#" + GLOB.skin_tones[H.skin_tone]
+				else if(findtext(H.skin_tone, "#")) // If it already has a # prefix
+					skin_color = H.skin_tone
+				else // Otherwise assume it's directly a hex color without #
+					skin_color = "#" + H.skin_tone
+			else if(length(H.dna.species.species_traits) > 0 && H.dna.features["mcolor"])
+				// For non-human species that use mutant colors
+				skin_color = "#[H.dna.features["mcolor"]]"
+	
+	// Update color
+	accessory_colors = color_list_to_string(list(skin_color))
+
 /obj/item/organ/testicles
 	name = "testicles"
 	icon_state = "severedtail" //placeholder
@@ -134,3 +193,29 @@
 	name = "internal testicles"
 	visible_organ = FALSE
 	accessory_type = /datum/sprite_accessory/none
+
+/obj/item/organ/testicles/update_accessory_colors()
+	if(!owner || !accessory_type)
+		return
+	
+	// Get skin color from owner
+	var/skin_color = "#a57d50" // Default fallback
+	if(ishuman(owner))
+		var/mob/living/carbon/human/H = owner
+		if(H.dna && H.dna.species)
+			if(H.dna.species.use_skintones && H.skin_tone)
+				// skin_tone is already a hex color value like "a57d50" in many cases
+				if(H.skin_tone in GLOB.skin_tones)
+					skin_color = "#" + GLOB.skin_tones[H.skin_tone]
+				else if(GLOB.skin_tones[H.skin_tone]) // If it's a key in the list
+					skin_color = "#" + GLOB.skin_tones[H.skin_tone]
+				else if(findtext(H.skin_tone, "#")) // If it already has a # prefix
+					skin_color = H.skin_tone
+				else // Otherwise assume it's directly a hex color without #
+					skin_color = "#" + H.skin_tone
+			else if(length(H.dna.species.species_traits) > 0 && H.dna.features["mcolor"])
+				// For non-human species that use mutant colors
+				skin_color = "#[H.dna.features["mcolor"]]"
+	
+	// Update color
+	accessory_colors = color_list_to_string(list(skin_color))
