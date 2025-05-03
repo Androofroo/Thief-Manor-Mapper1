@@ -580,6 +580,7 @@
 	var/list/datum/mind/pre_assassins = list() // List to hold pre-setup assassins
 	var/list/datum/mind/assassins = list() // List to hold actual assassins
 	var/assassin_spawned = FALSE // Track if we've spawned an assassin
+	var/initial_thief_count = 0 // Store the number of initial thieves selected
 
 // Override can_start to ensure it can always start
 /datum/game_mode/chaosmode/thiefmode/can_start()
@@ -632,10 +633,18 @@
 	var/num_thieves = 0
 	
 	// Determine number of thieves based on player count
-	if(num_players() >= 10)
-		num_thieves = CLAMP(round(num_players() / 10) + 1, 2, 4) // 2-4 thieves depending on player count
+	var/player_count = num_players()
+	if(player_count >= 20)
+		num_thieves = 3 // 20+ players: 3 thieves
+	else if(player_count >= 15)
+		num_thieves = 3 // 15-19 players: 3 thieves
+	else if(player_count >= 10)
+		num_thieves = 2 // 10-14 players: 2 thieves
 	else
-		num_thieves = 2 // Minimum 2 thieves for low pop
+		num_thieves = 1 // Less than 10 players: 1 thief
+	
+	// Store initial thief count for reference
+	initial_thief_count = num_thieves
 	
 	message_admins("Thiefmode: Starting thief selection with [num_thieves] thieves needed")
 	
@@ -930,25 +939,39 @@
 	if(!age_check(character.client))
 		return
 	
-	// Calculate the total maximum number of thieves based on player count
+	// Calculate the maximum number of latejoin thieves based on player count
+	var/max_latejoin_thieves = 1 // Default is 1 latejoin thief
+	var/player_count = num_players()
+	if(player_count >= 20)
+		max_latejoin_thieves = 2 // 2 possible latejoin thieves for 20+ players
+	
+	// Get current thief count without counting initial thieves
+	var/current_latejoin_thief_count = thieves.len - initial_thief_count
+	
+	// Calculate maximum total thieves (initial + latejoin)
 	var/max_total_thieves = 0
-	if(num_players() >= 10)
-		max_total_thieves = CLAMP(round(num_players() / 10) + 1, 2, 4) // Same formula as in pick_thieves
+	if(player_count >= 20)
+		max_total_thieves = 3 + 2 // 3 initial + 2 latejoin = 5 max
+	else if(player_count >= 15)
+		max_total_thieves = 3 + 1 // 3 initial + 1 latejoin = 4 max
+	else if(player_count >= 10)
+		max_total_thieves = 2 + 1 // 2 initial + 1 latejoin = 3 max
 	else
-		max_total_thieves = 2 // Minimum 2 thieves for low pop
+		max_total_thieves = 1 + 1 // 1 initial + 1 latejoin = 2 max
 	
-	// Get current thief count
-	var/current_thief_count = thieves.len
+	// If we've already reached the maximum allowed latejoin thieves, don't add more
+	if(current_latejoin_thief_count >= max_latejoin_thieves)
+		return
 	
-	// If we already have reached or exceeded the maximum allowed thieves, don't add more
-	if(current_thief_count >= max_total_thieves)
+	// If we've reached the maximum total thieves, don't add more
+	if(thieves.len >= max_total_thieves)
 		return
 	
 	// Check if player has ROLE_THIEF in preferences
 	if(ROLE_THIEF in character.client.prefs.be_special)
 		// 10% chance to become a thief
 		if(prob(10))
-			message_admins("Thiefmode: Adding [character.mind.key] as latejoin thief ([current_thief_count+1]/[max_total_thieves] thieves)")
+			message_admins("Thiefmode: Adding [character.mind.key] as latejoin thief ([thieves.len+1]/[max_total_thieves] thieves; Latejoin: [current_latejoin_thief_count+1]/[max_latejoin_thieves])")
 			var/datum/antagonist/new_antag = new /datum/antagonist/thief()
 			character.mind.add_antag_datum(new_antag)
 			thieves += character.mind
