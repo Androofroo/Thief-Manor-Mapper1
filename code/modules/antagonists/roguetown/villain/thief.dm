@@ -267,7 +267,54 @@
 		if(HAS_TRAIT(target, trait))
 			stored_appearance.fake_traits += trait
 	
-	// Store original movement sound component, if any
+	// Find and temporarily disable all of the user's own movement sound components
+	stored_appearance.original_movement_components = list()
+	var/list/user_equipped_items = list()
+	
+	// Add all of the user's equipped items that could have movement components
+	if(user.wear_armor)
+		user_equipped_items += user.wear_armor
+	if(user.wear_shirt)
+		user_equipped_items += user.wear_shirt
+	if(user.wear_pants)
+		user_equipped_items += user.wear_pants
+	if(user.head)
+		user_equipped_items += user.head
+	if(user.shoes)
+		user_equipped_items += user.shoes
+	if(user.gloves)
+		user_equipped_items += user.gloves
+	if(user.cloak)
+		user_equipped_items += user.cloak
+	if(user.wear_neck)
+		user_equipped_items += user.wear_neck
+	if(user.belt)
+		user_equipped_items += user.belt
+	if(user.beltl)
+		user_equipped_items += user.beltl
+	if(user.beltr)
+		user_equipped_items += user.beltr
+		
+	// Store references to the user's original movement components and REMOVE them temporarily
+	for(var/obj/item/gear in user_equipped_items)
+		for(var/datum/component/item_equipped_movement_rustle/R in gear.GetComponents(/datum/component/item_equipped_movement_rustle))
+			// Store component parameters to recreate it later
+			var/list/component_params = list(
+				"item" = gear,
+				"rustle_sounds" = R.rustle_sounds,
+				"move_delay" = R.move_delay,
+				"volume" = R.volume,
+				"sound_vary" = R.sound_vary,
+				"sound_extra_range" = R.sound_extra_range,
+				"sound_falloff_exponent" = R.sound_falloff_exponent,
+				"sound_falloff_distance" = R.sound_falloff_distance
+			)
+			stored_appearance.original_movement_components += list(component_params)
+			
+			// Remove the component
+			qdel(R)
+	
+	// Store original existing mimic component if any
 	var/datum/component/disguise_sound_mimic/existing_mimic = user.GetComponent(/datum/component/disguise_sound_mimic)
 	if(existing_mimic)
 		qdel(existing_mimic)
@@ -494,6 +541,24 @@
 	var/datum/component/disguise_sound_mimic/sound_mimic = user.GetComponent(/datum/component/disguise_sound_mimic)
 	if(sound_mimic)
 		qdel(sound_mimic)
+	
+	// Restore original movement sound components by recreating them
+	if(stored_appearance.original_movement_components)
+		for(var/list/component_data in stored_appearance.original_movement_components)
+			var/obj/item/gear = component_data["item"]
+			
+			// Check if item still exists
+			if(gear && !QDELETED(gear))
+				// Recreate the original component with stored parameters
+				gear.AddComponent(/datum/component/item_equipped_movement_rustle, 
+					component_data["rustle_sounds"],
+					component_data["move_delay"],
+					component_data["volume"],
+					component_data["sound_vary"],
+					component_data["sound_extra_range"],
+					component_data["sound_falloff_exponent"],
+					component_data["sound_falloff_distance"]
+				)
 	
 	// Restore original traits by removing disguise trait versions
 	for(var/trait in list(TRAIT_NOBLE, TRAIT_OUTLANDER, TRAIT_WITCH, TRAIT_BEAUTIFUL, TRAIT_UNSEEMLY, 
@@ -912,6 +977,7 @@
 /datum/component/disguise_sound_mimic
 	var/list/sound_parameters = list()
 	var/list/sound_counters = list() // Track counters for each sound separately
+	var/disabled = FALSE             // Add a disabled flag to the component
 
 /datum/component/disguise_sound_mimic/Initialize(list/parameters)
 	if(!ismob(parent))
@@ -929,7 +995,7 @@
 /datum/component/disguise_sound_mimic/proc/on_move()
 	SIGNAL_HANDLER
 	
-	if(!sound_parameters.len)
+	if(!sound_parameters.len || disabled)
 		return
 	
 	// Check each sound individually with its own counter

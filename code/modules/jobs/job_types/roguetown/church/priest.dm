@@ -12,7 +12,7 @@
 	tutorial = "The Deacon tends the humble chapel beyond the manor walls, offering guidance, comfort, and quiet prayers to those who seek them. Though gentle in demeanor, they are a vigilant guardian of sacred rites—and may know more about the manor’s buried sins than they let on."
 	whitelist_req = FALSE
 
-	spells = list(/obj/effect/proc_holder/spell/invoked/cure_rot, /obj/effect/proc_holder/spell/self/convertrole/templar, /obj/effect/proc_holder/spell/self/convertrole/monk)
+	spells = list(/obj/effect/proc_holder/spell/invoked/cure_rot)
 	outfit = /datum/outfit/job/roguetown/priest
 
 	display_order = JDO_PRIEST
