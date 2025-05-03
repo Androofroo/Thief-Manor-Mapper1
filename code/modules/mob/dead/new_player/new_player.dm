@@ -616,6 +616,9 @@ GLOBAL_LIST_INIT(roleplay_readme, world.file2list("strings/rt/rp_prompt.txt"))
 			
 		if(humanc)
 			try_apply_character_post_equipment(humanc)
+			// Call make_antag_chance to potentially convert the player into an antagonist
+			if(SSticker.mode)
+				SSticker.mode.make_antag_chance(humanc)
 		log_manifest(character.mind.key,character.mind,character,latejoin = TRUE)
 		return TRUE
 	to_chat(src, span_warning("[get_job_unavailable_error_message(IsJobUnavailable(rank, latejoin = TRUE), rank)]"))

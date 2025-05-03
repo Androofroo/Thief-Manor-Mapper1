@@ -907,3 +907,49 @@
 	gamemode_ready = FALSE
 	addtimer(VARSET_CALLBACK(src, gamemode_ready, TRUE), 101)
 	return TRUE
+
+// Override make_antag_chance to allow late joining players to become thieves
+/datum/game_mode/chaosmode/thiefmode/make_antag_chance(mob/living/carbon/human/character)
+	// Check if we're in thiefmode first
+	if(!istype(src, /datum/game_mode/chaosmode/thiefmode))
+		return
+	
+	// Define restricted jobs that can't be thieves
+	var/list/restricted_roles = list("Lord", "Heir", "Knight", "Lady", "Successor", "Consort")
+	
+	// Check if the character's job is restricted
+	if(character.mind && character.mind.assigned_role)
+		if(character.mind.assigned_role in restricted_roles)
+			return
+	
+	// Check for antagonist bans
+	if(is_banned_from(character.ckey, list(ROLE_THIEF)))
+		return
+		
+	// Check for age restrictions
+	if(!age_check(character.client))
+		return
+	
+	// Calculate the total maximum number of thieves based on player count
+	var/max_total_thieves = 0
+	if(num_players() >= 10)
+		max_total_thieves = CLAMP(round(num_players() / 10) + 1, 2, 4) // Same formula as in pick_thieves
+	else
+		max_total_thieves = 2 // Minimum 2 thieves for low pop
+	
+	// Get current thief count
+	var/current_thief_count = thieves.len
+	
+	// If we already have reached or exceeded the maximum allowed thieves, don't add more
+	if(current_thief_count >= max_total_thieves)
+		return
+	
+	// Check if player has ROLE_THIEF in preferences
+	if(ROLE_THIEF in character.client.prefs.be_special)
+		// 10% chance to become a thief
+		if(prob(10))
+			message_admins("Thiefmode: Adding [character.mind.key] as latejoin thief ([current_thief_count+1]/[max_total_thieves] thieves)")
+			var/datum/antagonist/new_antag = new /datum/antagonist/thief()
+			character.mind.add_antag_datum(new_antag)
+			thieves += character.mind
+			log_game("[key_name(character.mind)] has been selected as a latejoin thief")
