@@ -58,8 +58,9 @@
 	if(ishuman(src))
 		var/mob/living/carbon/human/H = src
 
-		if (H.statpack)
-			H.statpack.apply_to_human(H)
+		// Disabled statpacks entirely
+		/*if (H.statpack)
+			H.statpack.apply_to_human(H)*/
 		if (H.dna?.species) // LETHALSTONE EDIT: apply our race bonus, if we have one
 			var/datum/species/species = H.dna.species
 			if (species.race_bonus)

@@ -32,8 +32,8 @@
 		//this if chain is stupid, replace with variables on /datum/patron when possible?
 		switch(user.patron.type)
 			if(/datum/patron/old_god)
-				message_out = span_info("A strange stirring feeling pours from [target]!")
-				message_self = span_info("Sentimental thoughts drive away my pains!")
+				message_out = span_info("A wreath of gentle light passes over [target]!")
+				message_self = span_info("I'm bathed in holy light!")
 			if(/datum/patron/divine/astrata)
 				message_out = span_info("A wreath of gentle light passes over [target]!")
 				message_self = ("I'm bathed in holy light!")

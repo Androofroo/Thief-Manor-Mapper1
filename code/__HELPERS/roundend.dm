@@ -128,7 +128,7 @@
 
 	log_game("The round has ended.")
 
-	to_chat(world, "<BR><BR><BR><span class='reallybig'>So ends this tale on Azure Peak.</span>")
+	to_chat(world, "<BR><BR><BR><span class='reallybig'>So ends this tale on Thief Manor.</span>")
 	get_end_reason()
 
 	var/list/key_list = list()

@@ -338,16 +338,24 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		charflaw = new charflaw()
 
 /datum/preferences/proc/_load_statpack(S)
+	// Always use austere statpack (no stats)
+	statpack = new /datum/statpack/wildcard/austere()
+	/*
 	var/statpack_type
 	S["statpack"] >> statpack_type
 	if (statpack_type)
 		statpack = new statpack_type()
-	else
-		statpack = pick(GLOB.statpacks)
-		statpack = GLOB.statpacks[statpack]
-		//statpack = new statpack
+	
+	statpack = pick(GLOB.statpacks)
+	statpack = GLOB.statpacks[statpack]
+	//statpack = new statpack
+	*/
 
 /datum/preferences/proc/_load_virtue(S)
+	//Always use none virtue (disabled virtues entirely)
+	virtue = new /datum/virtue/none()
+	virtuetwo = new /datum/virtue/none()
+	/*
 	var/virtue_type
 	var/virtuetwo_type
 	S["virtue"] >> virtue_type
@@ -361,6 +369,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		virtuetwo = new virtuetwo_type
 	else
 		virtuetwo = new /datum/virtue/none
+	*/
 
 /datum/preferences/proc/_load_loadout(S)
 	var/loadout_type
@@ -662,9 +671,9 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["char_accent"] , char_accent)
 	WRITE_FILE(S["voice_type"] , voice_type)
 	WRITE_FILE(S["pronouns"] , pronouns)
-	WRITE_FILE(S["statpack"] , statpack.type)
-	WRITE_FILE(S["virtue"] , virtue.type)
-	WRITE_FILE(S["virtuetwo"], virtuetwo.type)
+	// Don't save virtue types, always use none
+	// WRITE_FILE(S["virtue"] , virtue.type)
+	// WRITE_FILE(S["virtuetwo"], virtuetwo.type)
 	
 	// Save job advclasses
 	WRITE_FILE(S["job_advclasses"], job_advclasses)
