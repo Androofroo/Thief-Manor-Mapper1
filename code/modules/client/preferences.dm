@@ -146,7 +146,6 @@ GLOBAL_LIST_EMPTY(chosen_names)
 	var/action_buttons_screen_locs = list()
 
 	var/domhand = 2
-	var/nickname = "Please Change Me"
 	var/highlight_color = "#FF0000"
 	var/datum/charflaw/charflaw
 
@@ -339,8 +338,8 @@ GLOBAL_LIST_EMPTY(chosen_names)
 			else
 				dat += "<a href='?_src_=prefs;preference=name;task=input'>[real_name]</a> <a href='?_src_=prefs;preference=name;task=random'>\[R\]</a>"
 			dat += "<BR>"
-			dat += "<b>Nickname:</b> "
-			dat += "<a href='?_src_=prefs;preference=nickname;task=input'>[nickname]</a><BR>"
+			//dat += "<b>Nickname:</b> "
+			//dat += "<a href='?_src_=prefs;preference=nickname;task=input'>[nickname]</a><BR>"
 			// pronouns now auto-set from gender
 			//dat += "<b>Pronouns:</b> <a href='?_src_=prefs;preference=pronouns;task=input'>[pronouns]</a><BR>"
 			// LETHALSTONE EDIT END
@@ -432,7 +431,7 @@ GLOBAL_LIST_EMPTY(chosen_names)
 				lang_output = initial(selected_lang.name)*/
 			//dat += "<b>Extra Language: </b><a href='?_src_=prefs;preference=extra_language;task=input'>[lang_output]</a>"
 			dat += "<br><b>Voice Color: </b><a href='?_src_=prefs;preference=voice;task=input'>Change</a>"
-			dat += "<br><b>Nickname Color: </b> </b><a href='?_src_=prefs;preference=highlight_color;task=input'>Change</a>"
+			//dat += "<br><b>Nickname Color: </b> </b><a href='?_src_=prefs;preference=highlight_color;task=input'>Change</a>"
 			dat += "<br><b>Voice Pitch: </b><a href='?_src_=prefs;preference=voice_pitch;task=input'>[voice_pitch]</a>"
 			//dat += "<br><b>Accent:</b> <a href='?_src_=prefs;preference=char_accent;task=input'>[char_accent]</a>"
 			dat += "<br><b>Features:</b> <a href='?_src_=prefs;preference=customizers;task=menu'>Change</a>"
@@ -1504,13 +1503,8 @@ GLOBAL_LIST_EMPTY(chosen_names)
 							to_chat(user, "<font color='red'>Invalid name. Your name should be at least 2 and at most [MAX_NAME_LEN] characters long. It may only contain the characters A-Z, a-z, -, ', . and ,.</font>")
 
 				if("nickname")
-					var/new_name = input(user, "Choose your character's nickname (For Highlighting):", "Nickname (For Chat Highlighting)")  as text|null
-					if(new_name)
-						new_name = reject_bad_name(new_name)
-						if(new_name)
-							nickname = new_name
-						else
-							to_chat(user, "<font color='red'>Invalid name. Your name should be at least 2 and at most [MAX_NAME_LEN] characters long. It may only contain the characters A-Z, a-z, -, ', . and ,.</font>")
+					to_chat(user, "<font color='red'>Nicknames have been disabled.</font>")
+					return
 
 //				if("age")
 //					var/new_age = input(user, "Choose your character's age:\n([AGE_MIN]-[AGE_MAX])", "Years Dead") as num|null
@@ -1621,9 +1615,8 @@ GLOBAL_LIST_EMPTY(chosen_names)
 						voice_pitch = new_voice_pitch
 
 				if("highlight_color")
-					var/new_color = input(user, "Choose your character's nickname highlight color:", "Character Preference","#"+highlight_color) as color|null
-					if(new_color)
-						highlight_color = sanitize_hexcolor(new_color)
+					to_chat(user, "<font color='red'>Nickname highlighting has been disabled.</font>")
+					return
 
 				/*if("headshot")
 					to_chat(user, "<span class='notice'>Please use a relatively SFW image of the head and shoulder area to maintain immersion level. Lastly, ["<span class='bold'>do not use a real life photo or use any image that is less than serious.</span>"]</span>")
@@ -2358,8 +2351,8 @@ GLOBAL_LIST_EMPTY(chosen_names)
 	character.name = character.real_name
 
 	character.domhand = domhand
-	character.highlight_color = highlight_color
-	character.nickname = nickname
+	//character.highlight_color = highlight_color
+	//character.nickname = nickname
 
 	character.eye_color = eye_color
 	if(extra_language && extra_language != "None")
