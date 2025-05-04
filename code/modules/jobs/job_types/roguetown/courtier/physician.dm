@@ -9,11 +9,7 @@
 	allowed_races = RACES_ALL_KINDS
 	allowed_sexes = list(MALE, FEMALE)
 	display_order = JDO_PHYSICIAN
-	tutorial = "You were a child born into good wealth--but poor health. \
-		Perhaps in another life, you would have turned out to be a powerful mage, wise archivist or a shrewd steward, \
-		but leprosy took away your younger years. \
-		Out of desperation, you followed the ways of Pestra and managed to be cured. \
-		Now you serve in the Duke's court ensuring the good health of those inhabiting the keep."
+	tutorial = "More than a healer, the court physician tends both to noble ailments and whispered afflictions best left unspoken. Their remedies are trusted—though no one knows quite where the herbs are gathered, or what else they might treat behind closed doors."
 	outfit = /datum/outfit/job/roguetown/physician
 
 	give_bank_account = 30
