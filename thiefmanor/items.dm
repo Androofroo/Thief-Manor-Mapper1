@@ -138,7 +138,7 @@
 	name = "Kassidy's Leotard"
 	desc = "A leotard worn by the infamous Kassidy, rumored to have been used in a daring escape from the prison of the Countess."
 	icon = 'icons/roguetown/items/misc.dmi'
-	icon_state = "athletic_leotard"
+	icon_state = "leotard"
 	difficulty = 9
 
 /obj/item/treasure/kassidy/proc/find_random_indoor_turf()
@@ -169,5 +169,150 @@
 				log_game("Kassidy's Leotard spawned in a closet at [AREACOORD(C)]")
 			else
 				log_game("ERROR: Failed to place Kassidy's Leotard anywhere on the map")
+
+/obj/item/treasure/lens_of_truth
+	name = "Mirror of Truth"
+	desc = "A mysterious mirror that reveals hidden truths. When used on someone, it reveals their hidden past."
+	icon = 'icons/roguetown/items/ore.dmi'
+	icon_state = "ingotglass"
+	w_class = WEIGHT_CLASS_TINY
+	difficulty = 3
+	var/next_use = 0
+	var/cooldown_time = 300 // 30 seconds cooldown
+
+/obj/item/treasure/lens_of_truth/afterattack(atom/target, mob/user, proximity_flag, click_parameters)
+	. = ..()
+	if(!ismob(target) || !isliving(target))
+		return
+		
+	var/mob/living/L = target
+	
+	if(world.time < next_use)
+		to_chat(user, span_warning("The mirror needs [round((next_use - world.time)/10)] more seconds to recharge!"))
+		return
+	
+	user.visible_message(span_notice("[user] holds up the [src] to [L]."), span_notice("You hold the [src] up to [L]."))
+	
+	if(!do_after(user, 30, target = L))
+		to_chat(user, span_warning("You need to hold the mirror steady!"))
+		return
+	
+	// Get say logs from the target's logging list
+	var/list/say_log_messages = list()
+	
+	// Check EVERY POSSIBLE FORMAT we've found in the codebase
+	// First, check standard LOG_SAY (1<<1 = 2)
+	if(L.logging && L.logging["2"])
+		for(var/entry in L.logging["2"])
+			var/msg = L.logging["2"][entry]
+			extract_speech(msg, say_log_messages)
+	
+	// Second variation, number as text "1" even though code defines LOG_SAY as 2
+	if(L.logging && L.logging["1"]) 
+		for(var/entry in L.logging["1"])
+			var/msg = L.logging["1"][entry]
+			extract_speech(msg, say_log_messages)
+	
+	// Check client logs if available
+	if(L.client && L.client.player_details && L.client.player_details.logging)
+		// Check both "2" and "1" for client logs
+		if(L.client.player_details.logging["2"])
+			for(var/entry in L.client.player_details.logging["2"])
+				var/msg = L.client.player_details.logging["2"][entry]
+				extract_speech(msg, say_log_messages)
+		
+		if(L.client.player_details.logging["1"]) 
+			for(var/entry in L.client.player_details.logging["1"])
+				var/msg = L.client.player_details.logging["1"][entry]
+				extract_speech(msg, say_log_messages)
+	
+	// This is a custom fallback that will listen to the say logs in real-time
+	// We should be able to capture at least one line this way
+	if(!length(say_log_messages) && ishuman(L))
+		if(ishuman(user))
+			var/mob/living/carbon/human/human_user = user
+			to_chat(human_user, span_warning("The mirror can't reveal anything... Try asking them to speak while you hold it up."))
+			// Start monitoring their next speech
+			addtimer(CALLBACK(src, PROC_REF(listen_for_speech), user, L), 5)
+			return
+	
+	if(!length(say_log_messages))
+		to_chat(user, span_warning("The mirror reveals nothing from [L]'s past words."))
+		return
+	
+	// Get a random message from their speech logs
+	var/message = pick(say_log_messages)
+	
+	to_chat(user, span_notice("The mirror shimmers, and you hear a whisper: \"[message]\""))
+	playsound(get_turf(user), 'sound/foley/glassbreak.ogg', 25, TRUE)
+	
+	next_use = world.time + cooldown_time
+	
+	// Visual effect
+	var/obj/effect/temp_visual/lens_shimmer/shimmer = new(get_turf(L))
+	shimmer.color = "#c0ffff"
+
+// Helper proc to extract speech from log entries
+/obj/item/treasure/lens_of_truth/proc/extract_speech(log_entry, list/output_list)
+	if(!istext(log_entry) || !islist(output_list))
+		return
+	
+	// First pattern: standard log format with quotes
+	var/quote_start = findtext(log_entry, "\"")
+	if(quote_start)
+		var/quote_end = findtext(log_entry, "\"", quote_start + 1)
+		if(quote_end)
+			var/spoken_text = copytext(log_entry, quote_start + 1, quote_end)
+			if(spoken_text && length(spoken_text) > 0)
+				output_list |= spoken_text
+				return
+	
+	// Second pattern: possible alternate format without quotes
+	var/says_pos = findtext(log_entry, "says, ")
+	if(says_pos)
+		var/message_part = copytext(log_entry, says_pos + 6)
+		if(message_part && length(message_part) > 0)
+			output_list |= message_part
+			return
+
+// Sets up a listening callback for the target's next speech
+/obj/item/treasure/lens_of_truth/proc/listen_for_speech(mob/user, mob/living/target)
+	if(!user || !target || QDELETED(src) || QDELETED(user) || QDELETED(target))
+		return
+		
+	var/datum/callback/speech_callback = CALLBACK(src, PROC_REF(capture_speech), user, target)
+	RegisterSignal(target, COMSIG_MOB_SAY, speech_callback)
+	addtimer(CALLBACK(src, PROC_REF(clear_speech_listener), target, speech_callback), 300) // 30 seconds max wait
+
+// Captures speech when the target speaks
+/obj/item/treasure/lens_of_truth/proc/capture_speech(mob/user, mob/living/target, message)
+	SIGNAL_HANDLER
+	
+	if(!user || !target || QDELETED(src) || QDELETED(user) || QDELETED(target))
+		return
+	
+	UnregisterSignal(target, COMSIG_MOB_SAY)
+	
+	to_chat(user, span_notice("The mirror shimmers, and captures the words: \"[message]\""))
+	playsound(get_turf(user), 'sound/foley/glassbreak.ogg', 25, TRUE)
+	
+	next_use = world.time + cooldown_time
+	
+	// Visual effect
+	var/obj/effect/temp_visual/lens_shimmer/shimmer = new(get_turf(target))
+	shimmer.color = "#c0ffff"
+
+// Cleans up the signal registration if no speech was captured
+/obj/item/treasure/lens_of_truth/proc/clear_speech_listener(mob/living/target, datum/callback/callback)
+	if(!target || QDELETED(src) || QDELETED(target))
+		return
+		
+	UnregisterSignal(target, COMSIG_MOB_SAY)
+
+/obj/effect/temp_visual/lens_shimmer
+	name = "lens shimmer"
+	icon = 'icons/effects/effects.dmi'
+	icon_state = "shield-flash"
+	duration = 5
 
 
