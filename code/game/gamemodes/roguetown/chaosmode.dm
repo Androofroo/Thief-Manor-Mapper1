@@ -628,7 +628,7 @@
 // Function to select thieves
 /datum/game_mode/chaosmode/thiefmode/proc/pick_thieves()
 	// Define restricted jobs - noble positions that can't be thieves
-	restricted_jobs = list("Lord", "Heir", "Knight", "Lady", "Successor", "Consort")
+	restricted_jobs = list("Lord", "Heir", "Knight", "Lady", "Successor", "Consort", "Court Magician")
 	
 	var/num_thieves = 0
 	var/manor_guard_count = 0 // Track the number of Manor Guards selected as thieves
@@ -743,7 +743,7 @@
 // Function to select an assassin
 /datum/game_mode/chaosmode/thiefmode/proc/pick_assassin()
 	// Use the same job restrictions as thieves
-	restricted_jobs = list("Lord", "Heir", "Knight", "Lady", "Successor", "Consort")
+	restricted_jobs = list("Lord", "Heir", "Knight", "Lady", "Successor", "Consort", "Court Magician")
 	
 	message_admins("Thiefmode: Starting assassin selection")
 	
@@ -813,7 +813,7 @@
 	set waitfor = FALSE
 	
 	// Define restricted jobs again for reference
-	var/list/restricted_roles = list("Lord", "Heir", "Knight", "Lady", "Successor", "Consort")
+	var/list/restricted_roles = list("Lord", "Heir", "Knight", "Lady", "Successor", "Consort", "Court Magician")
 	
 	// Create a list to track valid thieves
 	var/list/valid_thieves = list()
@@ -975,7 +975,7 @@
 		return
 	
 	// Define restricted jobs that can't be thieves
-	var/list/restricted_roles = list("Lord", "Heir", "Knight", "Lady", "Successor", "Consort")
+	var/list/restricted_roles = list("Lord", "Heir", "Knight", "Lady", "Successor", "Consort", "Court Magician")
 	
 	// Check if the character's job is restricted
 	if(character.mind && character.mind.assigned_role)
