@@ -10,8 +10,7 @@
 	allowed_races = NOBLE_RACES_TYPES
 	tutorial = "The Consort is a figure of charm and quiet influence, often overlooked but rarely uninformed. Behind their poised demeanor lies a keen mind, skilled in courtly manipulation, subtle persuasion, and guarding the manor’s most intimate secrets."
 
-	spells = list(/obj/effect/proc_holder/spell/self/convertrole/servant,
-	/obj/effect/proc_holder/spell/self/grant_nobility)
+	spells = list(/obj/effect/proc_holder/spell/self/convertrole/servant)
 	outfit = /datum/outfit/job/roguetown/lady
 
 	display_order = JDO_LADY
