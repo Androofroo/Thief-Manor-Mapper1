@@ -631,6 +631,7 @@
 	restricted_jobs = list("Lord", "Heir", "Knight", "Lady", "Successor", "Consort")
 	
 	var/num_thieves = 0
+	var/manor_guard_count = 0 // Track the number of Manor Guards selected as thieves
 	
 	// Determine number of thieves based on player count
 	var/player_count = num_players()
@@ -661,8 +662,16 @@
 		for(var/i = 0, i < num_thieves && initial_candidates.len > 0, i++)
 			var/datum/mind/thief = pick_n_take(initial_candidates)
 			if(thief)
+				// Check if this is a Manor Guard and if we've already selected one
+				if(thief.assigned_role == "Manor Guard")
+					if(manor_guard_count >= 1)
+						// Skip this candidate if we already have a Manor Guard
+						i-- // Don't count this attempt
+						continue
+					manor_guard_count++
+				
 				selected_thieves += thief
-				message_admins("Thiefmode: Selected [thief.key] as thief #[i+1] (first pass)")
+				message_admins("Thiefmode: Selected [thief.key] as thief #[i+1] (first pass) [thief.assigned_role == "Manor Guard" ? "(Manor Guard)" : ""]")
 		
 		// If we still need more thieves, get candidates from all roles
 		if(selected_thieves.len < num_thieves)
@@ -683,10 +692,34 @@
 			
 			// Second pass - select remaining thieves from all available candidates
 			for(var/i = selected_thieves.len, i < num_thieves && all_candidates.len > 0, i++)
+				// First try to get non-Manor Guard candidates if we already have one
+				if(manor_guard_count >= 1)
+					var/list/non_guard_candidates = all_candidates.Copy()
+					for(var/datum/mind/M in non_guard_candidates)
+						if(M.assigned_role == "Manor Guard")
+							non_guard_candidates -= M
+					
+					// If we have non-guard candidates, pick from them
+					if(non_guard_candidates.len > 0)
+						var/datum/mind/thief = pick_n_take(non_guard_candidates)
+						selected_thieves += thief
+						all_candidates -= thief
+						message_admins("Thiefmode: Selected [thief.key] as thief #[i+1] (second pass)")
+						continue
+				
+				// If we don't have a Manor Guard yet or no non-guard candidates remain, proceed with regular selection
 				var/datum/mind/thief = pick_n_take(all_candidates)
 				if(thief)
+					// Check if this is a Manor Guard and if we've already selected one
+					if(thief.assigned_role == "Manor Guard")
+						if(manor_guard_count >= 1)
+							// If we already have a Manor Guard, try again with a different candidate
+							i-- // Don't count this attempt
+							continue
+						manor_guard_count++
+					
 					selected_thieves += thief
-					message_admins("Thiefmode: Selected [thief.key] as thief #[i+1] (second pass)")
+					message_admins("Thiefmode: Selected [thief.key] as thief #[i+1] (second pass) [thief.assigned_role == "Manor Guard" ? "(Manor Guard)" : ""]")
 		
 		// Set special_role for all selected thieves and add to pre_thieves list
 		for(var/datum/mind/thief in selected_thieves)
@@ -696,7 +729,7 @@
 			if(thief in allantags)
 				allantags -= thief
 		
-		message_admins("Thiefmode: Selected [pre_thieves.len] thieves in total")
+		message_admins("Thiefmode: Selected [pre_thieves.len] thieves in total (Manor Guards: [manor_guard_count])")
 	
 	// Add thieves to pre_setup_antags
 	for(var/datum/mind/thief in pre_thieves)
@@ -785,6 +818,7 @@
 	// Create a list to track valid thieves
 	var/list/valid_thieves = list()
 	var/list/rejected_thieves = list()
+	var/manor_guard_count = 0 // Track Manor Guards
 	
 	// First pass - check all pre-selected thieves for validity
 	for(var/datum/mind/thief_mind in pre_thieves)
@@ -797,6 +831,15 @@
 					is_restricted = TRUE
 					rejected_thieves += thief_mind
 					break
+		
+		// Check for Manor Guard limit
+		if(!is_restricted && thief_mind.assigned_role == "Manor Guard")
+			if(manor_guard_count >= 1)
+				message_admins("Thiefmode: Rejecting thief [thief_mind.key] in post_setup - already have a Manor Guard thief")
+				rejected_thieves += thief_mind
+				is_restricted = TRUE
+			else
+				manor_guard_count++
 		
 		if(!is_restricted)
 			valid_thieves += thief_mind
@@ -823,12 +866,20 @@
 				if(M.assigned_role == job)
 					replacement_candidates -= M
 					break
+			
+			// Remove Manor Guards if we already have one
+			if(manor_guard_count >= 1 && M.assigned_role == "Manor Guard")
+				replacement_candidates -= M
 		
 		// Add replacement thieves
 		var/replacements_found = 0
 		for(var/i = 1, i <= rejected_thieves.len && replacement_candidates.len > 0, i++)
 			var/datum/mind/replacement = pick_n_take(replacement_candidates)
 			if(replacement)
+				// Update Manor Guard count if this is a Manor Guard
+				if(replacement.assigned_role == "Manor Guard")
+					manor_guard_count++
+				
 				valid_thieves += replacement
 				replacement.special_role = "Thief"
 				message_admins("Thiefmode: Found replacement thief [replacement.key] ([replacement.assigned_role])")
@@ -837,7 +888,7 @@
 		message_admins("Thiefmode: Found [replacements_found] replacement thieves")
 	
 	// Process valid thieves
-	message_admins("Thiefmode: Processing [valid_thieves.len] valid thieves")
+	message_admins("Thiefmode: Processing [valid_thieves.len] valid thieves (Manor Guards: [manor_guard_count])")
 	for(var/datum/mind/thief_mind in valid_thieves)
 		message_admins("Thiefmode: Processing thief [thief_mind.key] ([thief_mind.assigned_role]) in post_setup")
 		var/datum/antagonist/new_antag = new /datum/antagonist/thief()
@@ -939,6 +990,16 @@
 	if(!age_check(character.client))
 		return
 	
+	// Count how many Manor Guards are already thieves
+	var/manor_guard_thieves = 0
+	for(var/datum/mind/T in thieves)
+		if(T.assigned_role == "Manor Guard")
+			manor_guard_thieves++
+	
+	// If this character is a Manor Guard and we already have one as a thief, don't make them a thief
+	if(character.mind.assigned_role == "Manor Guard" && manor_guard_thieves >= 1)
+		return
+	
 	// Calculate the maximum number of latejoin thieves based on player count
 	var/max_latejoin_thieves = 1 // Default is 1 latejoin thief
 	var/player_count = num_players()
@@ -971,7 +1032,7 @@
 	if(ROLE_THIEF in character.client.prefs.be_special)
 		// 10% chance to become a thief
 		if(prob(10))
-			message_admins("Thiefmode: Adding [character.mind.key] as latejoin thief ([thieves.len+1]/[max_total_thieves] thieves; Latejoin: [current_latejoin_thief_count+1]/[max_latejoin_thieves])")
+			message_admins("Thiefmode: Adding [character.mind.key] as latejoin thief ([thieves.len+1]/[max_total_thieves] thieves; Latejoin: [current_latejoin_thief_count+1]/[max_latejoin_thieves]) [character.mind.assigned_role == "Manor Guard" ? "(Manor Guard)" : ""]")
 			var/datum/antagonist/new_antag = new /datum/antagonist/thief()
 			character.mind.add_antag_datum(new_antag)
 			thieves += character.mind
