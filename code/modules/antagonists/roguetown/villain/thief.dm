@@ -120,16 +120,12 @@
 	owner.current.playsound_local(get_turf(owner.current), 'sound/music/thief.ogg', 60, FALSE, pressure_affected = FALSE)
 
 /datum/antagonist/thief/proc/add_objectives()
-	to_chat(owner.current, "<span class='notice'>DEBUG: Starting objective assignment...</span>")
-	
 	// We'll create objective items dynamically based on available treasures
 	var/list/treasure_objectives = list()
 	
 	// Get all treasure subtypes
 	var/list/treasure_types = subtypesof(/obj/item/treasure)
 	treasure_types -= /obj/item/treasure // Remove the base type
-	
-	to_chat(owner.current, "<span class='notice'>DEBUG: Found [treasure_types.len] treasure types.</span>")
 	
 	// Create objective items for each treasure
 	for(var/treasure_path in treasure_types)
@@ -147,12 +143,8 @@
 			
 		treasure_objectives += treasure_objective
 	
-	to_chat(owner.current, "<span class='notice'>DEBUG: Created [treasure_objectives.len] treasure objectives.</span>")
-	
 	// If we don't have enough objectives, we're done
 	if(treasure_objectives.len < 2)
-		to_chat(owner.current, "<span class='warning'>DEBUG: Not enough treasure objectives available!</span>")
-		
 		if(treasure_objectives.len > 0)
 			// Add at least the one we have
 			var/datum/objective_item/steal/selected_item = pick(treasure_objectives)
@@ -163,8 +155,6 @@
 			steal_obj.steal_target = selected_item.targetitem
 			steal_obj.explanation_text = "Steal [selected_item.name]"
 			objectives += steal_obj
-			
-			to_chat(owner.current, "<span class='notice'>DEBUG: Added single objective: [selected_item.name]</span>")
 		
 		// Add survival objective
 		var/datum/objective/survive/survive_obj = new
@@ -195,8 +185,6 @@
 	steal_obj1.explanation_text = "Steal [first_objective.name]"
 	objectives += steal_obj1
 	
-	to_chat(owner.current, "<span class='notice'>DEBUG: Selected first objective: [first_objective.name]</span>")
-	
 	// Remove the first selected item from the weighted list
 	weighted_treasures -= first_objective
 	
@@ -209,9 +197,6 @@
 	steal_obj2.steal_target = second_objective.targetitem
 	steal_obj2.explanation_text = "Steal [second_objective.name]"
 	objectives += steal_obj2
-	
-	to_chat(owner.current, "<span class='notice'>DEBUG: Selected second objective: [second_objective.name]</span>")
-	to_chat(owner.current, "<span class='notice'>DEBUG: Total objectives: [objectives.len]</span>")
 	
 	// Add survival objective
 	var/datum/objective/survive/survive_obj = new
