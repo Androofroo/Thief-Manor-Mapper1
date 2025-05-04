@@ -15,20 +15,15 @@
 /datum/antagonist/thief/on_gain()
 	owner.special_role = name
 	add_objectives()
-	. = ..()
 	equip_thief()
 	finalize_thief()
-
+	greet()
 	return ..()
 
 /datum/antagonist/thief/proc/finalize_thief()
-	owner.current.playsound_local(get_turf(owner.current), 'sound/music/thief.ogg', 60, FALSE, pressure_affected = FALSE)
 	var/mob/living/carbon/human/H = owner.current
 	ADD_TRAIT(H, TRAIT_GENERIC, TRAIT_GENERIC)
-	to_chat(H, span_alertsyndie("I am a THIEF!"))
-	to_chat(H, span_boldwarning("I've worked in the manor for years, always overlooked, always underappreciated. I know every corner, every secret passage. Now it's time to take what I deserve - the Lord's Crown. My insider knowledge gives me an advantage, but betrayal is punished harshly in these lands."))
-	to_chat(H, span_boldnotice("I've been trained in the art of the thief, and have stealthy abilities and tools to help me complete my mission."))
-
+	
 	// If advsetup is already 0, give the lockpick immediately
 	if(!H.advsetup)
 		give_lockpick(H)
@@ -113,29 +108,118 @@
 	to_chat(H, span_notice("A lockpick ring appears at your feet."))
 
 /datum/antagonist/thief/greet()
-	owner.announce_objectives()
+	to_chat(owner.current, "<span class='userdanger'>You are a thief!</span>")
+	to_chat(owner.current, "<span class='boldwarning'>You've worked in the manor for years, always overlooked, always underappreciated. You know every corner, every secret passage. Now it's time to take what you deserve - precious treasures! Your insider knowledge gives you an advantage, but betrayal is punished harshly in these lands.</span>")
+	to_chat(owner.current, "<span class='boldnotice'>You've been trained in the art of the thief, and have stealthy abilities and tools to help you complete your mission.</span>")
+	
+	
+	if(owner.current.mind)
+		owner.current.mind.show_memory()
+	
+	// Play thief theme music
+	owner.current.playsound_local(get_turf(owner.current), 'sound/music/thief.ogg', 60, FALSE, pressure_affected = FALSE)
 
 /datum/antagonist/thief/proc/add_objectives()
-	var/datum/objective/steal/steal_obj = new
-	steal_obj.owner = owner
+	to_chat(owner.current, "<span class='notice'>DEBUG: Starting objective assignment...</span>")
 	
-	// Make sure GLOB.possible_items is populated
-	if(!GLOB.possible_items.len)
-		for(var/I in subtypesof(/datum/objective_item/steal/rogue))
-			new I
+	// We'll create objective items dynamically based on available treasures
+	var/list/treasure_objectives = list()
 	
+	// Get all treasure subtypes
+	var/list/treasure_types = subtypesof(/obj/item/treasure)
+	treasure_types -= /obj/item/treasure // Remove the base type
 	
-	for(var/datum/objective_item/possible_item in GLOB.possible_items)
-		if(istype(possible_item, /datum/objective_item/steal/rogue/crown))
-			steal_obj.targetinfo = possible_item
-			steal_obj.steal_target = possible_item.targetitem
-			steal_obj.explanation_text = "Steal the Lord's Crown."
-			break
+	to_chat(owner.current, "<span class='notice'>DEBUG: Found [treasure_types.len] treasure types.</span>")
 	
-	objectives += steal_obj
+	// Create objective items for each treasure
+	for(var/treasure_path in treasure_types)
+		var/obj/item/treasure/T = treasure_path
+		
+		// Create a new objective item for this treasure
+		var/datum/objective_item/steal/treasure_objective = new
+		treasure_objective.name = "the [initial(T.name)]"
+		treasure_objective.targetitem = treasure_path
+		treasure_objective.difficulty = initial(T.difficulty) || 1 // Use the treasure's difficulty or default to 1
+		
+		// Skip if this is for jobs the thief can't target
+		if(owner.assigned_role in treasure_objective.excludefromjob)
+			continue
+			
+		treasure_objectives += treasure_objective
+	
+	to_chat(owner.current, "<span class='notice'>DEBUG: Created [treasure_objectives.len] treasure objectives.</span>")
+	
+	// If we don't have enough objectives, we're done
+	if(treasure_objectives.len < 2)
+		to_chat(owner.current, "<span class='warning'>DEBUG: Not enough treasure objectives available!</span>")
+		
+		if(treasure_objectives.len > 0)
+			// Add at least the one we have
+			var/datum/objective_item/steal/selected_item = pick(treasure_objectives)
+			
+			var/datum/objective/steal/steal_obj = new
+			steal_obj.owner = owner
+			steal_obj.targetinfo = selected_item
+			steal_obj.steal_target = selected_item.targetitem
+			steal_obj.explanation_text = "Steal [selected_item.name]"
+			objectives += steal_obj
+			
+			to_chat(owner.current, "<span class='notice'>DEBUG: Added single objective: [selected_item.name]</span>")
+		
+		// Add survival objective
+		var/datum/objective/survive/survive_obj = new
+		survive_obj.owner = owner
+		objectives += survive_obj
+		
+		owner.announce_objectives()
+		return
+	
+	// Create weighted list based on difficulty
+	var/list/weighted_treasures = list()
+	for(var/datum/objective_item/steal/item in treasure_objectives)
+		// Add with weighting based on inverse of difficulty
+		// Higher difficulty = lower chance of selection
+		var/weight = 10 - item.difficulty
+		// Ensure at least a minimal chance for high-difficulty items
+		weight = max(weight, 1)
+		
+		weighted_treasures[item] = weight
+	
+	// Pick first objective
+	var/datum/objective_item/steal/first_objective = pickweight(weighted_treasures)
+	
+	var/datum/objective/steal/steal_obj1 = new
+	steal_obj1.owner = owner
+	steal_obj1.targetinfo = first_objective
+	steal_obj1.steal_target = first_objective.targetitem
+	steal_obj1.explanation_text = "Steal [first_objective.name]"
+	objectives += steal_obj1
+	
+	to_chat(owner.current, "<span class='notice'>DEBUG: Selected first objective: [first_objective.name]</span>")
+	
+	// Remove the first selected item from the weighted list
+	weighted_treasures -= first_objective
+	
+	// Pick second objective
+	var/datum/objective_item/steal/second_objective = pickweight(weighted_treasures)
+	
+	var/datum/objective/steal/steal_obj2 = new
+	steal_obj2.owner = owner
+	steal_obj2.targetinfo = second_objective
+	steal_obj2.steal_target = second_objective.targetitem
+	steal_obj2.explanation_text = "Steal [second_objective.name]"
+	objectives += steal_obj2
+	
+	to_chat(owner.current, "<span class='notice'>DEBUG: Selected second objective: [second_objective.name]</span>")
+	to_chat(owner.current, "<span class='notice'>DEBUG: Total objectives: [objectives.len]</span>")
+	
+	// Add survival objective
 	var/datum/objective/survive/survive_obj = new
 	survive_obj.owner = owner
 	objectives += survive_obj
+	
+	// Announce objectives
+	owner.announce_objectives()
 
 /obj/effect/proc_holder/spell/self/snuff_light
 	name = "Snuff Light"

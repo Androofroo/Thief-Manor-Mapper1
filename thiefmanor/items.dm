@@ -1,14 +1,25 @@
 #define TRAIT_ALWAYS_SILENT_STEP "always_silent_step"
 
-/obj/item/clothing/ring/silent_steps
+/obj/item/treasure/silent_steps
 	name = "Ring of Silent Steps"
 	desc = "A mysterious ring that absorbs all sound from the wearer's movements. Perfect for those who prefer to remain unheard."
 	icon_state = "dragonring" // Using existing icon temporarily
-	sellprice = 500
+	w_class = WEIGHT_CLASS_TINY
+	icon = 'icons/roguetown/clothing/rings.dmi'
+	mob_overlay_icon = 'icons/roguetown/clothing/onmob/rings.dmi'
+	sleeved = 'icons/roguetown/clothing/onmob/rings.dmi'
+	sleevetype = "shirt"
+	icon_state = "dragonring"
+	slot_flags = ITEM_SLOT_RING
+	resistance_flags = FIRE_PROOF | ACID_PROOF
+	anvilrepair = /datum/skill/craft/armorsmithing
+	experimental_inhand = FALSE
+	drop_sound = 'sound/foley/coinphy (1).ogg'
+
 	var/active_item = FALSE
 	var/silent_footstep_type
 
-/obj/item/clothing/ring/silent_steps/equipped(mob/living/user, slot)
+/obj/item/treasure/silent_steps/equipped(mob/living/user, slot)
 	. = ..()
 	if(active_item)
 		return
@@ -27,7 +38,7 @@
 		user.AddComponent(/datum/component/silent_footstep, silent_footstep_type)
 	return
 
-/obj/item/clothing/ring/silent_steps/dropped(mob/living/user)
+/obj/item/treasure/silent_steps/dropped(mob/living/user)
 	..()
 	if(active_item)
 		to_chat(user, span_notice("Your footsteps return as you remove the ring."))
@@ -44,7 +55,7 @@
 		active_item = FALSE
 	return
 
-/obj/item/clothing/ring/silent_steps/proc/suppress_rustle(mob/living/user)
+/obj/item/treasure/silent_steps/proc/suppress_rustle(mob/living/user)
 	SIGNAL_HANDLER
 	// Prevent rustle sounds from playing by resetting move counters on equipped items
 	for(var/obj/item/clothing/gear in user.get_equipped_items())
@@ -67,3 +78,53 @@
 	SIGNAL_HANDLER
 	// This component does nothing - it just prevents normal footstep sounds
 	return
+
+/obj/item/treasure
+	name = "Treasure"
+	desc = "How are you seeing this?"
+	icon_state = "treasure"
+	var/difficulty = 0
+
+/obj/item/treasure/marriagecontract
+	name = "Forged Marriage Contract"
+	desc = "A forged marriage contract that may erupt scandal in the noble realm.."
+	icon = 'icons/roguetown/items/misc.dmi'
+	icon_state = "contractsigned"
+	difficulty = 1
+
+/obj/item/treasure/ledger
+	name = "Manor Ledger"
+	desc = "A ledger that contains the records of the manor. Who knows what blackmail material is hidden within?"
+	icon = 'icons/roguetown/items/books.dmi'
+	icon_state = "spellbookyellow_0"
+	difficulty = 1
+
+/obj/item/treasure/brooch
+	name = "Countess Elira's Brooch"
+	desc = "A golden heirloom set with a rare violet gem. Missing for years… or was it just hidden?"
+	icon = 'icons/roguetown/items/misc.dmi'
+	icon_state = "ring_onyx"
+	difficulty = 5
+
+/obj/item/treasure/wine
+	name = "Vintage Wine"
+	desc = "A bottle of luxurious wine aged since year 401. It's said to have a unique flavor that can only be found in the finest vintages. Far too valuable to drink."
+	icon = 'icons/roguetown/items/cooking.dmi'
+	icon_state = "lovebottle"
+	difficulty = 1
+
+/obj/item/treasure/gemerald
+	name = "Massive Gemerald"
+	desc = "An absurdly large green gemstone—gaudy, cut, and almost too heavy to wear—rumored to have been pried from the eye socket of a fallen statue in an ancient ruin. Its true value is debated, but its sheer size makes it irresistible to thieves and impossible to hide discreetly."
+	icon = 'icons/roguetown/items/gems.dmi'
+	icon_state = "emerald_cut"
+	difficulty = 1
+
+/obj/item/treasure/blackmail
+	name = "Perfumed Letters"
+	desc = "Delicate, romantic, and politically dangerous if discovered."
+	icon = 'icons/roguetown/items/cooking.dmi'
+	icon_state = "bottle_message"
+	difficulty = 1
+
+
