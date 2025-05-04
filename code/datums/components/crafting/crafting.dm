@@ -322,6 +322,9 @@
 		for(var/A in R.reqs)
 			amt = R.reqs[A]
 			surroundings = get_environment(user)
+			for(var/atom/movable/IS in surroundings)
+				if(!R.subtype_reqs && (IS.type in subtypesof(A)))
+					surroundings.Remove(IS)
 			surroundings -= Deletion
 			if(ispath(A, /datum/reagent))
 				var/datum/reagent/RG = new A
@@ -410,6 +413,10 @@
 	while(Deletion.len)
 		var/DL = Deletion[Deletion.len]
 		Deletion.Cut(Deletion.len)
+		if(DL)
+			var/atom/movable/A = DL
+			if(R.blacklist.Find(A.type))
+				continue
 		qdel(DL)
 
 /datum/component/personal_crafting/proc/component_ui_interact(atom/movable/screen/craft/image, location, control, params, user)
