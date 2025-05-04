@@ -332,6 +332,7 @@
 	stored_appearance.original_obscured_flags = user.obscured_flags
 	stored_appearance.original_name_override = user.name_override
 	stored_appearance.original_advjob = user.advjob
+	stored_appearance.original_strength = user.STASTR
 	
 	// Store fake traits for examination purposes
 	stored_appearance.fake_traits = list()
@@ -506,9 +507,15 @@
 	stored_appearance.pronouns = user.pronouns
 	user.pronouns = target.pronouns
 	
-	// Copy the target's voice type
+	// Copy the target's voice type, color, and pitch
 	stored_appearance.voice_type = user.voice_type
+	stored_appearance.original_voice_color = user.voice_color
+	stored_appearance.original_voice_pitch = user.voice_pitch
+	stored_appearance.original_name_color = user.name_color
 	user.voice_type = target.voice_type
+	user.voice_color = target.voice_color
+	user.voice_pitch = target.voice_pitch
+	user.name_color = target.name_color
 	
 	// Instead of directly copying strength, add a trait that will be checked during examine
 	ADD_TRAIT(user, TRAIT_FAKE_STRENGTH, MAGICAL_DISGUISE_TRAIT)
@@ -593,8 +600,11 @@
 	// Restore pronouns
 	user.pronouns = stored_appearance.pronouns
 	
-	// Restore voice type
+	// Restore voice type, color, and pitch
 	user.voice_type = stored_appearance.voice_type
+	user.voice_color = stored_appearance.original_voice_color
+	user.voice_pitch = stored_appearance.original_voice_pitch
+	user.name_color = stored_appearance.original_name_color
 	
 	// Restore name_override
 	user.name_override = stored_appearance.original_name_override
@@ -799,6 +809,9 @@
 	var/original_name_override
 	var/original_strength
 	var/voice_type  // Store original voice type
+	var/original_voice_color  // Store original voice color
+	var/original_voice_pitch  // Store original voice pitch
+	var/original_name_color   // Store original name color
 	var/list/original_traits
 	var/list/original_movement_components
 	var/list/target_movement_components
@@ -814,6 +827,9 @@
 		src.original_advjob = H.advjob
 		src.original_strength = H.STASTR
 		src.voice_type = H.voice_type  // Store original voice type
+		src.original_voice_color = H.voice_color  // Store original voice color
+		src.original_voice_pitch = H.voice_pitch  // Store original voice pitch
+		src.original_name_color = H.name_color // Store original name color
 
 // The component to store species and descriptor info
 /datum/component/disguised_species
