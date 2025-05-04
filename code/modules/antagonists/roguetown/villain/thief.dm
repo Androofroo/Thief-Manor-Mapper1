@@ -511,11 +511,9 @@
 	stored_appearance.voice_type = user.voice_type
 	stored_appearance.original_voice_color = user.voice_color
 	stored_appearance.original_voice_pitch = user.voice_pitch
-	stored_appearance.original_name_color = user.name_color
 	user.voice_type = target.voice_type
 	user.voice_color = target.voice_color
 	user.voice_pitch = target.voice_pitch
-	user.name_color = target.name_color
 	
 	// Instead of directly copying strength, add a trait that will be checked during examine
 	ADD_TRAIT(user, TRAIT_FAKE_STRENGTH, MAGICAL_DISGUISE_TRAIT)
@@ -585,6 +583,9 @@
 	if(!disguise_active || !stored_appearance)
 		return
 	
+	// Mark as not active early to prevent recursion
+	disguise_active = FALSE
+	
 	// Restore original icon data
 	user.icon = stored_appearance.original_icon
 	user.icon_state = stored_appearance.original_icon_state
@@ -604,7 +605,6 @@
 	user.voice_type = stored_appearance.voice_type
 	user.voice_color = stored_appearance.original_voice_color
 	user.voice_pitch = stored_appearance.original_voice_pitch
-	user.name_color = stored_appearance.original_name_color
 	
 	// Restore name_override
 	user.name_override = stored_appearance.original_name_override
@@ -666,6 +666,11 @@
 	// Force complete icon regeneration to ensure original appearance is fully restored
 	user.regenerate_icons()
 	
+	// Force a final update by temporarily moving the player
+	var/turf/current_loc = get_turf(user)
+	if(current_loc)
+		user.forceMove(current_loc)
+	
 	// Remove the target species name trait
 	REMOVE_TRAIT(user, TRAIT_DISGUISED_SPECIES, MAGICAL_DISGUISE_TRAIT)
 	
@@ -692,7 +697,6 @@
 	stored_appearance = null
 	current_target = null
 	original_held_items.Cut()
-	disguise_active = FALSE
 	
 	playsound(get_turf(user), 'sound/magic/swap.ogg', 50, TRUE)
 	to_chat(user, "<span class='warning'>Your magical disguise wears off!</span>")
@@ -742,6 +746,10 @@
 	for(var/obj/effect/proc_holder/spell/self/magical_disguise/spell in src.mind.spell_list)
 		if(spell.disguise_active)
 			spell.remove_disguise(src)
+			
+			// Force a complete appearance update to fix any stuck items
+			regenerate_icons()
+			
 			break
 
 // Hook into item equipping/unequipping
@@ -752,10 +760,14 @@
 	. = ..()
 
 /mob/living/carbon/human/doUnEquip(obj/item/I, force, newloc, no_move, invdrop = TRUE, silent = FALSE)
-	if(HAS_TRAIT(src, TRAIT_DISGUISE_ACTIVE) && !silent)
+	// First call the parent to actually unequip the item
+	var/success = ..()
+	
+	// If we successfully unequipped the item and we have a disguise active
+	if(success && HAS_TRAIT(src, TRAIT_DISGUISE_ACTIVE) && !silent)
 		break_disguise_effect("Unequipping an item breaks your magical disguise!")
 	
-	. = ..()
+	return success
 
 // Override put_in_hands to detect when items are placed in hands
 /mob/living/carbon/human/put_in_hands(obj/item/I, del_on_fail = FALSE, merge_stacks = TRUE, forced = FALSE)
@@ -811,7 +823,6 @@
 	var/voice_type  // Store original voice type
 	var/original_voice_color  // Store original voice color
 	var/original_voice_pitch  // Store original voice pitch
-	var/original_name_color   // Store original name color
 	var/list/original_traits
 	var/list/original_movement_components
 	var/list/target_movement_components
@@ -829,7 +840,6 @@
 		src.voice_type = H.voice_type  // Store original voice type
 		src.original_voice_color = H.voice_color  // Store original voice color
 		src.original_voice_pitch = H.voice_pitch  // Store original voice pitch
-		src.original_name_color = H.name_color // Store original name color
 
 // The component to store species and descriptor info
 /datum/component/disguised_species

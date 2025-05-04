@@ -147,6 +147,9 @@
 		if(!T.is_blocked_turf(TRUE)) // Only check if the turf isn't blocked
 			var/area/A = get_area(T)
 			if(A && !A.outdoors) // Only check if the area is not outdoors
+				// Skip centcom map (Z-level 2 is typically centcom)
+				if(T.z == 2)
+					continue
 				valid_turfs += T
 	
 	if(valid_turfs.len)
@@ -156,6 +159,11 @@
 /obj/item/treasure/kassidy/Initialize(mapload)
 	. = ..()
 	if(!mapload)
+		// Skip if we're on centcom (Z-level 2)
+		if(src.z == 2)
+			log_game("Kassidy's Leotard creation skipped on centcom map")
+			return
+		
 		// If created during gameplay (not from map loading), place it in a random location
 		var/turf/T = find_random_indoor_turf()
 		if(T)
@@ -163,8 +171,15 @@
 			log_game("Kassidy's Leotard spawned at [AREACOORD(T)]")
 		else
 			// Fallback location - try to find a closet
-			var/obj/structure/closet/C = locate(/obj/structure/closet) in world
-			if(C && !QDELETED(C))
+			var/list/possible_closets = list()
+			for(var/obj/structure/closet/C in world)
+				// Skip closets on centcom
+				if(C.z == 2)
+					continue
+				possible_closets += C
+			
+			if(length(possible_closets))
+				var/obj/structure/closet/C = pick(possible_closets)
 				forceMove(C)
 				log_game("Kassidy's Leotard spawned in a closet at [AREACOORD(C)]")
 			else
