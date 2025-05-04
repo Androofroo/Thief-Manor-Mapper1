@@ -151,7 +151,8 @@ GLOBAL_VAR(lord_selected)
 /datum/outfit/job/roguetown/lord/hedonist/pre_equip(mob/living/carbon/human/H)
 	..()
 	// Triple the treasury value as this is the hedonist lord, but only if it's the first selection
-	if(!GLOB.lord_selected)
+	// Only boost the treasury if this isn't a preview dummy and is an actual player spawn
+	if(!GLOB.lord_selected && !istype(H, /mob/living/carbon/human/dummy))
 		SStreasury.treasury_value *= 3
 		to_chat(world, "<span class='boldnotice'>The Hedonist Lord's lavish lifestyle has resulted in a substantial treasury boost!</span>")
 		GLOB.lord_selected = TRUE
