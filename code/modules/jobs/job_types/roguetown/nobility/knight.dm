@@ -419,6 +419,8 @@
 	H.mind.adjust_skillrank(/datum/skill/misc/athletics, 3, TRUE)
 	H.mind.adjust_skillrank(/datum/skill/combat/knives, 3, TRUE)
 	H.mind.adjust_skillrank(/datum/skill/misc/tracking, 3, TRUE)
+	H.mind.adjust_skillrank(/datum/skill/magic/holy, 3, TRUE)
+	H.mind.AddSpell(new /obj/effect/proc_holder/spell/invoked/lesser_heal)
 	ADD_TRAIT(H, TRAIT_HEAVYARMOR, TRAIT_GENERIC)
 	ADD_TRAIT(H, TRAIT_ANTIMAGIC, TRAIT_GENERIC)
 	H.dna.species.soundpack_m = new /datum/voicepack/male/knight()

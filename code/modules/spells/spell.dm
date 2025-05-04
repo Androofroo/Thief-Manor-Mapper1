@@ -271,7 +271,7 @@ GLOBAL_LIST_INIT(spells, typesof(/obj/effect/proc_holder/spell)) //needed for th
 			to_chat(user, span_warning("I can't get the words out!"))
 			return FALSE
 
-		if(miracle && !H.devotion?.check_devotion(src))
+		if(miracle && devotion_cost != 0 && !H.devotion?.check_devotion(src))
 			to_chat(H, span_warning("I don't have enough devotion!"))
 			return FALSE
 		if(H.handcuffed && gesture_required)
@@ -476,7 +476,7 @@ GLOBAL_LIST_INIT(spells, typesof(/obj/effect/proc_holder/spell)) //needed for th
 				var/datum/effect_system/smoke_spread/sleeping/smoke = new
 				smoke.set_up(smoke_amt, location)
 				smoke.start()
-	if(devotion_cost && ishuman(user))
+	if(devotion_cost && ishuman(user) && devotion_cost != 0)
 		var/mob/living/carbon/human/devotee = user
 		devotee.devotion?.update_devotion(-devotion_cost)
 		to_chat(devotee, "<font color='purple'>I [devotion_cost > 0 ? "lost" : "gained"] [abs(devotion_cost)] devotion.</font>")
