@@ -8,7 +8,7 @@
 
 	allowed_races = RACES_ALL_KINDS
 
-	tutorial = "Servitude unto death; that is your motto. You are the manor's major-domo, commanding over the house servants and seeing to the administrative affairs, day to day of the estate. This role has style options for chief butlers and head maids."
+	tutorial = "The seneschal keeps the manor running with near-military precision, knowing every schedule, secret passage, and unpaid debt. While the lord rules, it is the seneschal who truly controls the day-to-day beating heart of the estate.."
 	outfit = /datum/outfit/job/roguetown/seneschal
 	advclass_cat_rolls = list(CTAG_SENESCHAL = 20)
 	display_order = JDO_BUTLER

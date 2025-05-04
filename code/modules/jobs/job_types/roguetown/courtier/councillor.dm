@@ -9,7 +9,7 @@
 	allowed_races = RACES_NO_CONSTRUCT		//Nobility, so no constructs.
 	allowed_sexes = list(MALE, FEMALE)
 	display_order = JDO_COUNCILLOR
-	tutorial = "You may have inherited this position, bought your way into it, or were appointed to it by merit--perish the thought! Whatever the case though, you work as an assistant and agent of the crown in matters of state. Whether this be aiding the steward, the Knight, or the crown itself, or simply enjoying the free food of the Manor, your duties vary day by day. You may be the lowest rung of the ladder, but that rung still towers over everyone else in town."
+	tutorial = "The councillor speaks softly but shapes the will of the court, weaving influence through debate, law, and veiled threats. Their counsel can save a house—or quietly doom it."
 	whitelist_req = FALSE
 	outfit = /datum/outfit/job/roguetown/councillor
 

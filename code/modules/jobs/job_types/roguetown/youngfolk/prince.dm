@@ -12,7 +12,7 @@
 	allowed_ages = list(AGE_ADULT)
 	advclass_cat_rolls = list(CTAG_HEIR = 20)
 
-	tutorial = "You've never felt the gnawing of the winter, never known the bite of hunger and certainly have never known a honest day's work. You are as free as any bird in the sky, and you may revel in your debauchery for as long as your parents remain upon the throne: But someday you'll have to grow up, and that will be the day your carelessness will cost you more than a few mammons."
+	tutorial = "Raised for power but chained by expectation, the heir walks the manor halls with a future too heavy for young shoulders. Whether ambitious, naive, or cunning, all eyes watch what they will become."
 
 	display_order = JDO_PRINCE
 	give_bank_account = 30
