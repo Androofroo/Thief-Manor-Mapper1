@@ -1,53 +1,61 @@
-/mob/living/simple_animal/hostile/retaliate/rogue/mole
-	icon = 'icons/roguetown/mob/monster/mole.dmi'
-	name = "mole"
-	icon_state = "mole"
-	icon_living = "mole"
-	icon_dead = "mole_dead"
+//Subtype of wolf, but non-hostile until attacked instead of default hostile.
+/mob/living/simple_animal/hostile/retaliate/rogue/fox
+	icon = 'icons/roguetown/mob/monster/fox.dmi'
+	name = "venard"
+	desc = "A majestic beast of Dendor's realm, hopping through the local fauna."
+	icon_state = "fox"
+	icon_living = "fox"
+	icon_dead = "fox_dead"
 	gender = MALE
 	emote_hear = null
 	emote_see = null
 	speak_chance = 1
-	turns_per_move = 2
+	turns_per_move = 3
 	see_in_dark = 6
-	move_to_delay = 5
-	base_intents = list(/datum/intent/simple/claw/mole)
-	botched_butcher_results = list(/obj/item/reagent_containers/food/snacks/rogue/meat/steak = 2, /obj/item/alch/viscera = 1)
-	butcher_results = list(/obj/item/reagent_containers/food/snacks/rogue/meat/steak = 3,
+	move_to_delay = 3
+	base_intents = list(/datum/intent/simple/bite/volf)	//Same as volf, simplicity is key
+	aggressive = 1
+	botched_butcher_results = list(/obj/item/reagent_containers/food/snacks/rogue/meat/steak = 1, /obj/item/alch/viscera = 1, /obj/item/natural/bone = 3)
+	butcher_results = list(/obj/item/reagent_containers/food/snacks/rogue/meat/steak = 2,
+						/obj/item/natural/hide = 1,
+						/obj/item/alch/sinew = 2, 
+						/obj/item/alch/bone = 1, 
+						/obj/item/alch/viscera = 1,
+						/obj/item/natural/fur/fox = 1, 
+						/obj/item/natural/bone = 4)
+	perfect_butcher_results = list(/obj/item/reagent_containers/food/snacks/rogue/meat/steak = 3,
 						/obj/item/natural/hide = 2,
-						/obj/item/natural/fur = 1,
-						/obj/item/natural/bone = 3, 
-						/obj/item/alch/sinew = 3, 
+						/obj/item/alch/sinew = 2, 
 						/obj/item/alch/bone = 1, 
-						/obj/item/alch/viscera = 1)
-	perfect_butcher_results = list(/obj/item/reagent_containers/food/snacks/rogue/meat/steak = 5,
-						/obj/item/natural/hide = 3,
-						/obj/item/natural/fur = 2,
-						/obj/item/natural/bone = 3, 
-						/obj/item/alch/sinew = 3, 
-						/obj/item/alch/bone = 1, 
-						/obj/item/alch/viscera = 1)
-	faction = list("wolfs")
+						/obj/item/alch/viscera = 1,
+						/obj/item/natural/fur/fox = 2, 
+						/obj/item/natural/bone = 4,
+						/obj/item/natural/head/fox = 1)
+	faction = list("wolfs", "zombie")
 	mob_biotypes = MOB_ORGANIC|MOB_BEAST
-	health = MOLE_HEALTH
-	maxHealth = MOLE_HEALTH
-	melee_damage_lower = 19
-	melee_damage_upper = 29
+	remains_type = /obj/effect/decal/remains/fox
+	health = 100
+	maxHealth = 100				//Wolf is 120
+	melee_damage_lower = 10		//Wolf is 19
+	melee_damage_upper = 20		//Wolf is 29
 	vision_range = 7
 	aggro_vision_range = 9
-	environment_smash = ENVIRONMENT_SMASH_STRUCTURES
+	environment_smash = ENVIRONMENT_SMASH_NONE
 	retreat_distance = 0
 	minimum_distance = 0
 	milkies = FALSE
-	food_type = list(/obj/item/reagent_containers/food/snacks/rogue/meat, 
-	//obj/item/bodypart, 
-	//obj/item/organ
-	)
+	food_type = list(/obj/item/reagent_containers/food/snacks, 
+					//obj/item/bodypart, 
+					//obj/item/organ, 
+					/obj/item/natural/bone, 
+					/obj/item/natural/hide)
 	footstep_type = FOOTSTEP_MOB_BAREFOOT
 	pooptype = null
-	STACON = 7
-	STASTR = 20
-	STASPD = 13
+	STACON = 6
+	STASTR = 5
+	STASPD = 13	//Fast
+	ai_controller = null
+	simple_detect_bonus = 20
 	deaggroprob = 0
 	defprob = 40
 	defdrain = 10
@@ -57,35 +65,16 @@
 	attack_sound = list('sound/vo/mobs/vw/attack (1).ogg','sound/vo/mobs/vw/attack (2).ogg','sound/vo/mobs/vw/attack (3).ogg','sound/vo/mobs/vw/attack (4).ogg')
 	dodgetime = 30
 	aggressive = 1
-//	stat_attack = UNCONSCIOUS
-	remains_type = /obj/effect/decal/remains/mole
+	eat_forever = TRUE
 	rot_type = null
 
-//new ai, old ai off
-	AIStatus = AI_OFF
-	can_have_ai = FALSE
-	ai_controller = /datum/ai_controller/mole
-
-/obj/effect/decal/remains/mole
+/obj/effect/decal/remains/fox
 	name = "remains"
 	gender = PLURAL
-	icon_state = "mole_bones"
-	icon = 'icons/roguetown/mob/monster/mole.dmi'
+	icon_state = "bones"
+	icon = 'icons/roguetown/mob/monster/fox.dmi'
 
-/mob/living/simple_animal/hostile/retaliate/rogue/mole/Initialize()
-	. = ..()
-	gender = MALE
-	AddElement(/datum/element/ai_retaliate)
-	if(prob(33))
-		gender = FEMALE
-	update_icon()
-	ai_controller.set_blackboard_key(BB_BASIC_FOODS, food_type)
-
-/mob/living/simple_animal/hostile/retaliate/rogue/mole/death(gibbed)
-	..()
-	update_icon()
-
-/mob/living/simple_animal/hostile/retaliate/rogue/mole/get_sound(input)//my media player does not work please add new .ogg
+/mob/living/simple_animal/hostile/retaliate/rogue/fox/get_sound(input)
 	switch(input)
 		if("aggro")
 			return pick('sound/vo/mobs/vw/aggro (1).ogg','sound/vo/mobs/vw/aggro (2).ogg')
@@ -98,20 +87,20 @@
 		if("cidle")
 			return pick('sound/vo/mobs/vw/bark (1).ogg','sound/vo/mobs/vw/bark (2).ogg','sound/vo/mobs/vw/bark (3).ogg','sound/vo/mobs/vw/bark (4).ogg','sound/vo/mobs/vw/bark (5).ogg','sound/vo/mobs/vw/bark (6).ogg','sound/vo/mobs/vw/bark (7).ogg')
 
-/mob/living/simple_animal/hostile/retaliate/rogue/mole/taunted(mob/user)
+/mob/living/simple_animal/hostile/retaliate/rogue/fox/taunted(mob/user)
 	emote("aggro")
 	Retaliate()
 	GiveTarget(user)
 	return
 
-/mob/living/simple_animal/hostile/retaliate/rogue/mole/Life()
+/mob/living/simple_animal/hostile/retaliate/rogue/fox/Life()
 	..()
 	if(pulledby)
 		Retaliate()
 		GiveTarget(pulledby)
 
 
-/mob/living/simple_animal/hostile/retaliate/rogue/mole/simple_limb_hit(zone)
+/mob/living/simple_animal/hostile/retaliate/rogue/fox/simple_limb_hit(zone)
 	if(!zone)
 		return ""
 	switch(zone)
@@ -152,6 +141,3 @@
 		if(BODY_ZONE_L_ARM)
 			return "foreleg"
 	return ..()
-
-/datum/intent/simple/claw/mole
-	clickcd = MOLE_ATTACK_SPEED

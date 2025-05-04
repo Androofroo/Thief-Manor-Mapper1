@@ -145,9 +145,9 @@
 	sellprice = 10
 
 /datum/crafting_recipe/roguetown/leather/volfhelm
-	name = "volf helm (1 leather, 1 fur, 1 volf head)"
+	name = "volf helm (1 leather, 1 volf fur, 1 volf head)"
 	result = list(/obj/item/clothing/head/roguetown/helmet/leather/volfhelm)
-	reqs = list(/obj/item/natural/hide/cured = 1, /obj/item/natural/fur = 2, /obj/item/natural/head/volf = 1)
+	reqs = list(/obj/item/natural/hide/cured = 1, /obj/item/natural/fur/wolf = 1, /obj/item/natural/head/volf = 1)
 	sellprice = 20
 
 /datum/crafting_recipe/roguetown/leather/volfmantle
@@ -158,6 +158,12 @@
 		/obj/item/natural/head/volf = 1,
 	)
 	craftdiff = 2
+
+/datum/crafting_recipe/roguetown/leather/saigahelm
+	name = "saiga helm (1 leather, 2 hide, 1 saiga head)"
+	result = list(/obj/item/clothing/head/roguetown/helmet/leather/saiga)
+	reqs = list(/obj/item/natural/hide/cured = 1, /obj/item/natural/hide = 2, /obj/item/natural/head/saiga = 1)
+	sellprice = 20
 
 /datum/crafting_recipe/roguetown/leather/heavy_leather_pants
 	name = "hardened leather pants (1 fibers, 3 leather, 1 tallow)"
@@ -379,17 +385,17 @@
 	sellprice = 80
 
 /datum/crafting_recipe/roguetown/leather/bearcloak
-	name = "direbear cloak (4 leather, 2 fur)"
+	name = "direbear cloak (4 leather, 1 direbear fur)"
 	result = list(/obj/item/clothing/cloak/darkcloak/bear)
-	reqs = list(/obj/item/natural/fur = 2,
+	reqs = list(/obj/item/natural/fur/direbear = 1,
 				/obj/item/natural/hide/cured = 4)
 	craftdiff = 3
 	sellprice = 80
 
 /datum/crafting_recipe/roguetown/leather/lightbearcloak
-	name = "light direbear cloak (4 leather, 2 fur)"
+	name = "light direbear cloak (4 leather, 1 direbear fur)"
 	result = list(/obj/item/clothing/cloak/darkcloak/bear/light)
-	reqs = list(/obj/item/natural/fur = 2,
+	reqs = list(/obj/item/natural/fur/direbear = 1,
 				/obj/item/natural/hide/cured = 4)
 	craftdiff = 3
 	sellprice = 80
