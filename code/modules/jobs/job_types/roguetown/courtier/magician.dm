@@ -11,9 +11,7 @@
 	allowed_sexes = list(MALE, FEMALE)
 	spells = list(/obj/effect/proc_holder/spell/targeted/touch/prestidigitation)
 	display_order = JDO_MAGICIAN
-	tutorial = "Your creed is one dedicated to the conquering of the arcane arts and the constant thrill of knowledge. \
-		You owe your life to the Lord, for it was his coin that allowed you to continue your studies in these dark times. \
-		In return, you have proven time and time again as justicar and trusted advisor to their reign."
+	tutorial = "A devoted servant of both knowledge and nobility, the court magician owes his craft to the lord who funded his rise from obscurity. Bound by gratitude and respect, he wields his magic in service of the manor’s protection, guarding its halls with both enchantment and unwavering loyalty."
 	outfit = /datum/outfit/job/roguetown/magician
 	give_bank_account = 47
 	min_pq = 0 //High potential for abuse, lovepotion/killersice/greater fireball is not for the faint of heart
