@@ -76,7 +76,7 @@ SUBSYSTEM_DEF(role_class_handler)
 */
 /datum/controller/subsystem/role_class_handler/proc/setup_class_handler(mob/living/carbon/human/H, advclass_rolls_override = null, register_id = null)
 	if(!register_id)
-		if(H.job == "Towner")
+		if(H.job == "Artisan")
 			register_id = "towner"
 	// insure they somehow aren't closing the datum they got and opening a new one w rolls
 	var/datum/class_select_handler/GOT_IT = class_select_handlers[H.client.ckey]

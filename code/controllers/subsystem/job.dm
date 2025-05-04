@@ -714,7 +714,7 @@ SUBSYSTEM_DEF(job)
 				handle_auto_deadmin_roles(M.client, rank)
 
 		// For roundstart spawns, handle advclass selection if needed
-		if(!joined_late && length(job.advclass_cat_rolls) && job.title != "Adventurer" && H.mind && M.client)
+		if(!joined_late && length(job.advclass_cat_rolls) && job.title != "Adventurer" && job.title != "Artisan" && H.mind && M.client)
 			// Check for a saved advclass preference
 			var/selected_advclass = null
 			

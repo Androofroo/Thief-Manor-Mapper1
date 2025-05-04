@@ -902,7 +902,7 @@ GLOBAL_LIST_EMPTY(chosen_names)
 			// Add advclass selector button for jobs with advclass_cat_rolls
 			// Only show if the job has a preference set (not NEVER)
 			// Exclude the Adventurer job as it uses a different system
-			if(job.advclass_cat_rolls && job_preferences[job.title] && job.title != "Adventurer")
+			if(job.advclass_cat_rolls && job_preferences[job.title] && job.title != "Adventurer" && job.title != "Artisan")
 				var/selected_class = null
 				var/tutorial_text = ""
 				if(job_advclasses && job_advclasses[job.title])

@@ -1,12 +1,12 @@
 /datum/job/roguetown/villager
-	title = "Towner"
+	title = "Artisan"
 	flag = VILLAGER
 	department_flag = PEASANTS
 	faction = "Station"
-	total_positions = 0
-	spawn_positions = 0
+	total_positions = 4
+	spawn_positions = 4
 	allowed_races = RACES_ALL_KINDS
-	tutorial = "You've lived in this shithole for effectively all your life. You are not an explorer, nor exactly a warrior in many cases. You're just some average poor bastard who thinks they'll be something someday."
+	tutorial = "Skilled hands in service to noble gold, Artisans are the lifeblood of the manor’s daily function and quiet prestige. Whether forging steel, weaving finery, or brewing potions, each Artisan holds knowledge, tools, and secrets that others overlook... until something goes missing."
 	advclass_cat_rolls = list(CTAG_TOWNER = 20)
 	outfit = null
 	outfit_female = null
