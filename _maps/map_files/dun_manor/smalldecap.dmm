@@ -3524,7 +3524,7 @@
 /turf/open/floor/rogue/hexstone,
 /area/rogue/outdoors/mountains/decap/stepbelow)
 "TT" = (
-/obj/structure/fluff/millstone,
+/obj/item/millstone,
 /turf/open/floor/rogue/tile,
 /area/rogue/outdoors/mountains/decap/stepbelow)
 "TU" = (

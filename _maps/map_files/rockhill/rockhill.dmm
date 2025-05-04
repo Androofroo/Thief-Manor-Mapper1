@@ -1431,7 +1431,7 @@
 	},
 /area/rogue/indoors)
 "azl" = (
-/obj/structure/fluff/millstone,
+/obj/item/millstone,
 /turf/open/floor/rogue/tile,
 /area/rogue/indoors)
 "azC" = (
@@ -8580,7 +8580,7 @@
 /turf/open/floor/rogue/church,
 /area/rogue/indoors/town/church/chapel)
 "hVZ" = (
-/obj/structure/fluff/millstone,
+/obj/item/millstone,
 /turf/open/floor/rogue/cobblerock,
 /area/rogue/outdoors/rtfield)
 "hWL" = (
@@ -11298,7 +11298,7 @@
 	},
 /area/rogue/indoors/town)
 "ldr" = (
-/obj/structure/fluff/millstone,
+/obj/item/millstone,
 /turf/open/floor/rogue/woodturned,
 /area/rogue/indoors/town/manor)
 "lec" = (
@@ -16317,7 +16317,7 @@
 /turf/open/floor/rogue/church,
 /area/rogue/under/town/basement)
 "qLR" = (
-/obj/structure/fluff/millstone,
+/obj/item/millstone,
 /turf/open/floor/rogue/dirt/road,
 /area/rogue/outdoors/bog)
 "qMJ" = (
@@ -18066,7 +18066,7 @@
 	icon_state = "longtable_mid";
 	dir = 1
 	},
-/obj/structure/fluff/millstone{
+/obj/item/millstone{
 	pixel_y = 7
 	},
 /turf/open/floor/rogue/hexstone,
@@ -18878,7 +18878,7 @@
 	},
 /area/rogue/indoors/town/manor)
 "tAt" = (
-/obj/structure/fluff/millstone{
+/obj/item/millstone{
 	pixel_y = 7
 	},
 /turf/open/floor/rogue/ruinedwood{
@@ -20450,7 +20450,7 @@
 	icon_state = "largetable";
 	dir = 10
 	},
-/obj/structure/fluff/millstone{
+/obj/item/millstone{
 	pixel_y = 12
 	},
 /turf/open/floor/rogue/tile{

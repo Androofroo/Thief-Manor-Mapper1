@@ -2862,7 +2862,7 @@
 /turf/open/floor/rogue/tile,
 /area/rogue/under/cave/mazedungeon)
 "beg" = (
-/obj/structure/fluff/millstone,
+/obj/item/millstone,
 /turf/open/floor/rogue/tile,
 /area/rogue/outdoors/mountains/decap/stepbelow)
 "beq" = (
@@ -5071,7 +5071,7 @@
 	dir = 1;
 	icon_state = "longtable"
 	},
-/obj/structure/fluff/millstone{
+/obj/item/millstone{
 	pixel_y = 12
 	},
 /turf/open/floor/rogue/cobble,
@@ -6061,7 +6061,7 @@
 /obj/structure/fluff/railing/border{
 	dir = 8
 	},
-/obj/structure/fluff/millstone{
+/obj/item/millstone{
 	pixel_y = 7
 	},
 /obj/item/rogueweapon/huntingknife/chefknife,
@@ -8301,7 +8301,7 @@
 /obj/structure/table/wood{
 	icon_state = "longtable"
 	},
-/obj/structure/fluff/millstone{
+/obj/item/millstone{
 	pixel_y = 7
 	},
 /turf/open/floor/rogue/tile,
@@ -9662,7 +9662,7 @@
 	},
 /area/rogue/indoors/town)
 "dOY" = (
-/obj/structure/fluff/millstone{
+/obj/item/millstone{
 	pixel_y = 7
 	},
 /turf/open/floor/rogue/ruinedwood{
@@ -12564,7 +12564,7 @@
 /obj/structure/table/wood{
 	icon_state = "tablewood1"
 	},
-/obj/structure/fluff/millstone{
+/obj/item/millstone{
 	pixel_y = 7
 	},
 /turf/open/floor/rogue/blocks,
@@ -22113,7 +22113,7 @@
 	dir = 1;
 	icon_state = "longtable_mid"
 	},
-/obj/structure/fluff/millstone{
+/obj/item/millstone{
 	pixel_y = 7
 	},
 /turf/open/floor/rogue/tile,
@@ -24419,7 +24419,7 @@
 /obj/structure/table/wood{
 	icon_state = "tablewood1"
 	},
-/obj/structure/fluff/millstone{
+/obj/item/millstone{
 	pixel_y = 7
 	},
 /turf/open/floor/rogue/ruinedwood{
@@ -30037,7 +30037,7 @@
 /obj/structure/table/wood{
 	icon_state = "tablewood1"
 	},
-/obj/structure/fluff/millstone{
+/obj/item/millstone{
 	pixel_y = 7
 	},
 /obj/machinery/light/rogue/wallfire/candle{
@@ -41175,7 +41175,7 @@
 	dir = 1;
 	icon_state = "longtable"
 	},
-/obj/structure/fluff/millstone{
+/obj/item/millstone{
 	pixel_y = 7
 	},
 /turf/open/floor/rogue/tile,
@@ -46355,7 +46355,7 @@
 /turf/open/floor/rogue/grassred,
 /area/rogue/outdoors/beach/forest)
 "scY" = (
-/obj/structure/fluff/millstone{
+/obj/item/millstone{
 	pixel_x = 3;
 	pixel_y = 7
 	},
@@ -47764,7 +47764,7 @@
 /area/rogue/indoors)
 "sAL" = (
 /obj/structure/table/wood,
-/obj/structure/fluff/millstone{
+/obj/item/millstone{
 	pixel_y = 7
 	},
 /turf/open/floor/rogue/ruinedwood/spiral,
@@ -50753,7 +50753,7 @@
 /turf/open/floor/rogue/blocks/platform,
 /area/rogue/outdoors/mountains/decap)
 "tMq" = (
-/obj/structure/fluff/millstone,
+/obj/item/millstone,
 /obj/structure/table/wood{
 	icon_state = "longtable"
 	},
@@ -51267,7 +51267,7 @@
 /turf/open/floor/carpet/red,
 /area/rogue/indoors/town/tavern)
 "tXp" = (
-/obj/structure/fluff/millstone{
+/obj/item/millstone{
 	pixel_y = 12
 	},
 /obj/structure/table/wood,
@@ -56813,7 +56813,7 @@
 	dir = 1;
 	icon_state = "longtable"
 	},
-/obj/structure/fluff/millstone{
+/obj/item/millstone{
 	pixel_y = 12
 	},
 /turf/open/floor/rogue/hexstone,
@@ -57701,7 +57701,7 @@
 	dir = 9;
 	icon_state = "largetable"
 	},
-/obj/structure/fluff/millstone{
+/obj/item/millstone{
 	pixel_y = 7
 	},
 /turf/open/floor/rogue/ruinedwood/spiral,
@@ -59233,7 +59233,7 @@
 /obj/structure/table/wood{
 	icon_state = "largetable"
 	},
-/obj/structure/fluff/millstone{
+/obj/item/millstone{
 	pixel_y = 7
 	},
 /turf/open/floor/rogue/ruinedwood/spiral,
@@ -59570,7 +59570,7 @@
 /obj/structure/fluff/railing/border{
 	dir = 8
 	},
-/obj/structure/fluff/millstone{
+/obj/item/millstone{
 	pixel_y = 7
 	},
 /turf/open/floor/rogue/blocks/stonered,
@@ -60239,7 +60239,7 @@
 	dir = 1;
 	icon_state = "tablewood1"
 	},
-/obj/structure/fluff/millstone{
+/obj/item/millstone{
 	pixel_y = 7
 	},
 /obj/machinery/light/rogue/wallfire/candle{

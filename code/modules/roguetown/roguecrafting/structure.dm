@@ -549,11 +549,10 @@
 
 /datum/crafting_recipe/roguetown/structure/millstone
 	name = "millstone"
-	result = /obj/structure/fluff/millstone
+	result = /obj/item/millstone
 	reqs = list(/obj/item/natural/stone = 3)
 	verbage = "assembles"
 	craftsound = null
-	wallcraft = TRUE
 	skillcraft = /datum/skill/craft/masonry
 
 /datum/crafting_recipe/roguetown/structure/lever
