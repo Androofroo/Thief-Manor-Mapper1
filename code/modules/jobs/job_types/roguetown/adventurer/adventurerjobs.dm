@@ -431,8 +431,6 @@
 			H.change_stat("constitution", 1)
 			H.change_stat("intelligence", 1)
 			H.change_stat("perception", 1)
-			var/datum/devotion/C = new /datum/devotion(H, H.patron)
-			C.grant_spells_templar(H)
 			ADD_TRAIT(H, TRAIT_MEDIUMARMOR, TRAIT_GENERIC)
 			ADD_TRAIT(H, TRAIT_HEAVYARMOR, TRAIT_GENERIC)
 
