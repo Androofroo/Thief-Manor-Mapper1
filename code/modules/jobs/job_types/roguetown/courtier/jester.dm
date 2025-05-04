@@ -8,10 +8,7 @@
 
 	allowed_races = RACES_ALL_KINDS
 
-	tutorial = "The Grenzelhofts were known for their Jesters, wisemen with a tongue just as sharp as their wit. \
-		You command a position of a fool, envious of the position your superiors have upon you. \
-		Your cheap tricks and illusions of intelligence will only work for so long, \
-		and someday you'll find yourself at the end of something sharper than you."
+	tutorial = "The lord’s jester is a painted fool with a sharp tongue and sharper eyes—mocking the court by day, and quietly collecting secrets by night. Beneath the bells and laughter lies a cunning mind that few take seriously... to their regret."
 
 	allowed_ages = ALL_AGES_LIST
 	spells = list(/obj/effect/proc_holder/spell/self/telljoke,/obj/effect/proc_holder/spell/self/telltragedy)

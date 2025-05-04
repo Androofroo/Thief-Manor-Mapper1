@@ -503,7 +503,7 @@ GLOBAL_LIST_INIT(roleplay_readme, world.file2list("strings/rt/rp_prompt.txt"))
 	if(!IsJobUnavailable(rank, latejoin = TRUE))
 		// Check if the job has advclass_cat_rolls defined (excluding Adventurer)
 		var/datum/job/job_datum = SSjob.GetJob(rank)
-		if(job_datum && length(job_datum.advclass_cat_rolls) && job_datum.title != "Adventurer")
+		if(job_datum && length(job_datum.advclass_cat_rolls) && job_datum.title != "Adventurer" && job_datum.title != "Artisan")
 			// We need to show the advclass selection dialog
 			var/selected_advclass = null
 			
