@@ -155,6 +155,10 @@
 			steal_obj.steal_target = selected_item.targetitem
 			steal_obj.explanation_text = "Steal [selected_item.name]"
 			objectives += steal_obj
+			
+			// If the objective is Kassidy's Leotard, make sure it exists in the world
+			if(istype(selected_item.targetitem, /obj/item/treasure/kassidy) && !locate(/obj/item/treasure/kassidy) in world)
+				new /obj/item/treasure/kassidy() // This will automatically place itself in a random location
 		
 		// Add survival objective
 		var/datum/objective/survive/survive_obj = new
@@ -197,6 +201,10 @@
 	steal_obj2.steal_target = second_objective.targetitem
 	steal_obj2.explanation_text = "Steal [second_objective.name]"
 	objectives += steal_obj2
+	
+	// Check if either objective is Kassidy's Leotard and ensure it exists
+	if((istype(first_objective.targetitem, /obj/item/treasure/kassidy) || istype(second_objective.targetitem, /obj/item/treasure/kassidy)) && !locate(/obj/item/treasure/kassidy) in world)
+		new /obj/item/treasure/kassidy() // This will automatically place itself in a random location
 	
 	// Add survival objective
 	var/datum/objective/survive/survive_obj = new
@@ -1022,6 +1030,7 @@
 /obj/effect/proc_holder/spell/self/smoke_bomb
 	name = "Smoke Bomb"
 	desc = "Release a cloud of thick smoke around you, perfect for confusing guards or making a quick escape."
+	overlay_state = "smokebomb"
 	clothes_req = FALSE
 	human_req = TRUE
 	charge_max = 300

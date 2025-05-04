@@ -127,4 +127,47 @@
 	icon_state = "bottle_message"
 	difficulty = 1
 
+/obj/item/treasure/bond
+	name = "Crown's Bond"
+	desc = "A pledged promise from the Crown, promising a small fortune of gold to the bearer."
+	icon = 'icons/roguetown/items/misc.dmi'
+	icon_state = "confession"
+	difficulty = 1
+
+/obj/item/treasure/kassidy
+	name = "Kassidy's Leotard"
+	desc = "A leotard worn by the infamous Kassidy, rumored to have been used in a daring escape from the prison of the Countess."
+	icon = 'icons/roguetown/items/misc.dmi'
+	icon_state = "athletic_leotard"
+	difficulty = 9
+
+/obj/item/treasure/kassidy/proc/find_random_indoor_turf()
+	var/list/valid_turfs = list()
+	for(var/turf/open/floor/T in world)
+		if(!T.is_blocked_turf(TRUE)) // Only check if the turf isn't blocked
+			var/area/A = get_area(T)
+			if(A && !A.outdoors) // Only check if the area is not outdoors
+				valid_turfs += T
+	
+	if(valid_turfs.len)
+		return pick(valid_turfs)
+	return null
+
+/obj/item/treasure/kassidy/Initialize(mapload)
+	. = ..()
+	if(!mapload)
+		// If created during gameplay (not from map loading), place it in a random location
+		var/turf/T = find_random_indoor_turf()
+		if(T)
+			forceMove(T)
+			log_game("Kassidy's Leotard spawned at [AREACOORD(T)]")
+		else
+			// Fallback location - try to find a closet
+			var/obj/structure/closet/C = locate(/obj/structure/closet) in world
+			if(C && !QDELETED(C))
+				forceMove(C)
+				log_game("Kassidy's Leotard spawned in a closet at [AREACOORD(C)]")
+			else
+				log_game("ERROR: Failed to place Kassidy's Leotard anywhere on the map")
+
 
