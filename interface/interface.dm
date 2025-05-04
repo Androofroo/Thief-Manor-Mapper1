@@ -56,7 +56,7 @@
 		to_chat(src, span_danger("The Github URL is not set in the server configuration."))
 	return
 
-/client/verb/mentorhelp()
+/* /client/verb/mentorhelp()
 	set name = "Mentorhelp"
 	set desc = ""
 	set category = "-Admin-"
@@ -65,7 +65,7 @@
 		if(msg)
 			mob.schizohelp(msg)
 	else
-		to_chat(src, span_danger("You can't currently use Mentorhelp in the main menu."))
+		to_chat(src, span_danger("You can't currently use Mentorhelp in the main menu."))*/
 
 /client/verb/reportissue()
 	set name = "report-issue"
