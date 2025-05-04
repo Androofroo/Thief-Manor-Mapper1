@@ -67,7 +67,10 @@ GLOBAL_VAR(lord_selected)
 
 /datum/outfit/job/roguetown/lord/standard/pre_equip(mob/living/carbon/human/H)
 	..()
-	head = /obj/item/clothing/head/roguetown/crown/serpcrown
+	if(!istype(H, /mob/living/carbon/human/dummy))
+		head = /obj/item/clothing/head/roguetown/crown/serpcrown
+	else
+		head = /obj/item/clothing/head/roguetown/crown/fakecrown
 	neck = /obj/item/storage/belt/rogue/pouch/coins/rich
 	cloak = /obj/item/clothing/cloak/lordcloak
 	belt = /obj/item/storage/belt/rogue/leather/plaquegold
@@ -151,13 +154,16 @@ GLOBAL_VAR(lord_selected)
 /datum/outfit/job/roguetown/lord/hedonist/pre_equip(mob/living/carbon/human/H)
 	..()
 	// Triple the treasury value as this is the hedonist lord, but only if it's the first selection
-	// Only boost the treasury if this isn't a preview dummy and is an actual player spawn
-	if(!GLOB.lord_selected && !istype(H, /mob/living/carbon/human/dummy))
+	// Only apply treasury boost for actual players (not dummies/previews)
+	if(!GLOB.lord_selected && !istype(H, /mob/living/carbon/human/dummy) && H.client)
 		SStreasury.treasury_value *= 3
 		to_chat(world, "<span class='boldnotice'>The Hedonist Lord's lavish lifestyle has resulted in a substantial treasury boost!</span>")
 		GLOB.lord_selected = TRUE
 	
-	head = /obj/item/clothing/head/roguetown/crown/serpcrown
+	if(!istype(H, /mob/living/carbon/human/dummy))
+		head = /obj/item/clothing/head/roguetown/crown/serpcrown
+	else
+		head = /obj/item/clothing/head/roguetown/crown/fakecrown
 	neck = /obj/item/storage/belt/rogue/pouch/coins/rich
 	belt = /obj/item/storage/belt/rogue/leather/plaquegold
 	beltl = /obj/item/storage/keyring/lord
@@ -214,7 +220,10 @@ GLOBAL_VAR(lord_selected)
 
 /datum/outfit/job/roguetown/lord/merchant/pre_equip(mob/living/carbon/human/H)
 	..()
-	head = /obj/item/clothing/head/roguetown/crown/serpcrown
+	if(!istype(H, /mob/living/carbon/human/dummy))
+		head = /obj/item/clothing/head/roguetown/crown/serpcrown
+	else
+		head = /obj/item/clothing/head/roguetown/crown/fakecrown
 	neck = /obj/item/storage/belt/rogue/pouch/coins/rich
 	backr = /obj/item/storage/backpack/rogue/satchel
 	belt = /obj/item/storage/belt/rogue/leather/plaquegold
@@ -271,7 +280,10 @@ GLOBAL_VAR(lord_selected)
 
 /datum/outfit/job/roguetown/lord/scholar/pre_equip(mob/living/carbon/human/H)
 	..()
-	head = /obj/item/clothing/head/roguetown/crown/serpcrown
+	if(!istype(H, /mob/living/carbon/human/dummy))
+		head = /obj/item/clothing/head/roguetown/crown/serpcrown
+	else
+		head = /obj/item/clothing/head/roguetown/crown/fakecrown
 	neck = /obj/item/storage/belt/rogue/pouch/coins/rich
 	cloak = /obj/item/clothing/cloak/lordcloak
 	backr = /obj/item/storage/backpack/rogue/satchel
