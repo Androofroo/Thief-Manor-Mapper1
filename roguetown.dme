@@ -2044,6 +2044,7 @@
 #include "modular_hearthstone\code\modules\spells\roguetown\flagellant.dm"
 #include "modular_hearthstone\code\modules\spells\roguetown\spelllist.dm"
 #include "modular_hearthstone\code\modules\spells\roguetown\wizard.dm"
+#include "thiefmanor\items.dm"
 #include "thiefmanor\weapons.dm"
 // END_INCLUDE
 
