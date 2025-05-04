@@ -9,7 +9,7 @@
 	allowed_races = NOBLE_RACES_TYPES
 	allowed_ages = list(AGE_ADULT, AGE_MIDDLEAGED, AGE_OLD)
 	display_order = JDO_MARSHAL
-	tutorial = "The Magistrate is the manor’s authoritative judge and enforcer of law, entrusted with maintaining order and settling disputes. With sharp insight and the power to interrogate, detain, or issue decrees, their presence commands both respect and fear."
+	tutorial = "The Magistrate is the manor's authoritative judge and enforcer of the Lord's law, entrusted with maintaining order and settling disputes. With sharp insight and the power to interrogate, detain, or issue decrees, their presence commands both respect and fear. Thieves will ultimately answer to the Magistrate, or so they claim."
 	whitelist_req = FALSE
 
 	spells = list(/obj/effect/proc_holder/spell/self/convertrole/guard) // /obj/effect/proc_holder/spell/self/convertrole/bog
@@ -21,7 +21,6 @@
 	max_pq = null
 	round_contrib_points = 3
 	cmode_music = 'sound/music/combat_guard.ogg'
-	advclass_cat_rolls = list (CTAG_MARSHAL = 20)
 
 /datum/outfit/job/roguetown/marshal/pre_equip(mob/living/carbon/human/H)
 	..()
@@ -32,9 +31,15 @@
 	gloves = /obj/item/clothing/gloves/roguetown/angle
 	wrists = /obj/item/clothing/wrists/roguetown/bracers
 	id = /obj/item/scomstone/garrison
+	armor = /obj/item/clothing/suit/roguetown/armor/brigandine/sheriff
+	cloak = /obj/item/clothing/cloak/stabard/surcoat/bailiff
+	backr = /obj/item/rogueweapon/mace/cudgel/justice
+	belt = /obj/item/storage/belt/rogue/leather/plaquegold
+	beltr = /obj/item/storage/belt/rogue/pouch/coins/rich
+	beltl = /obj/item/storage/keyring/sheriff
 	backpack_contents = list(/obj/item/rogueweapon/huntingknife/idagger/steel/special = 1, /obj/item/signal_horn = 1)
 	if(H.mind)
-		
+		H.mind.adjust_skillrank(/datum/skill/combat/maces, 4, TRUE)
 		H.mind.adjust_skillrank(/datum/skill/combat/crossbows, 2, TRUE)
 		H.mind.adjust_skillrank(/datum/skill/combat/wrestling, 4, TRUE)
 		H.mind.adjust_skillrank(/datum/skill/combat/unarmed, 3, TRUE)
@@ -58,44 +63,6 @@
 
 /datum/job/roguetown/marshal/after_spawn(mob/living/L, mob/M, latejoin = TRUE)
 	. = ..()
-	if(ishuman(L))
-		var/mob/living/carbon/human/H = L
-		H.advsetup = 1
-		H.invisibility = INVISIBILITY_MAXIMUM
-		H.become_blind("advsetup")
-
-/datum/advclass/marshal/classic
-	name = "Marshal"
-	tutorial = "You've spent your daes in the courts and garrisons of the city. You've studied the law tome from back to front and enforce your word with the iron hand of justice, and the iron mace in your hands. More men have spent days rotting in the dungeon than that Knight Commander could ever have claimed, and every person in the realm respects your authority in matters of law and order."
-	outfit = /datum/outfit/job/roguetown/marshal/classic
-
-	category_tags = list(CTAG_MARSHAL)
-
-/datum/outfit/job/roguetown/marshal/classic/pre_equip(mob/living/carbon/human/H)
-	armor = /obj/item/clothing/suit/roguetown/armor/brigandine/sheriff
-	cloak = /obj/item/clothing/cloak/stabard/surcoat/bailiff
-	backr = /obj/item/rogueweapon/mace/cudgel/justice
-	belt = /obj/item/storage/belt/rogue/leather/plaquegold
-	beltr = /obj/item/storage/belt/rogue/pouch/coins/rich
-	beltl = /obj/item/storage/keyring/sheriff
-	if(H.mind)
-		H.mind.adjust_skillrank(/datum/skill/combat/maces, 4, TRUE)
-
-/datum/advclass/marshal/kcommander
-	name = "Knight Commander"
-	tutorial = "You spent your daes as a dutiful knight in the service of the crown. Earning your accolades through military tactics and victories, you're reknown for your warfaring. Now retired from your days afield, you enforce the same iron law you once practiced at war in your home. You run the garrison, knights and the town's laws with a military strictness, and no-one can claim you are weaker on crime than any of those weak Marshals."
-	outfit = /datum/outfit/job/roguetown/marshal/kcommander
-
-	category_tags = list(CTAG_MARSHAL)
-
-/datum/outfit/job/roguetown/marshal/kcommander/pre_equip(mob/living/carbon/human/H)
-	armor = /obj/item/clothing/suit/roguetown/armor/brigandine/sheriff/coat
-	backr = /obj/item/rogueweapon/sword/long/oathkeeper
-	belt = /obj/item/storage/belt/rogue/leather
-	beltr = /obj/item/storage/belt/rogue/pouch/coins/rich
-	beltl = /obj/item/storage/keyring/sheriff
-	if(H.mind)
-		H.mind.adjust_skillrank(/datum/skill/combat/swords, 4, TRUE)
 
 /mob/living/carbon/human/proc/request_law()
 	set name = "Request Law"
