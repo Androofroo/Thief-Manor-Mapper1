@@ -148,8 +148,11 @@
 			objectives += steal_obj
 			
 			// If the objective is Kassidy's Leotard, make sure it exists in the world
-			if(istype(selected_item.targetitem, /obj/item/treasure/kassidy) && !locate(/obj/item/treasure/kassidy) in world)
-				new /obj/item/treasure/kassidy() // This will automatically place itself in a random location
+			if(istype(selected_item.targetitem, /obj/item/treasure/kassidy))
+				new /obj/item/treasure/kassidy()
+
+			else if(istype(selected_item.targetitem, /obj/item/treasure/morgan))
+				new /obj/item/treasure/morgan()
 		
 		// Add survival objective
 		var/datum/objective/survive/survive_obj = new
@@ -194,8 +197,12 @@
 	objectives += steal_obj2
 	
 	// Check if either objective is Kassidy's Leotard and ensure it exists
-	if((istype(first_objective.targetitem, /obj/item/treasure/kassidy) || istype(second_objective.targetitem, /obj/item/treasure/kassidy)) && !locate(/obj/item/treasure/kassidy) in world)
-		new /obj/item/treasure/kassidy() // This will automatically place itself in a random location
+	if(istype(first_objective.targetitem, /obj/item/treasure/kassidy) || istype(second_objective.targetitem, /obj/item/treasure/kassidy))
+		new /obj/item/treasure/kassidy() // Always spawn one regardless of whether one exists
+	
+	// Check if either objective is Morgan Doll and ensure it exists
+	if(istype(first_objective.targetitem, /obj/item/treasure/morgan) || istype(second_objective.targetitem, /obj/item/treasure/morgan))
+		new /obj/item/treasure/morgan() // Always spawn one regardless of whether one exists
 	
 	// Add survival objective
 	var/datum/objective/survive/survive_obj = new
@@ -872,7 +879,7 @@
 	
 	. = ..()
 
-
+// Update the break_magical_disguise verb to use our new helper
 /mob/proc/break_magical_disguise()
 	set name = "Break Disguise"
 	set desc = "Voluntarily break your magical disguise."
