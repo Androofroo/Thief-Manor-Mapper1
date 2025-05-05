@@ -31,6 +31,8 @@
 		H.mind.adjust_skillrank(/datum/skill/craft/crafting, 5, TRUE)
 		H.mind.adjust_skillrank(/datum/skill/craft/engineering, 5, TRUE)
 		H.mind.adjust_skillrank(/datum/skill/craft/blacksmithing, 4, TRUE) 
+		H.mind.adjust_skillrank(/datum/skill/craft/weaponsmithing, 4, TRUE)
+		H.mind.adjust_skillrank(/datum/skill/craft/armorsmithing, 4, TRUE)
 		H.mind.adjust_skillrank(/datum/skill/misc/climbing, 3, TRUE)
 		H.mind.adjust_skillrank(/datum/skill/misc/lockpicking, 4, TRUE)
 		H.mind.adjust_skillrank(/datum/skill/craft/smelting, 4, TRUE)
