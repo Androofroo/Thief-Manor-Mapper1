@@ -110,8 +110,8 @@
 /obj/item/treasure/wine
 	name = "Vintage Wine"
 	desc = "A bottle of luxurious wine aged since year 401. It's said to have a unique flavor that can only be found in the finest vintages. Far too valuable to drink."
-	icon = 'icons/roguetown/items/cooking.dmi'
-	icon_state = "lovebottle"
+	icon = 'icons/roguetown/items/misc.dmi'
+	icon_state = "wine"
 	difficulty = 1
 
 /obj/item/treasure/gemerald
@@ -576,7 +576,7 @@
 	name = "The Gossamer Bell"
 	desc = "A delicate silver bell with intricate engravings of flowing mist. It's said to ring on its own when spirits are near."
 	icon = 'icons/roguetown/items/misc.dmi'
-	icon_state = "churchbell"  // Using existing bell icon
+	icon_state = "churchbell"
 	w_class = WEIGHT_CLASS_TINY
 	difficulty = 3
 	resistance_flags = FIRE_PROOF
@@ -587,7 +587,7 @@
 	var/detection_range = 5
 	var/next_ring = 0
 	var/ring_timer_id
-	var/last_manual_ring = 0  // For manual ringing cooldown
+	var/last_manual_ring = 0
 
 /obj/item/treasure/gossamer_bell/Initialize()
 	. = ..()
@@ -667,3 +667,252 @@
 	playsound(src, 'sound/misc/bell.ogg', 50, TRUE)
 	user.visible_message(span_notice("[user] rings [src]."), span_notice("You ring [src]. It makes a clear, sweet sound."))
 	return TRUE
+
+/obj/item/treasure/marvelous_compass
+	name = "Marvelous Compass"
+	desc = "An ornate brass compass with intricate engravings. Instead of cardinal directions, it has symbols of precious items around its face. The needle seems to point toward valuable treasures."
+	icon = 'icons/roguetown/items/misc.dmi'
+	icon_state = "compass"
+	w_class = WEIGHT_CLASS_SMALL
+	difficulty = 4
+	resistance_flags = FIRE_PROOF
+	slot_flags = ITEM_SLOT_BELT
+	var/next_scan = 0
+	var/scan_interval = 5 SECONDS
+	var/active = FALSE
+	var/atom/target_treasure = null
+
+/obj/item/treasure/marvelous_compass/Initialize()
+	. = ..()
+	update_icon()
+
+/obj/item/treasure/marvelous_compass/update_icon()
+	. = ..()
+	cut_overlays()
+	if(active)
+		var/image/overlay = image(icon, src, "compassneedle")
+		if(target_treasure)
+			var/direction = get_dir(get_turf(src), get_turf(target_treasure))
+			// Convert direction to degrees for the compass needle
+			var/angle = dir2angle(direction)
+			var/matrix/M = matrix()
+			M.Turn(angle)
+			overlay.transform = M
+		else
+			// Spin randomly if no target
+			var/matrix/M = matrix()
+			M.Turn(rand(0, 360))
+			overlay.transform = M
+		add_overlay(overlay)
+
+/obj/item/treasure/marvelous_compass/attack_self(mob/user)
+	active = !active
+	if(active)
+		to_chat(user, span_notice("You activate [src]. The needle starts moving..."))
+		START_PROCESSING(SSobj, src)
+		scan_for_treasure(user)
+	else
+		to_chat(user, span_notice("You deactivate [src]. The needle stops moving."))
+		STOP_PROCESSING(SSobj, src)
+		target_treasure = null
+	
+	update_icon()
+	return TRUE
+
+/obj/item/treasure/marvelous_compass/process()
+	if(!active || world.time < next_scan)
+		return
+	
+	next_scan = world.time + scan_interval
+	
+	if(ismob(loc))
+		var/mob/M = loc
+		scan_for_treasure(M)
+	else
+		scan_for_treasure(null)
+
+/obj/item/treasure/marvelous_compass/proc/scan_for_treasure(mob/user)
+	var/list/possible_treasures = list()
+	var/list/objective_treasures = list()
+	
+	// Get all treasures in the world
+	for(var/obj/item/treasure/T in world)
+		if(T == src) // Don't point to ourselves
+			continue
+		possible_treasures += T
+	
+	// If we have a user with a thief antagonist, check for objective items
+	if(user && ishuman(user))
+		var/mob/living/carbon/human/H = user
+		if(H.mind && H.mind.has_antag_datum(/datum/antagonist/thief))
+			var/datum/antagonist/thief/thief_antag = H.mind.has_antag_datum(/datum/antagonist/thief)
+			// Check each objective
+			for(var/datum/objective/steal/O in thief_antag.objectives)
+				if(istype(O) && O.steal_target)
+					// Look for all treasures matching the objective
+					for(var/obj/item/treasure/T in possible_treasures)
+						if(istype(T, O.steal_target))
+							objective_treasures += T
+	
+	// Determine target based on what we found
+	if(length(objective_treasures) > 0)
+		// Randomly pick one of the objective treasures
+		target_treasure = pick(objective_treasures)
+		if(user)
+			to_chat(user, span_notice("The compass needle spins rapidly before settling on a direction. It seems to be pointing toward something you seek."))
+	else if(length(possible_treasures) > 0)
+		// Find the closest treasure
+		var/obj/item/treasure/closest = null
+		var/closest_dist = INFINITY
+		var/turf/our_turf = get_turf(src)
+		
+		for(var/obj/item/treasure/T in possible_treasures)
+			var/dist = get_dist(our_turf, get_turf(T))
+			if(dist < closest_dist)
+				closest_dist = dist
+				closest = T
+		
+		target_treasure = closest
+		if(user)
+			to_chat(user, span_notice("The compass needle points toward the nearest treasure."))
+	else
+		// No treasures found
+		target_treasure = null
+		if(user)
+			to_chat(user, span_warning("The compass needle spins aimlessly, unable to detect any treasures."))
+	
+	// Create a direction arrow and tell the user which direction
+	if(target_treasure && user)
+		show_direction_to_user(user)
+	
+	update_icon()
+
+/obj/item/treasure/marvelous_compass/proc/show_direction_to_user(mob/user)
+	if(!target_treasure || !user)
+		return
+		
+	var/turf/T = get_turf(src)
+	var/turf/target_turf = get_turf(target_treasure)
+	
+	if(!T || !target_turf)
+		return
+		
+	// Get the direction to the target
+	var/direction = get_dir(T, target_turf)
+	
+	// Tell the user which direction in chat
+	var/dir_text = dir2text(direction)
+	var/dist = get_dist(T, target_turf)
+	
+	// Check if the target is on a different z-level
+	var/vertical_direction = ""
+	if(T.z > target_turf.z)
+		vertical_direction = "below you"
+	else if(T.z < target_turf.z)
+		vertical_direction = "above you"
+	
+	// Customize the message based on whether the target is on the same z-level or not
+	if(vertical_direction != "")
+		to_chat(user, span_notice("The compass needle quivers and points <b>[dir_text]</b> and <b>[vertical_direction]</b>. The treasure is ([dist] steps away) on another level."))
+	else
+		to_chat(user, span_notice("The treasure is <b>[dir_text]</b> from here ([dist] steps away)."))
+	
+	// Create a visible arrow icon for the user
+	var/obj/effect/temp_visual/dir_setting/compass_arrow/arrow
+	
+	// Always point in the cardinal direction, but set z-direction if needed
+	arrow = new(T, direction)
+	
+	// If on different z-level, add an indicator for that too
+	if(vertical_direction == "above you")
+		arrow.z_direction = "up"
+	else if(vertical_direction == "below you")
+		arrow.z_direction = "down"
+	
+	// Make the arrow only visible to the user
+	var/image/I = image(arrow)
+	I.override = TRUE
+	
+	// Only show it to the user
+	user.client?.images += I
+	
+	// Add a second arrow for z-level if needed
+	if(vertical_direction != "")
+		var/obj/effect/temp_visual/dir_setting/compass_arrow/z_arrow
+		
+		if(vertical_direction == "above you")
+			z_arrow = new(T, NORTH)
+			z_arrow.z_level_indicator = TRUE
+			z_arrow.pixel_x = 16 // Offset to the right
+		else
+			z_arrow = new(T, SOUTH)
+			z_arrow.z_level_indicator = TRUE
+			z_arrow.pixel_x = 16 // Offset to the right
+		
+		// Make the z-arrow only visible to the user
+		var/image/I2 = image(z_arrow)
+		I2.override = TRUE
+		
+		// Only show it to the user
+		user.client?.images += I2
+		
+		// Remove the image after a short delay
+		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(remove_image_from_client), I2, user.client), 3 SECONDS)
+	
+	// Remove the image after a short delay
+	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(remove_image_from_client), I, user.client), 3 SECONDS)
+
+// Updated arrow effect that points to the target
+/obj/effect/temp_visual/dir_setting/compass_arrow
+	name = "compass arrow"
+	icon = 'icons/mob/screen_gen.dmi'
+	icon_state = "arrowcompass"
+	duration = 3 SECONDS
+	color = "#FFD700" // Gold color
+	layer = ABOVE_MOB_LAYER
+	pixel_y = 16 // Position it above the player's head (reduced from 32)
+	var/z_direction = null // Indicates if the arrow points up or down
+	var/z_level_indicator = FALSE // Is this arrow showing z-level difference?
+
+/obj/effect/temp_visual/dir_setting/compass_arrow/Initialize(mapload, set_dir)
+	. = ..()
+	
+	// Different animation for z-level indicators
+	if(z_level_indicator)
+		// Smaller for secondary indicator
+		transform = transform.Scale(0.7)
+		// Different color for z-level
+		color = "#36C5F0" // Light blue 
+		
+		// Pulsing animation for z-level
+		animate(src, alpha = 150, time = 10, loop = 3)
+		animate(alpha = 255, time = 10)
+	else
+		// Regular animation for main direction
+		animate(src, pixel_y = pixel_y + 4, time = 5, loop = 6, flags = ANIMATION_RELATIVE)
+		animate(pixel_y = pixel_y - 4, time = 5)
+	
+	// Handle different directions for z-levels - only apply if this is a z-level indicator
+	if(z_level_indicator)
+		if(z_direction == "up")
+			dir = NORTH // Use north-facing arrow for up
+		else if(z_direction == "down")
+			dir = SOUTH // Use south-facing arrow for down
+
+// Global proc to remove images from clients after delay
+/proc/remove_image_from_client(image/I, client/C)
+	if(I && C)
+		C.images -= I
+
+/obj/item/treasure/marvelous_compass/Destroy()
+	STOP_PROCESSING(SSobj, src)
+	target_treasure = null
+	return ..()
+	
+/obj/item/treasure/marvelous_compass/dropped()
+	. = ..()
+	update_icon()
+	
+/obj/item/treasure/marvelous_compass/equipped()
+	. = ..()
+	update_icon()
