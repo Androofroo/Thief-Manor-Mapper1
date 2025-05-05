@@ -142,14 +142,12 @@
 	name = "Kassidy Doll"
 	desc = "A strange plush doll that resembles Kassidy the Red."
 	icon_state = "kass"
-	dropshrink = 0.8
 	difficulty = 10
 
 /obj/item/treasure/morgan
 	name = "Morgan Doll"
 	desc = "A strange plush doll that resembles Morgan Cross."
 	icon_state = "morgan"
-	dropshrink = 0.8
 	difficulty = 15
 
 /obj/item/treasure/morgan/proc/find_random_indoor_turf()
