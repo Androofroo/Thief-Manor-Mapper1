@@ -124,21 +124,21 @@
 	desc = "An absurdly large green gemstone—gaudy, cut, and almost too heavy to wear—rumored to have been pried from the eye socket of a fallen statue in an ancient ruin. Its true value is debated, but its sheer size makes it irresistible to thieves and impossible to hide discreetly."
 	icon = 'icons/roguetown/items/gems.dmi'
 	icon_state = "emerald_cut"
-	difficulty = 1
+	difficulty = 4
 	drop_sound = 'sound/items/gem.ogg'
 
 /obj/item/treasure/blackmail
 	name = "Perfumed Letters"
 	desc = "Delicate, romantic, and politically dangerous if discovered."
 	icon_state = "blackmail"
-	difficulty = 1
+	difficulty = 2
 	drop_sound = 'sound/foley/dropsound/paper_drop.ogg'
 
 /obj/item/treasure/bond
 	name = "Crown's Bond"
 	desc = "A pledged promise from the Crown, promising a small fortune of gold to the bearer."
 	icon_state = "bond"
-	difficulty = 1
+	difficulty = 2
 	drop_sound = 'sound/foley/dropsound/paper_drop.ogg'
 
 /obj/item/treasure/kassidy
@@ -547,7 +547,7 @@
 	desc = "A delicate silver bell with intricate engravings of flowing mist. It's said to ring on its own when spirits are near."
 	is_silver = TRUE
 	icon = 'icons/roguetown/items/misc.dmi'
-	icon_state = "churchbell"
+	icon_state = "bell"
 	w_class = WEIGHT_CLASS_TINY
 	difficulty = 3
 	resistance_flags = FIRE_PROOF
