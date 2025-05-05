@@ -145,7 +145,7 @@
 	name = "Kassidy Doll"
 	desc = "A strange plush doll that resembles Kassidy the Red."
 	icon_state = "kass"
-	drop_shrink = 0.8
+	dropshrink = 0.8
 	difficulty = 9
 
 /obj/item/treasure/snake
@@ -198,6 +198,7 @@
 	name = "Mirror of Truth"
 	desc = "A mysterious mirror that reveals hidden truths. When used on someone, it reveals their hidden past."
 	icon_state = "mirror"
+	drop_sound = 'sound/foley/dropsound/glass_drop.ogg'
 	w_class = WEIGHT_CLASS_TINY
 	difficulty = 3
 	var/next_use = 0
