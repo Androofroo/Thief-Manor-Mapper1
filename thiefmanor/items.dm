@@ -367,3 +367,50 @@
 	allowed_race = NON_DWARVEN_RACE_TYPES
 	r_sleeve_status = SLEEVE_NORMAL
 	l_sleeve_status = SLEEVE_NORMAL
+
+/obj/item/treasure/quiet_blade
+	name = "The Quiet Blade"
+	desc = "A perfectly balanced dagger of mysterious origin. Its edge is impossibly sharp and never seems to dull. Legend says it never misses its mark."
+	icon = 'icons/roguetown/weapons/32.dmi'
+	icon_state = "gsdagger"  // Similar to silverstake but should be changed
+	w_class = WEIGHT_CLASS_TINY
+	force = 20
+	throwforce = 15
+	difficulty = 7
+	resistance_flags = FIRE_PROOF | ACID_PROOF
+	slot_flags = ITEM_SLOT_BELT | ITEM_SLOT_HIP
+	possible_item_intents = list(/datum/intent/dagger/ghost_strike)
+	experimental_inhand = TRUE
+
+/obj/item/treasure/quiet_blade/getonmobprop(tag)
+	. = ..()
+	if(tag)
+		switch(tag)
+			if("gen")
+				return list("shrink" = 0.4,"sx" = -10,"sy" = 0,"nx" = 11,"ny" = 0,"wx" = -4,"wy" = 0,"ex" = 2,"ey" = 0,"northabove" = 0,"southabove" = 1,"eastabove" = 1,"westabove" = 0,"nturn" = 0,"sturn" = 0,"wturn" = 0,"eturn" = 0,"nflip" = 0,"sflip" = 8,"wflip" = 8,"eflip" = 0)
+			if("onbelt")
+				return list("shrink" = 0.3,"sx" = -2,"sy" = -5,"nx" = 4,"ny" = -5,"wx" = 0,"wy" = -5,"ex" = 2,"ey" = -5,"nturn" = 0,"sturn" = 0,"wturn" = 0,"eturn" = 0,"nflip" = 0,"sflip" = 0,"wflip" = 0,"eflip" = 0,"northabove" = 0,"southabove" = 1,"eastabove" = 1,"westabove" = 0)
+
+/obj/item/treasure/quiet_blade/Initialize()
+	. = ..()
+	AddComponent(/datum/component/butchering, 30, 100, 0, null, TRUE)
+
+// This item never takes damage
+/obj/item/treasure/quiet_blade/take_damage(damage_amount, damage_type, damage_flag, sound_effect, attack_dir, armour_penetration)
+	return 0
+
+
+/datum/intent/dagger/ghost_strike
+	name = "ghost strike"
+	icon_state = "instab"
+	attack_verb = list("silently pierces", "quietly slices through", "imperceptibly cuts")
+	animname = "stab"
+	blade_class = BCLASS_STAB
+	hitsound = list('sound/combat/hits/bladed/genstab (1).ogg')
+	penfactor = 100
+	chargetime = 0
+	clickcd = 8
+	item_d_type = "stab"
+	candodge = FALSE
+	canparry = FALSE 
+	damfactor = 1.5 
