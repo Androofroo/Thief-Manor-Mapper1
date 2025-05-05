@@ -1062,6 +1062,7 @@ GLOBAL_LIST_EMPTY(all_treasures)
 	name = "Pathmaker's Parchment"
 	desc = "An ancient, crackling parchment with a map that seems to shift and change as you look at it. Strange symbols glow along its weathered edges."
 	icon_state = "map"
+	drop_sound = 'sound/foley/dropsound/paper_drop.ogg'
 	difficulty = 4
 	resistance_flags = FIRE_PROOF
 	var/treasures_collected = 0
@@ -1228,16 +1229,44 @@ GLOBAL_LIST_EMPTY(all_treasures)
 		
 	to_chat(user, span_notice("You sense the treasure lies <b>[dir_text]</b> from here ([dist] paces away)[level_hint]."))
 	
-	// Create a momentary animated arrow pointing in the treasure's direction
+	// Create a temporary visual arrow that's only visible to the user who activated the map
 	var/obj/effect/temp_visual/dir_setting/parchment_indicator/arrow = new(user_turf, direction)
 	
-	// Only make it visible to the user
+	// Make the arrow only visible to the user who activated the map
+	// We don't use VIS_HIDE_ALL since it might not be defined, instead we use images
+	
+	// Create an image of the arrow that only the user can see
 	var/image/I = image(arrow)
 	I.override = TRUE
 	user.client?.images += I
 	
-	// Remove after a few seconds
-	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(remove_image_from_client), I, user.client), 3 SECONDS)
+	// Remove the image from the user's client after the effect duration
+	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(remove_image_from_client), I, user.client), arrow.duration)
+	
+	// Z-level indicator if needed
+	if(user_turf.z != target_turf.z)
+		var/z_dir = (user_turf.z < target_turf.z) ? "up" : "down"
+		var/obj/effect/temp_visual/dir_setting/parchment_indicator/z_arrow = new(user_turf, NORTH)
+		
+		// Different color for z-level indicator
+		z_arrow.color = "#36C5F0" // Light blue
+		
+		// Create unique transform for z direction
+		var/matrix/Z = matrix()
+		if(z_dir == "down")
+			Z.Turn(180) // Point downward
+		z_arrow.transform = Z.Scale(0.7) // Slightly smaller
+		
+		// Offset slightly so both arrows are visible
+		z_arrow.pixel_x = 16
+		
+		// Create an image only the user can see
+		var/image/Z_image = image(z_arrow)
+		Z_image.override = TRUE
+		user.client?.images += Z_image
+		
+		// Remove the image from the user's client after the effect duration
+		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(remove_image_from_client), Z_image, user.client), z_arrow.duration)
 
 /obj/item/treasure/pathmakers_parchment/proc/get_location_description(mob/user, obj/item/treasure/target)
 	if(!user || !target)
@@ -1522,9 +1551,6 @@ GLOBAL_LIST_EMPTY(all_treasures)
 			angle_offset = 225 
 		if(NORTHWEST)
 			angle_offset = 315 
-	
-	// Always use the NORTH-facing sprite as base and rotate it
-	dir = NORTH
 	
 	// Apply rotation transform
 	var/matrix/M = matrix()
