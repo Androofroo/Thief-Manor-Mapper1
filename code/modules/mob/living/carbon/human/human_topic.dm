@@ -106,11 +106,8 @@ GLOBAL_VAR_INIT(year_integer, text2num(year)) // = 2013???
 			L.remove_bandage()
 			usr.put_in_hands(I)
 
-	if(href_list["item"]) //canUseTopic check for this is handled by mob/Topic()
-		var/slot = text2num(href_list["item"])
-		if(slot in check_obscured_slots(TRUE))
-			to_chat(usr, span_warning("I can't reach that! Something is covering it."))
-			return
+	// Item href is now handled in mob/Topic() function
+	// This empty block was left over from the previous implementation
 
 	if(href_list["undiesthing"]) //canUseTopic check for this is handled by mob/Topic()
 		if(!get_location_accessible(src, BODY_ZONE_PRECISE_GROIN, skipundies = TRUE))
