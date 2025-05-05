@@ -83,14 +83,14 @@
 	name = "Treasure"
 	desc = "How are you seeing this?"
 	w_class = WEIGHT_CLASS_TINY
+	icon = 'icons/roguetown/items/misc.dmi'
 	icon_state = "treasure"
 	var/difficulty = 0
 
 /obj/item/treasure/marriagecontract
 	name = "Forged Marriage Contract"
 	desc = "A forged marriage contract that may erupt scandal in the noble realm.."
-	icon = 'icons/roguetown/items/misc.dmi'
-	icon_state = "contractsigned"
+	icon_state = "marriagecontract"
 	difficulty = 1
 
 /obj/item/treasure/ledger
@@ -125,23 +125,29 @@
 /obj/item/treasure/blackmail
 	name = "Perfumed Letters"
 	desc = "Delicate, romantic, and politically dangerous if discovered."
-	icon = 'icons/roguetown/items/cooking.dmi'
-	icon_state = "bottle_message"
+	icon_state = "blackmail"
 	difficulty = 1
 
 /obj/item/treasure/bond
 	name = "Crown's Bond"
 	desc = "A pledged promise from the Crown, promising a small fortune of gold to the bearer."
-	icon = 'icons/roguetown/items/misc.dmi'
-	icon_state = "confession"
+	icon_state = "bond"
 	difficulty = 1
 
 /obj/item/treasure/kassidy
-	name = "Kassidy's Leotard"
-	desc = "A leotard worn by the infamous Kassidy, rumored to have been used in a daring escape from the prison of the Countess."
+	name = "Kassidy Doll"
+	desc = "A strange plush doll that resembles Kassidy the Red."
 	icon = 'icons/roguetown/items/misc.dmi'
-	icon_state = "leotard"
+	icon_state = "kassidy"
 	difficulty = 9
+
+/obj/item/treasure/snake
+	name = "Emerald Idol of Ithulu"
+	desc = "A six-inch tall statue of a forgotten serpent god, carved from raw emerald. Recovered from an expedition to the jungle of the cursed island of Ithulu."
+	icon = 'icons/roguetown/items/misc.dmi'
+	icon_state = "snake"
+	difficulty = 3
+	drop_sound = 'sound/items/gem.ogg'
 
 /obj/item/treasure/kassidy/proc/find_random_indoor_turf()
 	var/list/valid_turfs = list()
@@ -176,16 +182,15 @@
 		if(length(possible_closets))
 			var/obj/structure/closet/C = pick(possible_closets)
 			forceMove(C)
-			message_admins("Kassidy's Leotard spawned in a closet at [ADMIN_VERBOSEJMP(C)]")
+			message_admins("Kassidy doll spawned in a closet at [ADMIN_VERBOSEJMP(C)]")
 		else
-			message_admins("ERROR: Failed to place Kassidy's Leotard in town area - no valid locations found")
+			message_admins("ERROR: Failed to place Kassidy doll in town area - no valid locations found")
 			qdel(src) // Delete the item if we can't find a valid location
 
 /obj/item/treasure/lens_of_truth
 	name = "Mirror of Truth"
 	desc = "A mysterious mirror that reveals hidden truths. When used on someone, it reveals their hidden past."
-	icon = 'icons/roguetown/items/ore.dmi'
-	icon_state = "ingotglass"
+	icon_state = "mirror"
 	w_class = WEIGHT_CLASS_TINY
 	difficulty = 3
 	var/next_use = 0
@@ -328,8 +333,7 @@
 /obj/item/treasure/quiet_blade
 	name = "The Quiet Blade"
 	desc = "A perfectly balanced dagger of mysterious origin. Its edge is impossibly sharp and never seems to dull. Legend says it never misses its mark."
-	icon = 'icons/roguetown/weapons/32.dmi'
-	icon_state = "gsdagger"  // Similar to silverstake but should be changed
+	icon_state = "quietblade"
 	associated_skill = /datum/skill/combat/knives
 	w_class = WEIGHT_CLASS_TINY
 	force = 20
