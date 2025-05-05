@@ -143,7 +143,52 @@
 	desc = "A strange plush doll that resembles Kassidy the Red."
 	icon_state = "kass"
 	dropshrink = 0.8
-	difficulty = 9
+	difficulty = 10
+
+/obj/item/treasure/morgan
+	name = "Morgan Doll"
+	desc = "A strange plush doll that resembles Morgan Cross."
+	icon_state = "morgan"
+	dropshrink = 0.8
+	difficulty = 15
+
+/obj/item/treasure/morgan/proc/find_random_indoor_turf()
+	var/list/valid_turfs = list()
+	for(var/turf/open/floor/T in world)
+		if(!T.is_blocked_turf(TRUE)) // Only check if the turf isn't blocked
+			var/area/A = get_area(T)
+			// Only check if the area is of type /area/rogue/indoors/town
+			if(A && istype(A, /area/rogue/indoors/town))
+				valid_turfs += T
+	
+	if(valid_turfs.len)
+		return pick(valid_turfs)
+	return null
+
+/obj/item/treasure/morgan/Initialize(mapload)
+	. = ..()
+	
+	// If created during gameplay (not from map loading), place it in a random location
+	var/turf/T = find_random_indoor_turf()
+	if(T)
+		forceMove(T)
+		message_admins("Morgan doll spawned at [ADMIN_VERBOSEJMP(T)]")
+	else
+		// Fallback location - try to find a closet in the town area
+		var/list/possible_closets = list()
+		for(var/obj/structure/closet/C in world)
+			// Only consider closets in the town
+			var/area/A = get_area(C)
+			if(A && istype(A, /area/rogue/indoors/town))
+				possible_closets += C
+		
+		if(length(possible_closets))
+			var/obj/structure/closet/C = pick(possible_closets)
+			forceMove(C)
+			message_admins("Morgan doll spawned in a closet at [ADMIN_VERBOSEJMP(C)]")
+		else
+			message_admins("ERROR: Failed to place Morgan doll in town area - no valid locations found")
+			qdel(src) // Delete the item if we can't find a valid location
 
 /obj/item/treasure/snake
 	name = "Emerald Idol of Ithulu"
