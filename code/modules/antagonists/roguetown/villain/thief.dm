@@ -235,6 +235,23 @@
 			snuffed = TRUE
 			snuff_count++
 	
+	// Also extinguish any candles in view
+	for(var/obj/item/candle/C in view(user))
+		if(C.lit)
+			C.lit = FALSE
+			C.update_icon()
+			C.set_light(0)
+			snuffed = TRUE
+			snuff_count++
+	
+	// Also extinguish any torches in view
+	for(var/obj/item/flashlight/flare/torch/T in view(user))
+		if(T.on)
+			T.on = FALSE
+			T.update_brightness()
+			snuffed = TRUE
+			snuff_count++
+	
 	if(snuffed)
 		to_chat(user, "<span class='notice'>You silently extinguish [snuff_count] nearby lights.</span>")
 		return TRUE // Return TRUE to trigger cooldown
