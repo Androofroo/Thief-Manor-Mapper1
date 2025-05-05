@@ -579,3 +579,107 @@
 	stressadd = 5
 	desc = span_danger("I miss the beauty I once had... I need to use the comb again.")
 	timer = 20 MINUTES // Depression lasts longer than the comb effect
+
+/obj/item/treasure/gossamer_bell
+	name = "The Gossamer Bell"
+	desc = "A delicate silver bell with intricate engravings of flowing mist. It's said to ring on its own when spirits are near."
+	icon = 'icons/roguetown/items/misc.dmi'
+	icon_state = "churchbell"  // Using existing bell icon
+	w_class = WEIGHT_CLASS_TINY
+	difficulty = 3
+	resistance_flags = FIRE_PROOF
+	experimental_inhand = TRUE
+	slot_flags = ITEM_SLOT_BELT
+	var/next_check = 0
+	var/check_interval = 10 SECONDS
+	var/detection_range = 5
+	var/next_ring = 0
+	var/ring_timer_id
+	var/last_manual_ring = 0  // For manual ringing cooldown
+
+/obj/item/treasure/gossamer_bell/getonmobprop(tag)
+	if(tag)
+		switch(tag)
+			if("gen")
+				return list("shrink" = 0.4,"sx" = -1,"sy" = 0,"nx" = 11,"ny" = 1,"wx" = 0,"wy" = 1,"ex" = 4,"ey" = 0,"northabove" = 0,"southabove" = 1,"eastabove" = 1,"westabove" = 0,"nturn" = 15,"sturn" = 0,"wturn" = 0,"eturn" = 39,"nflip" = 8,"sflip" = 0,"wflip" = 0,"eflip" = 8)
+			if("onbelt")
+				return list("shrink" = 0.3,"sx" = -2,"sy" = -5,"nx" = 4,"ny" = -5,"wx" = 0,"wy" = -5,"ex" = 2,"ey" = -5,"nturn" = 0,"sturn" = 0,"wturn" = 0,"eturn" = 0,"nflip" = 0,"sflip" = 0,"wflip" = 0,"eflip" = 0,"northabove" = 0,"southabove" = 1,"eastabove" = 1,"westabove" = 0)
+
+/obj/item/treasure/gossamer_bell/Initialize()
+	. = ..()
+	START_PROCESSING(SSobj, src)
+
+/obj/item/treasure/gossamer_bell/Destroy()
+	STOP_PROCESSING(SSobj, src)
+	if(ring_timer_id)
+		deltimer(ring_timer_id)
+		ring_timer_id = null
+	return ..()
+
+/obj/item/treasure/gossamer_bell/dropped()
+	. = ..()
+	update_icon()
+
+/obj/item/treasure/gossamer_bell/equipped()
+	. = ..()
+	update_icon()
+
+/obj/item/treasure/gossamer_bell/process()
+	if(world.time < next_check)
+		return
+	
+	next_check = world.time + check_interval
+	
+	// Don't check if we're already planning to ring soon
+	if(ring_timer_id || world.time < next_ring)
+		return
+	
+	var/turf/T = get_turf(src)
+	if(!T)
+		return
+	
+	// Check for ghosts nearby
+	var/ghost_nearby = FALSE
+	for(var/mob/dead/observer/G in GLOB.player_list)
+		if(!G.client) // Only count ghosts with clients
+			continue
+			
+		if(get_dist(G, src) <= detection_range)
+			ghost_nearby = TRUE
+			break
+	
+	// If there's a ghost nearby, schedule a ring
+	if(ghost_nearby)
+		// Schedule the bell to ring in 10-20 seconds
+		var/ring_delay = rand(10 SECONDS, 20 SECONDS)
+		ring_timer_id = addtimer(CALLBACK(src, PROC_REF(ring_bell), T), ring_delay, TIMER_STOPPABLE)
+
+/obj/item/treasure/gossamer_bell/proc/ring_bell(turf/source_turf)
+	ring_timer_id = null
+	
+	if(!source_turf)
+		source_turf = get_turf(src)
+		
+	if(!source_turf)
+		return
+	
+	// Play the sound effect
+	playsound(source_turf, 'sound/misc/bell.ogg', 40, TRUE, -1)
+	
+	// Visual feedback for those who can see the bell
+	var/list/viewers = viewers(7, source_turf)
+	for(var/mob/M in viewers)
+		to_chat(M, span_notice("[src] rings softly by itself..."))
+	
+	// Set the next time we can ring
+	next_ring = world.time + rand(10 SECONDS, 20 SECONDS)
+
+/obj/item/treasure/gossamer_bell/attack_self(mob/user)
+	if(world.time < last_manual_ring + 3 SECONDS)
+		return FALSE
+		
+	last_manual_ring = world.time
+	
+	playsound(src, 'sound/misc/bell.ogg', 50, TRUE)
+	user.visible_message(span_notice("[user] rings [src]."), span_notice("You ring [src]. It makes a clear, sweet sound."))
+	return TRUE
