@@ -1077,7 +1077,7 @@ GLOBAL_LIST_EMPTY(all_treasures)
 	else if(istype(T, /obj/item/treasure/marriagecontract))
 		return "a sealed document"
 	else if(istype(T, /obj/item/treasure/ledger))
-		return "an open book"
+		return "an ominous book"
 	else if(istype(T, /obj/item/treasure/wine))
 		return "an ornate bottle"
 	else if(istype(T, /obj/item/treasure/gemerald))
@@ -1089,7 +1089,7 @@ GLOBAL_LIST_EMPTY(all_treasures)
 	else if(istype(T, /obj/item/treasure/kassidy))
 		return "a mysterious figure"
 	else if(istype(T, /obj/item/treasure/morgan))
-		return "a hooded figure"
+		return "a beloved figure"
 	else if(istype(T, /obj/item/treasure/snake))
 		return "a coiled serpent"
 	else if(istype(T, /obj/item/treasure/lens_of_truth))
