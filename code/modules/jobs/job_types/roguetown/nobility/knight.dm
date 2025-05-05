@@ -189,7 +189,7 @@
 		var/obj/item/clothing/head/new_helmet = new helmet_type(get_turf(H))
 		if(H.head)
 			H.dropItemToGround(H.head)
-		H.equip_to_slot_if_possible(new_helmet, SLOT_HEAD)
+		H.equip_to_slot_or_del(new_helmet, SLOT_HEAD)
 	
 	var/armor_type = armors[armorchoice]
 	
@@ -197,15 +197,15 @@
 		var/obj/item/clothing/suit/new_armor = new armor_type(get_turf(H))
 		if(H.wear_armor)
 			H.dropItemToGround(H.wear_armor)
-		H.equip_to_slot_if_possible(new_armor, SLOT_ARMOR)
+		H.equip_to_slot_or_del(new_armor, SLOT_ARMOR)
 	
 	// Equip the weapon and shield
-	if(H.put_in_l_hand(weapon_item) || H.put_in_r_hand(weapon_item) || H.equip_to_slot_if_possible(weapon_item, SLOT_BELT_L))
+	if(H.put_in_l_hand(weapon_item) || H.put_in_r_hand(weapon_item) || H.equip_to_slot_or_del(weapon_item, SLOT_BELT_L))
 		to_chat(H, "<span class='notice'>You arm yourself with \a [weapon_item].</span>")
 	else
 		to_chat(H, "<span class='warning'>You couldn't equip \a [weapon_item], so it's on the ground.</span>")
 	
-	if(H.equip_to_slot_if_possible(shield_item, SLOT_BACK_L))
+	if(H.equip_to_slot_or_del(shield_item, SLOT_BACK_L))
 		to_chat(H, "<span class='notice'>You take up \a [shield_item].</span>")
 	else
 		to_chat(H, "<span class='warning'>You couldn't equip \a [shield_item], so it's on the ground.</span>")
@@ -365,7 +365,7 @@
 		
 		if(H.head)
 			H.dropItemToGround(H.head)
-		H.equip_to_slot_if_possible(new_helmet, SLOT_HEAD)
+		H.equip_to_slot_or_del(new_helmet, SLOT_HEAD)
 		H.update_inv_head()
 	
 	// Equip the weapon
@@ -471,12 +471,12 @@
 			shield_item = new /obj/item/rogueweapon/shield/wood(get_turf(H))
 	
 	// Attempt to put items in the appropriate slots
-	if(H.put_in_l_hand(weapon_item) || H.put_in_r_hand(weapon_item) || H.equip_to_slot_if_possible(weapon_item, SLOT_BELT_L))
+	if(H.put_in_l_hand(weapon_item) || H.put_in_r_hand(weapon_item) || H.equip_to_slot_or_del(weapon_item, SLOT_BELT_L))
 		to_chat(H, "<span class='notice'>You arm yourself with \a [weapon_item].</span>")
 	else
 		to_chat(H, "<span class='warning'>You couldn't equip \a [weapon_item], so it's on the ground.</span>")
 	
-	if(H.equip_to_slot_if_possible(shield_item, SLOT_BACK_L))
+	if(H.equip_to_slot_or_del(shield_item, SLOT_BACK_L))
 		to_chat(H, "<span class='notice'>You take up \a [shield_item].</span>")
 	else
 		to_chat(H, "<span class='warning'>You couldn't equip \a [shield_item], so it's on the ground.</span>")
@@ -581,12 +581,12 @@
 			H.mind.adjust_skillrank(/datum/skill/combat/whipsflails, 2, TRUE)
 	
 	// Equip the weapon and shield
-	if(H.put_in_l_hand(weapon_item) || H.put_in_r_hand(weapon_item) || H.equip_to_slot_if_possible(weapon_item, SLOT_BELT_L))
+	if(H.put_in_l_hand(weapon_item) || H.put_in_r_hand(weapon_item) || H.equip_to_slot_or_del(weapon_item, SLOT_BELT_L))
 		to_chat(H, "<span class='notice'>You arm yourself with \a [weapon_item].</span>")
 	else
 		to_chat(H, "<span class='warning'>You couldn't equip \a [weapon_item], so it's on the ground.</span>")
 	
-	if(H.equip_to_slot_if_possible(shield_item, SLOT_BACK_L))
+	if(H.equip_to_slot_or_del(shield_item, SLOT_BACK_L))
 		to_chat(H, "<span class='notice'>You take up \a [shield_item].</span>")
 	else
 		to_chat(H, "<span class='warning'>You couldn't equip \a [shield_item], so it's on the ground.</span>")

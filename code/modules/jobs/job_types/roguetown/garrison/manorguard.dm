@@ -111,20 +111,20 @@
 			var/obj/item/weapon_item = new /obj/item/rogueweapon/sword(get_turf(H))
 			var/obj/item/shield_item = new /obj/item/rogueweapon/shield/wood(get_turf(H))
 			
-			if(H.equip_to_slot_if_possible(weapon_item, SLOT_BELT_R))
+			if(H.equip_to_slot_or_del(weapon_item, SLOT_BELT_R))
 				to_chat(H, "<span class='notice'>You arm yourself with \a [weapon_item].</span>")
 			
-			if(H.equip_to_slot_if_possible(shield_item, SLOT_BACK_L))
+			if(H.equip_to_slot_or_del(shield_item, SLOT_BACK_L))
 				to_chat(H, "<span class='notice'>You take up \a [shield_item].</span>")
 		
 		if("Mace & Shield")
 			var/obj/item/weapon_item = new /obj/item/rogueweapon/mace(get_turf(H))
 			var/obj/item/shield_item = new /obj/item/rogueweapon/shield/wood(get_turf(H))
 			
-			if(H.equip_to_slot_if_possible(weapon_item, SLOT_BELT_R))
+			if(H.equip_to_slot_or_del(weapon_item, SLOT_BELT_R))
 				to_chat(H, "<span class='notice'>You arm yourself with \a [weapon_item].</span>")
 			
-			if(H.equip_to_slot_if_possible(shield_item, SLOT_BACK_L))
+			if(H.equip_to_slot_or_del(shield_item, SLOT_BACK_L))
 				to_chat(H, "<span class='notice'>You take up \a [shield_item].</span>")
 		
 		if("Halberd")
@@ -215,30 +215,30 @@
 			var/obj/item/quiver_item = new /obj/item/quiver/bolts(get_turf(H))
 			var/obj/item/weapon_item = new /obj/item/gun/ballistic/revolver/grenadelauncher/crossbow(get_turf(H))
 			
-			if(H.equip_to_slot_if_possible(quiver_item, SLOT_BELT_R))
+			if(H.equip_to_slot_or_del(quiver_item, SLOT_BELT_R))
 				to_chat(H, "<span class='notice'>You take up \a [quiver_item].</span>")
 			
-			if(H.equip_to_slot_if_possible(weapon_item, SLOT_BACK_L))
+			if(H.equip_to_slot_or_del(weapon_item, SLOT_BACK_L))
 				to_chat(H, "<span class='notice'>You arm yourself with \a [weapon_item].</span>")
 		
 		if("Yew Longbow & Arrows")
 			var/obj/item/quiver_item = new /obj/item/quiver/arrows(get_turf(H))
 			var/obj/item/weapon_item = new /obj/item/gun/ballistic/revolver/grenadelauncher/bow/longbow(get_turf(H))
 			
-			if(H.equip_to_slot_if_possible(quiver_item, SLOT_BELT_R))
+			if(H.equip_to_slot_or_del(quiver_item, SLOT_BELT_R))
 				to_chat(H, "<span class='notice'>You take up \a [quiver_item].</span>")
 			
-			if(H.equip_to_slot_if_possible(weapon_item, SLOT_BACK_L))
+			if(H.equip_to_slot_or_del(weapon_item, SLOT_BACK_L))
 				to_chat(H, "<span class='notice'>You arm yourself with \a [weapon_item].</span>")
 				
 		if("Recurve Bow & Arrows")
 			var/obj/item/quiver_item = new /obj/item/quiver/arrows(get_turf(H))
 			var/obj/item/weapon_item = new /obj/item/gun/ballistic/revolver/grenadelauncher/bow/recurve(get_turf(H))
 			
-			if(H.equip_to_slot_if_possible(quiver_item, SLOT_BELT_R))
+			if(H.equip_to_slot_or_del(quiver_item, SLOT_BELT_R))
 				to_chat(H, "<span class='notice'>You take up \a [quiver_item].</span>")
 			
-			if(H.equip_to_slot_if_possible(weapon_item, SLOT_BACK_L))
+			if(H.equip_to_slot_or_del(weapon_item, SLOT_BACK_L))
 				to_chat(H, "<span class='notice'>You arm yourself with \a [weapon_item].</span>")
 	
 	// Extra secondary weapon - a dagger for close combat
@@ -317,37 +317,58 @@
 	if(!weapon_choice)
 		weapon_choice = "Knife & Whip" // Default if they cancel
 	
-	// Equip chosen weapon
+	// Create chosen weapons
 	switch(weapon_choice)
 		if("Knife & Whip")
 			var/obj/item/weapon_item = new /obj/item/rogueweapon/huntingknife(get_turf(H))
 			var/obj/item/whip_item = new /obj/item/rogueweapon/whip(get_turf(H))
 			
-			if(H.equip_to_slot_if_possible(weapon_item, SLOT_BELT_R))
+			// Store in backpack using SEND_SIGNAL
+			if(H.backr && SEND_SIGNAL(H.backr, COMSIG_TRY_STORAGE_INSERT, weapon_item, H, TRUE))
+				to_chat(H, "<span class='notice'>You place \a [weapon_item] in your satchel.</span>")
+			else
+				H.equip_to_slot_or_del(weapon_item, SLOT_BELT_R)
 				to_chat(H, "<span class='notice'>You arm yourself with \a [weapon_item].</span>")
 			
-			if(H.equip_to_slot_if_possible(whip_item, SLOT_BACK_L))
-				to_chat(H, "<span class='notice'>You take up \a [whip_item].</span>")
+			if(H.backr && SEND_SIGNAL(H.backr, COMSIG_TRY_STORAGE_INSERT, whip_item, H, TRUE))
+				to_chat(H, "<span class='notice'>You place \a [whip_item] in your satchel.</span>")
+			else
+				if(H.equip_to_slot_or_del(whip_item, SLOT_BACK_L))
+					to_chat(H, "<span class='notice'>You take up \a [whip_item].</span>")
 		
 		if("Knife & Cudgel")
 			var/obj/item/weapon_item = new /obj/item/rogueweapon/mace/cudgel(get_turf(H))
 			var/obj/item/dagger_item = new /obj/item/rogueweapon/huntingknife/idagger(get_turf(H))
 			
-			if(H.equip_to_slot_if_possible(weapon_item, SLOT_BELT_R))
+			// Store in backpack using SEND_SIGNAL
+			if(H.backr && SEND_SIGNAL(H.backr, COMSIG_TRY_STORAGE_INSERT, weapon_item, H, TRUE))
+				to_chat(H, "<span class='notice'>You place \a [weapon_item] in your satchel.</span>")
+			else
+				H.equip_to_slot_or_del(weapon_item, SLOT_BELT_R)
 				to_chat(H, "<span class='notice'>You arm yourself with \a [weapon_item].</span>")
 			
-			if(H.equip_to_slot_if_possible(dagger_item, SLOT_BACK_L))
-				to_chat(H, "<span class='notice'>You take up \a [dagger_item].</span>")
+			if(H.backr && SEND_SIGNAL(H.backr, COMSIG_TRY_STORAGE_INSERT, dagger_item, H, TRUE))
+				to_chat(H, "<span class='notice'>You place \a [dagger_item] in your satchel.</span>")
+			else
+				if(H.equip_to_slot_or_del(dagger_item, SLOT_BACK_L))
+					to_chat(H, "<span class='notice'>You take up \a [dagger_item].</span>")
 		
 		if("Mace & Dagger")
 			var/obj/item/weapon_item = new /obj/item/rogueweapon/mace(get_turf(H))
 			var/obj/item/dagger_item = new /obj/item/rogueweapon/huntingknife/idagger(get_turf(H))
 			
-			if(H.equip_to_slot_if_possible(weapon_item, SLOT_BELT_R))
+			// Store in backpack using SEND_SIGNAL
+			if(H.backr && SEND_SIGNAL(H.backr, COMSIG_TRY_STORAGE_INSERT, weapon_item, H, TRUE))
+				to_chat(H, "<span class='notice'>You place \a [weapon_item] in your satchel.</span>")
+			else
+				H.equip_to_slot_or_del(weapon_item, SLOT_BELT_R)
 				to_chat(H, "<span class='notice'>You arm yourself with \a [weapon_item].</span>")
 			
-			if(H.equip_to_slot_if_possible(dagger_item, SLOT_BACK_L))
-				to_chat(H, "<span class='notice'>You take up \a [dagger_item].</span>")
+			if(H.backr && SEND_SIGNAL(H.backr, COMSIG_TRY_STORAGE_INSERT, dagger_item, H, TRUE))
+				to_chat(H, "<span class='notice'>You place \a [dagger_item] in your satchel.</span>")
+			else
+				if(H.equip_to_slot_or_del(dagger_item, SLOT_BACK_L))
+					to_chat(H, "<span class='notice'>You take up \a [dagger_item].</span>")
 	
 	to_chat(H, "<span class='boldnotice'>Welcome, [H.real_name], shrewd Witchfinder of the Manor!</span>")
 
@@ -422,20 +443,20 @@
 			var/obj/item/weapon_item = new /obj/item/rogueweapon/mace/warhammer(get_turf(H))
 			var/obj/item/shield_item = new /obj/item/rogueweapon/shield/tower/metal(get_turf(H))
 			
-			if(H.equip_to_slot_if_possible(weapon_item, SLOT_BELT_R))
+			if(H.equip_to_slot_or_del(weapon_item, SLOT_BELT_R))
 				to_chat(H, "<span class='notice'>You arm yourself with \a [weapon_item].</span>")
 			
-			if(H.equip_to_slot_if_possible(shield_item, SLOT_BACK_L))
+			if(H.equip_to_slot_or_del(shield_item, SLOT_BACK_L))
 				to_chat(H, "<span class='notice'>You take up \a [shield_item].</span>")
 		
 		if("Mace & Shield")
 			var/obj/item/weapon_item = new /obj/item/rogueweapon/mace(get_turf(H))
 			var/obj/item/shield_item = new /obj/item/rogueweapon/shield/tower/metal(get_turf(H))
 			
-			if(H.equip_to_slot_if_possible(weapon_item, SLOT_BELT_R))
+			if(H.equip_to_slot_or_del(weapon_item, SLOT_BELT_R))
 				to_chat(H, "<span class='notice'>You arm yourself with \a [weapon_item].</span>")
 			
-			if(H.equip_to_slot_if_possible(shield_item, SLOT_BACK_L))
+			if(H.equip_to_slot_or_del(shield_item, SLOT_BACK_L))
 				to_chat(H, "<span class='notice'>You take up \a [shield_item].</span>")
 	
 	to_chat(H, "<span class='boldnotice'>Welcome, [H.real_name], immovable Sentinel of the Manor!</span>")

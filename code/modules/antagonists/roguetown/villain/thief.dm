@@ -269,7 +269,8 @@
 	// Find all human mobs with minds, regardless of distance
 	for(var/mob/living/carbon/human/H)
 		if(H != user && H.mind) // Only include other mobs with minds
-			var/target_name = H.name
+			// Always use actual name for the menu, not the visible name
+			var/target_name = H.real_name
 			if(H.job) // Add job in parentheses if available
 				target_name = "[target_name] ([H.job])"
 			targets_with_minds[target_name] = H
