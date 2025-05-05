@@ -92,6 +92,7 @@
 	desc = "A forged marriage contract that may erupt scandal in the noble realm.."
 	icon_state = "marriagecontract"
 	difficulty = 1
+	drop_sound = 'sound/foley/dropsound/paper_drop.ogg'
 
 /obj/item/treasure/ledger
 	name = "Manor Ledger"
@@ -99,6 +100,7 @@
 	icon = 'icons/roguetown/items/books.dmi'
 	icon_state = "spellbookyellow_0"
 	difficulty = 1
+	drop_sound = 'sound/foley/dropsound/book_drop.ogg'
 
 /obj/item/treasure/brooch
 	name = "Countess Elira's Brooch"
@@ -107,12 +109,14 @@
 	icon_state = "brooch"
 	dropshrink = 0.5
 	difficulty = 5
+	drop_sound = 'sound/items/gem.ogg'
 
 /obj/item/treasure/wine
 	name = "Vintage Wine"
 	desc = "A bottle of luxurious wine aged since year 401. It's said to have a unique flavor that can only be found in the finest vintages. Far too valuable to drink."
 	icon = 'icons/roguetown/items/misc.dmi'
 	icon_state = "wine"
+	drop_sound = 'sound/foley/dropsound/glass_drop.ogg'
 	difficulty = 1
 
 /obj/item/treasure/gemerald
@@ -121,23 +125,27 @@
 	icon = 'icons/roguetown/items/gems.dmi'
 	icon_state = "emerald_cut"
 	difficulty = 1
+	drop_sound = 'sound/items/gem.ogg'
 
 /obj/item/treasure/blackmail
 	name = "Perfumed Letters"
 	desc = "Delicate, romantic, and politically dangerous if discovered."
 	icon_state = "blackmail"
 	difficulty = 1
+	drop_sound = 'sound/foley/dropsound/paper_drop.ogg'
 
 /obj/item/treasure/bond
 	name = "Crown's Bond"
 	desc = "A pledged promise from the Crown, promising a small fortune of gold to the bearer."
 	icon_state = "bond"
 	difficulty = 1
+	drop_sound = 'sound/foley/dropsound/paper_drop.ogg'
 
 /obj/item/treasure/kassidy
 	name = "Kassidy Doll"
 	desc = "A strange plush doll that resembles Kassidy the Red."
 	icon_state = "kass"
+	drop_shrink = 0.8
 	difficulty = 9
 
 /obj/item/treasure/snake
