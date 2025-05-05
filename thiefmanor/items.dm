@@ -414,3 +414,168 @@
 	candodge = FALSE
 	canparry = FALSE 
 	damfactor = 1.5 
+
+/obj/item/treasure/obsidian_comb
+	name = "The Obsidian Comb"
+	desc = "A sleek black comb with intricate carvings along its spine. It's said to grant irresistible beauty to anyone who uses it, but at a price: once its magic fades, one is left longing for the beauty they briefly possessed."
+	icon = 'icons/roguetown/items/misc.dmi'
+	icon_state = "comb"
+	w_class = WEIGHT_CLASS_TINY
+	difficulty = 1
+	resistance_flags = FIRE_PROOF
+	experimental_inhand = TRUE
+	slot_flags = ITEM_SLOT_BELT
+	var/cooldown_time = 10 MINUTES
+	var/next_use = 0
+
+/obj/item/treasure/obsidian_comb/getonmobprop(tag)
+	if(tag)
+		switch(tag)
+			if("gen")
+				return list("shrink" = 0.4,"sx" = -10,"sy" = -6,"nx" = 11,"ny" = -6,"wx" = -4,"wy" = -3,"ex" = 2,"ey" = -3,"northabove" = 0,"southabove" = 1,"eastabove" = 1,"westabove" = 0,"nturn" = 0,"sturn" = 0,"wturn" = 0,"eturn" = 0,"nflip" = 0,"sflip" = 8,"wflip" = 8,"eflip" = 0)
+			if("onbelt")
+				return list("shrink" = 0.3,"sx" = -2,"sy" = -5,"nx" = 4,"ny" = -5,"wx" = 0,"wy" = -5,"ex" = 2,"ey" = -5,"nturn" = 0,"sturn" = 0,"wturn" = 0,"eturn" = 0,"nflip" = 0,"sflip" = 0,"wflip" = 0,"eflip" = 0,"northabove" = 0,"southabove" = 1,"eastabove" = 1,"westabove" = 0)
+
+/obj/item/treasure/obsidian_comb/afterattack(atom/target, mob/user, proximity_flag, click_parameters)
+	. = ..()
+	if(!ishuman(target) || !ishuman(user))
+		return
+	
+	var/mob/living/carbon/human/H = target
+	
+	if(world.time < next_use)
+		to_chat(user, span_warning("The Obsidian Comb's magic hasn't recharged yet. You'll need to wait [round((next_use - world.time)/600, 0.1)] more minutes."))
+		return
+	
+	if(H.has_status_effect(/datum/status_effect/obsidian_beauty))
+		to_chat(user, span_notice("[H] is already under the comb's enchantment."))
+		return
+	
+	if(user != target)
+		user.visible_message(span_notice("[user] gently runs The Obsidian Comb through [H]'s hair."), 
+			span_notice("You gently run the comb through [H]'s hair."))
+	else
+		user.visible_message(span_notice("[user] runs The Obsidian Comb through [user.p_their()] hair."), 
+			span_notice("As you run the comb through your hair, you feel a tingling sensation spreading throughout your body."))
+	
+	if(!do_after(user, 10, target = H))
+		to_chat(user, span_warning("You need to hold the comb steady!"))
+		return
+	
+	// Visual message for successful use
+	if(user != target)
+		to_chat(user, span_notice("You see [H]'s appearance subtly change, becoming more radiant and attractive."))
+		to_chat(H, span_notice("You feel a tingling sensation spreading throughout your body. You feel more beautiful and confident."))
+	else
+		to_chat(user, span_notice("You feel more beautiful and confident."))
+	
+	playsound(get_turf(H), 'sound/magic/swap.ogg', 50, TRUE)
+	
+	// Create visual effect
+	var/obj/effect/temp_visual/lens_shimmer/shimmer = new(get_turf(H))
+	shimmer.color = "#8c00ff" // Purple shimmer
+	
+	// Apply status effect which will handle the traits
+	H.apply_status_effect(/datum/status_effect/obsidian_beauty)
+	
+	next_use = world.time + cooldown_time
+
+// Status effect for the Obsidian Comb
+/datum/status_effect/obsidian_beauty
+	id = "obsidian_beauty"
+	status_type = STATUS_EFFECT_UNIQUE
+	duration = 10 MINUTES
+	alert_type = /atom/movable/screen/alert/status_effect/obsidian_beauty
+	var/had_beautiful_trait = FALSE
+	var/had_goodlover_trait = FALSE
+	var/heart_timer_id
+
+/atom/movable/screen/alert/status_effect/obsidian_beauty
+	name = "Magical Beauty"
+	desc = "The Obsidian Comb's enchantment makes you irresistibly beautiful."
+	icon_state = "buff"
+
+/datum/status_effect/obsidian_beauty/on_apply()
+	if(ishuman(owner))
+		var/mob/living/carbon/human/H = owner
+		
+		// Store if the user already had these traits
+		had_beautiful_trait = HAS_TRAIT(H, TRAIT_BEAUTIFUL)
+		had_goodlover_trait = HAS_TRAIT(H, TRAIT_GOODLOVER)
+		
+		// Apply the traits
+		ADD_TRAIT(H, TRAIT_BEAUTIFUL, "obsidian_comb")
+		ADD_TRAIT(H, TRAIT_GOODLOVER, "obsidian_comb")
+		
+		// Start the heart emission process
+		heart_timer_id = addtimer(CALLBACK(src, PROC_REF(emit_heart)), rand(50, 100), TIMER_STOPPABLE)
+	
+	return TRUE
+
+/datum/status_effect/obsidian_beauty/proc/emit_heart()
+	if(!owner || QDELETED(owner))
+		return
+	
+	// Only continue if owner is a human
+	if(ishuman(owner))
+		var/mob/living/carbon/human/H = owner
+		
+		// Check if the person is visible (not invisible)
+		if(H.alpha <= 10)
+			return
+		
+		// 50% chance to emit a heart on each timer call
+		if(prob(50))
+			// Create a love heart at the user's location
+			var/obj/effect/temp_visual/love_heart/heart = new(get_turf(H))
+			// Make it pink
+			heart.color = "#ff69b4"
+			
+			// Position the heart visually above the player but at a lower layer
+			heart.pixel_y = 22  // Higher position to appear above the character
+			heart.layer = BELOW_MOB_LAYER  // Set layer below mob for proper rendering
+			
+			// Add a little randomness to the position
+			heart.pixel_x = rand(-8, 8)
+			
+			// Make the heart rise higher
+			animate(heart, pixel_y = heart.pixel_y + 32, alpha = 0, time = heart.duration)
+	
+	// Next heart will be in 5-10 seconds
+	var/next_time = rand(50, 100)
+	heart_timer_id = addtimer(CALLBACK(src, PROC_REF(emit_heart)), next_time, TIMER_STOPPABLE)
+
+/datum/status_effect/obsidian_beauty/on_remove()
+	if(ishuman(owner))
+		var/mob/living/carbon/human/H = owner
+		
+		// Remove the traits if the user didn't already have them
+		if(!had_beautiful_trait)
+			REMOVE_TRAIT(H, TRAIT_BEAUTIFUL, "obsidian_comb")
+		if(!had_goodlover_trait)
+			REMOVE_TRAIT(H, TRAIT_GOODLOVER, "obsidian_comb")
+		
+		// Add the depression stress effect
+		H.add_stress(/datum/stressevent/comb_depression)
+		
+		// Visual effect for end of enchantment
+		H.visible_message(span_notice("[H]'s appearance seems to dim slightly."), 
+			span_warning("As the comb's magic fades, you feel a profound emptiness. The world seems less vibrant now."))
+		
+		var/obj/effect/temp_visual/lens_shimmer/shimmer = new(get_turf(H))
+		shimmer.color = "#505050" // Gray shimmer
+		
+		playsound(get_turf(H), 'sound/magic/churn.ogg', 30, TRUE) // Sadder sound
+		
+		// Clean up the heart timer
+		if(heart_timer_id)
+			deltimer(heart_timer_id)
+			heart_timer_id = null
+	
+	return ..()
+
+// Depression stress effect for when the comb's effect wears off
+/datum/stressevent/comb_depression
+	stressadd = 5
+	desc = span_danger("I miss the beauty I once had... I need to use the comb again.")
+	timer = 20 MINUTES // Depression lasts longer than the comb effect
