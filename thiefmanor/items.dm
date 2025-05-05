@@ -877,6 +877,42 @@
 /obj/effect/temp_visual/dir_setting/compass_arrow/Initialize(mapload, set_dir)
 	. = ..()
 	
+	// Store original transform to apply with any animation later
+	var/matrix/original_transform = transform
+	
+	// Handle all directions by using transform matrix rotation
+	// BYOND sprites typically only come in 4 directions, but we can rotate to get all 8
+	var/angle_offset = 0
+	
+	switch(dir)
+		// Cardinal directions
+		if(NORTH)
+			angle_offset = 0   // No rotation needed
+		if(EAST)
+			angle_offset = 90  // Rotate 90 degrees clockwise from north
+		if(SOUTH) 
+			angle_offset = 180 // Rotate 180 degrees from north
+		if(WEST)
+			angle_offset = 270 // Rotate 270 degrees clockwise from north (or 90 counterclockwise)
+		
+		// Diagonal directions
+		if(NORTHEAST)
+			angle_offset = 45  // Between north and east
+		if(SOUTHEAST)
+			angle_offset = 135 // Between east and south
+		if(SOUTHWEST)
+			angle_offset = 225 // Between south and west
+		if(NORTHWEST)
+			angle_offset = 315 // Between west and north
+	
+	// Always use the NORTH-facing sprite as base and rotate it
+	dir = NORTH
+	
+	// Apply rotation transform
+	var/matrix/M = matrix()
+	M.Turn(angle_offset)
+	transform = M
+	
 	// Different animation for z-level indicators
 	if(z_level_indicator)
 		// Smaller for secondary indicator
@@ -895,9 +931,26 @@
 	// Handle different directions for z-levels - only apply if this is a z-level indicator
 	if(z_level_indicator)
 		if(z_direction == "up")
-			dir = NORTH // Use north-facing arrow for up
+			// Reset transform and use up direction
+			transform = original_transform
+			
+			// Scale down if needed
+			if(z_level_indicator)
+				transform = transform.Scale(0.7)
+				
+			// No rotation - up is the default
 		else if(z_direction == "down")
-			dir = SOUTH // Use south-facing arrow for down
+			// Reset transform and use down direction (180 degrees rotation)
+			transform = original_transform
+			
+			// Scale down if needed
+			if(z_level_indicator) 
+				transform = transform.Scale(0.7)
+				
+			// Rotate to point down
+			var/matrix/M2 = transform
+			M2.Turn(180)
+			transform = M2
 
 // Global proc to remove images from clients after delay
 /proc/remove_image_from_client(image/I, client/C)
