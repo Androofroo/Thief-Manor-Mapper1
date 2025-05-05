@@ -82,6 +82,7 @@
 /obj/item/treasure
 	name = "Treasure"
 	desc = "How are you seeing this?"
+	w_class = WEIGHT_CLASS_TINY
 	icon_state = "treasure"
 	var/difficulty = 0
 
