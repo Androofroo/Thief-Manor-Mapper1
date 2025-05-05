@@ -716,6 +716,64 @@ GLOBAL_VAR_INIT(mobids, 1)
 		var/slot = text2num(href_list["item"])
 		var/hand_index = text2num(href_list["hand_index"])
 		var/obj/item/what
+		
+		// Check if the slot is obscured before proceeding (only for numeric slots, not hands)
+		if(slot && !hand_index && ishuman(src))
+			var/mob/living/carbon/human/H = src
+			var/list/obscured = H.check_obscured_slots(TRUE)
+			if(slot in obscured)
+				to_chat(usr, span_warning("You can't reach that! Something is covering it."))
+				return
+				
+			// Also check for disguise-obscured slots
+			if(HAS_TRAIT(H, TRAIT_DISGUISE_ACTIVE))
+				var/datum/component/disguised_species/DS = H.GetComponent(/datum/component/disguised_species)
+				if(DS && DS.disguised_equipment)
+					// Convert slot number to slot name
+					var/slot_name = ""
+					switch(slot)
+						if(SLOT_HEAD)
+							slot_name = "head"
+						if(SLOT_WEAR_MASK)
+							slot_name = "wear_mask"
+						if(SLOT_MOUTH)
+							slot_name = "mouth"
+						if(SLOT_NECK)
+							slot_name = "wear_neck"
+						if(SLOT_BACK)
+							slot_name = "back"
+						if(SLOT_BACK_L)
+							slot_name = "backl"
+						if(SLOT_BACK_R)
+							slot_name = "backr"
+						if(SLOT_CLOAK)
+							slot_name = "cloak"
+						if(SLOT_ARMOR)
+							slot_name = "wear_armor"
+						if(SLOT_SHIRT)
+							slot_name = "wear_shirt"
+						if(SLOT_PANTS)
+							slot_name = "wear_pants"
+						if(SLOT_GLOVES)
+							slot_name = "gloves"
+						if(SLOT_RING)
+							slot_name = "wear_ring"
+						if(SLOT_WRISTS)
+							slot_name = "wear_wrists"
+						if(SLOT_BELT)
+							slot_name = "belt"
+						if(SLOT_BELT_L)
+							slot_name = "beltl"
+						if(SLOT_BELT_R)
+							slot_name = "beltr"
+						if(SLOT_SHOES)
+							slot_name = "shoes"
+					
+					if(slot_name && (slot_name in DS.disguised_equipment) && DS.disguised_equipment[slot_name] == "obscured")
+						to_chat(usr, span_warning("You can't reach that! Something is covering it."))
+						return
+		
+		
 		if(hand_index)
 			what = get_item_for_held_index(hand_index)
 			slot = list(slot,hand_index)

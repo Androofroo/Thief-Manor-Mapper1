@@ -136,13 +136,85 @@
 
 	return //RTchange
 
+/mob/living/carbon/human/proc/process_disguised_item_display(var/item_data, var/default_text)
+	if(item_data == null)
+		// Extract the slot name from default_text - if it's already the grey format, use it
+		if(istext(default_text) && findtext(default_text, "<font color=grey>"))
+			return default_text
+		// Otherwise it's an item, try to extract the slot name
+		var/slot_name = "Empty"
+		if(isobj(default_text) && istype(default_text, /obj/item))
+			// This is a real item. We need to determine which slot it's in.
+			// For now, just return a generic empty slot text
+			if(default_text == head)
+				slot_name = "Head"
+			else if(default_text == wear_mask)
+				slot_name = "Mask"  
+			else if(default_text == mouth)
+				slot_name = "Mouth"
+			else if(default_text == wear_neck)
+				slot_name = "Neck"
+			else if(default_text == cloak)
+				slot_name = "Cloak"
+			else if(default_text == backr)
+				slot_name = "Right Back"
+			else if(default_text == backl)
+				slot_name = "Left Back"
+			else if(default_text == back)
+				slot_name = "Back"
+			else if(default_text == wear_armor)
+				slot_name = "Armor"
+			else if(default_text == wear_shirt)
+				slot_name = "Shirt"
+			else if(default_text == gloves)
+				slot_name = "Gloves"
+			else if(default_text == wear_ring)
+				slot_name = "Ring"
+			else if(default_text == wear_wrists)
+				slot_name = "Wrists"
+			else if(default_text == belt)
+				slot_name = "Belt"
+			else if(default_text == beltl)
+				slot_name = "Left Belt"
+			else if(default_text == beltr)
+				slot_name = "Right Belt"
+			else if(default_text == wear_pants)
+				slot_name = "Trousers"
+			else if(default_text == shoes)
+				slot_name = "Shoes"
+		
+		return "<font color=grey>[slot_name]</font>"
+	else if(item_data == "obscured")
+		return "<font color=grey>Obscured</font>"
+	else if(istext(item_data) && item_data != "obscured")
+		return "The [item_data]"
+	else if(islist(item_data) && ("name" in item_data))
+		return "The [item_data["name"]]"
+	return default_text
+
 /mob/living/carbon/human/show_inv(mob/user)
 	user.set_machine(src)
 	var/list/obscured = check_obscured_slots()
 	var/list/dat = list()
-
+	
+	// Check if this person is using the magical disguise spell
+	var/datum/component/disguised_species/DS = null
+	var/is_disguised = FALSE
+	var/disguise_name = name
+	
+	if(HAS_TRAIT(src, TRAIT_DISGUISED_SPECIES))
+		DS = GetComponent(/datum/component/disguised_species)
+		if(DS)
+			is_disguised = TRUE
+			// Use the disguise's name for the UI
+			if(DS.is_face_hidden && DS.visible_name)
+				disguise_name = DS.visible_name
+			else
+				disguise_name = name // This will already be the disguised name
+	
+	// Set title for the menu
 	dat += "<table>"
-
+	
 	if(handcuffed)
 		dat += "<tr><td><A href='?src=[REF(src)];item=[SLOT_HANDCUFFED]'>Remove [handcuffed]</A></td></tr>"
 	if(legcuffed)
@@ -162,106 +234,291 @@
 //	dat += "<tr><td><B>HEAD</B></td></tr>"
 
 	//head
-	if(SLOT_HEAD in obscured)
+	if(is_disguised && DS && DS.disguised_equipment && ("head" in DS.disguised_equipment))
+		var/item_data = DS.disguised_equipment["head"]
+		// Check if this is marked as obscured in the disguise or is actually obscured
+		if(item_data == "obscured" || (SLOT_HEAD in obscured))
+			dat += "<tr><td><font color=grey>Obscured</font></td></tr>"
+		else
+			var/head_display = process_disguised_item_display(item_data, (head && !(head.item_flags & ABSTRACT)) ? head : "<font color=grey>Head</font>")
+			dat += "<tr><td><A href='?src=[REF(src)];item=[SLOT_HEAD]'>[head_display]</A></td></tr>"
+	else if(SLOT_HEAD in obscured)
 		dat += "<tr><td><font color=grey>Obscured</font></td></tr>"
 	else
-		dat += "<tr><td><A href='?src=[REF(src)];item=[SLOT_HEAD]'>[(head && !(head.item_flags & ABSTRACT)) ? head : "<font color=grey>Head</font>"]</A></td></tr>"
+		// Show real head item
+		var/head_display = (head && !(head.item_flags & ABSTRACT)) ? head : "<font color=grey>Head</font>"
+		dat += "<tr><td><A href='?src=[REF(src)];item=[SLOT_HEAD]'>[head_display]</A></td></tr>"
 
-	if(SLOT_WEAR_MASK in obscured)
+	if(is_disguised && DS && DS.disguised_equipment && ("wear_mask" in DS.disguised_equipment))
+		var/item_data = DS.disguised_equipment["wear_mask"]
+		// Check if this is marked as obscured in the disguise or is actually obscured
+		if(item_data == "obscured" || (SLOT_WEAR_MASK in obscured))
+			dat += "<tr><td><font color=grey>Obscured</font></td></tr>"
+		else
+			var/mask_display = process_disguised_item_display(item_data, (wear_mask && !(wear_mask.item_flags & ABSTRACT)) ? wear_mask : "<font color=grey>Mask</font>")
+			dat += "<tr><td><A href='?src=[REF(src)];item=[SLOT_WEAR_MASK]'>[mask_display]</A></td></tr>"
+	else if(SLOT_WEAR_MASK in obscured)
 		dat += "<tr><td><font color=grey>Obscured</font></td></tr>"
 	else
-		dat += "<tr><td><A href='?src=[REF(src)];item=[SLOT_WEAR_MASK]'>[(wear_mask && !(wear_mask.item_flags & ABSTRACT)) ? wear_mask : "<font color=grey>Mask</font>"]</A></td></tr>"
+		// Show real mask
+		var/mask_display = (wear_mask && !(wear_mask.item_flags & ABSTRACT)) ? wear_mask : "<font color=grey>Mask</font>"
+		dat += "<tr><td><A href='?src=[REF(src)];item=[SLOT_WEAR_MASK]'>[mask_display]</A></td></tr>"
 
-	if(SLOT_MOUTH in obscured)
+	if(is_disguised && DS && DS.disguised_equipment && ("mouth" in DS.disguised_equipment))
+		var/item_data = DS.disguised_equipment["mouth"]
+		// Check if this is marked as obscured in the disguise or is actually obscured
+		if(item_data == "obscured" || (SLOT_MOUTH in obscured))
+			dat += "<tr><td><font color=grey>Obscured</font></td></tr>"
+		else
+			var/mouth_display = process_disguised_item_display(item_data, (mouth && !(mouth.item_flags & ABSTRACT)) ? mouth : "<font color=grey>Mouth</font>")
+			dat += "<tr><td><A href='?src=[REF(src)];item=[SLOT_MOUTH]'>[mouth_display]</A></td></tr>"
+	else if(SLOT_MOUTH in obscured)
 		dat += "<tr><td><font color=grey>Obscured</font></td></tr>"
 	else
-		dat += "<tr><td><A href='?src=[REF(src)];item=[SLOT_MOUTH]'>[(mouth && !(mouth.item_flags & ABSTRACT)) ? mouth : "<font color=grey>Mouth</font>"]</A></td></tr>"
+		// Show real mouth item
+		var/mouth_display = (mouth && !(mouth.item_flags & ABSTRACT)) ? mouth : "<font color=grey>Mouth</font>"
+		dat += "<tr><td><A href='?src=[REF(src)];item=[SLOT_MOUTH]'>[mouth_display]</A></td></tr>"
 
-	if(SLOT_NECK in obscured)
+	if(is_disguised && DS && DS.disguised_equipment && ("wear_neck" in DS.disguised_equipment))
+		var/item_data = DS.disguised_equipment["wear_neck"]
+		// Check if this is marked as obscured in the disguise or is actually obscured
+		if(item_data == "obscured" || (SLOT_NECK in obscured))
+			dat += "<tr><td><font color=grey>Obscured</font></td></tr>"
+		else
+			var/neck_display = process_disguised_item_display(item_data, (wear_neck && !(wear_neck.item_flags & ABSTRACT)) ? wear_neck : "<font color=grey>Neck</font>")
+			dat += "<tr><td><A href='?src=[REF(src)];item=[SLOT_NECK]'>[neck_display]</A></td></tr>"
+	else if(SLOT_NECK in obscured)
 		dat += "<tr><td><font color=grey>Obscured</font></td></tr>"
 	else
-		dat += "<tr><td><A href='?src=[REF(src)];item=[SLOT_NECK]'>[(wear_neck && !(wear_neck.item_flags & ABSTRACT)) ? wear_neck : "<font color=grey>Neck</font>"]</A></td></tr>"
+		// Show real neck item
+		var/neck_display = (wear_neck && !(wear_neck.item_flags & ABSTRACT)) ? wear_neck : "<font color=grey>Neck</font>"
+		dat += "<tr><td><A href='?src=[REF(src)];item=[SLOT_NECK]'>[neck_display]</A></td></tr>"
 
 	dat += "<tr><td><hr></td></tr>"
 
 //	dat += "<tr><td><B>BACK</B></td></tr>"
 
-	if(SLOT_CLOAK in obscured)
+	if(is_disguised && DS && DS.disguised_equipment && ("cloak" in DS.disguised_equipment))
+		var/item_data = DS.disguised_equipment["cloak"]
+		// Check if this is marked as obscured in the disguise or is actually obscured
+		if(item_data == "obscured" || (SLOT_CLOAK in obscured))
+			dat += "<tr><td><font color=grey>Obscured</font></td></tr>"
+		else
+			var/cloak_display = process_disguised_item_display(item_data, (cloak && !(cloak.item_flags & ABSTRACT)) ? cloak : "<font color=grey>Cloak</font>")
+			dat += "<tr><td><A href='?src=[REF(src)];item=[SLOT_CLOAK]'>[cloak_display]</A></td></tr>"
+	else if(SLOT_CLOAK in obscured)
 		dat += "<tr><td><font color=grey>Obscured</font></td></tr>"
 	else
-		dat += "<tr><td><A href='?src=[REF(src)];item=[SLOT_CLOAK]'>[(cloak && !(cloak.item_flags & ABSTRACT)) ? cloak : "<font color=grey>Cloak</font>"]</A></td></tr>"
+		// Show real cloak
+		var/cloak_display = (cloak && !(cloak.item_flags & ABSTRACT)) ? cloak : "<font color=grey>Cloak</font>"
+		dat += "<tr><td><A href='?src=[REF(src)];item=[SLOT_CLOAK]'>[cloak_display]</A></td></tr>"
 
-	if(SLOT_BACK_R in obscured)
+	if(is_disguised && DS && DS.disguised_equipment && ("backr" in DS.disguised_equipment))
+		var/item_data = DS.disguised_equipment["backr"]
+		// Check if this is marked as obscured in the disguise or is actually obscured
+		if(item_data == "obscured" || (SLOT_BACK_R in obscured))
+			dat += "<tr><td><font color=grey>Obscured</font></td></tr>"
+		else
+			var/backr_display = process_disguised_item_display(item_data, (backr && !(backr.item_flags & ABSTRACT)) ? backr : "<font color=grey>Right Back</font>")
+			dat += "<tr><td><A href='?src=[REF(src)];item=[SLOT_BACK_R]'>[backr_display]</A></td></tr>"
+	else if(SLOT_BACK_R in obscured)
 		dat += "<tr><td><font color=grey>Obscured</font></td></tr>"
 	else
-		dat += "<tr><td><A href='?src=[REF(src)];item=[SLOT_BACK_R]'>[(backr && !(backr.item_flags & ABSTRACT)) ? backr : "<font color=grey>Back</font>"]</A></td></tr>"
+		// Show real backr
+		var/backr_display = (backr && !(backr.item_flags & ABSTRACT)) ? backr : "<font color=grey>Right Back</font>"
+		dat += "<tr><td><A href='?src=[REF(src)];item=[SLOT_BACK_R]'>[backr_display]</A></td></tr>"
 
-	if(SLOT_BACK_L in obscured)
+	if(is_disguised && DS && DS.disguised_equipment && ("backl" in DS.disguised_equipment))
+		var/item_data = DS.disguised_equipment["backl"]
+		// Check if this is marked as obscured in the disguise or is actually obscured
+		if(item_data == "obscured" || (SLOT_BACK_L in obscured))
+			dat += "<tr><td><font color=grey>Obscured</font></td></tr>"
+		else
+			var/backl_display = process_disguised_item_display(item_data, (backl && !(backl.item_flags & ABSTRACT)) ? backl : "<font color=grey>Left Back</font>")
+			dat += "<tr><td><A href='?src=[REF(src)];item=[SLOT_BACK_L]'>[backl_display]</A></td></tr>"
+	else if(SLOT_BACK_L in obscured)
 		dat += "<tr><td><font color=grey>Obscured</font></td></tr>"
 	else
-		dat += "<tr><td><A href='?src=[REF(src)];item=[SLOT_BACK_L]'>[(backl && !(backl.item_flags & ABSTRACT)) ? backl : "<font color=grey>Back</font>"]</A></td></tr>"
+		// Show real backl
+		var/backl_display = (backl && !(backl.item_flags & ABSTRACT)) ? backl : "<font color=grey>Left Back</font>"
+		dat += "<tr><td><A href='?src=[REF(src)];item=[SLOT_BACK_L]'>[backl_display]</A></td></tr>"
 
 	dat += "<tr><td><hr></td></tr>"
 
 //	dat += "<tr><td><B>TORSO</B></td></tr>"
 
-	if(SLOT_ARMOR in obscured)
+	if(is_disguised && DS && DS.disguised_equipment && ("wear_armor" in DS.disguised_equipment))
+		var/item_data = DS.disguised_equipment["wear_armor"]
+		// Check if this is marked as obscured in the disguise or is actually obscured
+		if(item_data == "obscured" || (SLOT_ARMOR in obscured))
+			dat += "<tr><td><font color=grey>Obscured</font></td></tr>"
+		else
+			var/armor_display = process_disguised_item_display(item_data, (wear_armor && !(wear_armor.item_flags & ABSTRACT)) ? wear_armor : "<font color=grey>Armor</font>")
+			dat += "<tr><td><A href='?src=[REF(src)];item=[SLOT_ARMOR]'>[armor_display]</A></td></tr>"
+	else if(SLOT_ARMOR in obscured)
 		dat += "<tr><td><font color=grey>Obscured</font></td></tr>"
 	else
-		dat += "<tr><td><A href='?src=[REF(src)];item=[SLOT_ARMOR]'>[(wear_armor && !(wear_armor.item_flags & ABSTRACT)) ? wear_armor : "<font color=grey>Armor</font>"]</A></td></tr>"
+		// Show real armor
+		var/armor_display = (wear_armor && !(wear_armor.item_flags & ABSTRACT)) ? wear_armor : "<font color=grey>Armor</font>"
+		dat += "<tr><td><A href='?src=[REF(src)];item=[SLOT_ARMOR]'>[armor_display]</A></td></tr>"
 
-	if(SLOT_SHIRT in obscured)
+	if(is_disguised && DS && DS.disguised_equipment && ("wear_shirt" in DS.disguised_equipment))
+		var/item_data = DS.disguised_equipment["wear_shirt"]
+		// Check if this is marked as obscured in the disguise or is actually obscured
+		if(item_data == "obscured" || (SLOT_SHIRT in obscured))
+			dat += "<tr><td><font color=grey>Obscured</font></td></tr>"
+		else
+			var/shirt_display = process_disguised_item_display(item_data, (wear_shirt && !(wear_shirt.item_flags & ABSTRACT)) ? wear_shirt : "<font color=grey>Shirt</font>")
+			dat += "<tr><td><A href='?src=[REF(src)];item=[SLOT_SHIRT]'>[shirt_display]</A></td></tr>"
+	else if(SLOT_SHIRT in obscured)
 		dat += "<tr><td><font color=grey>Obscured</font></td></tr>"
 	else
-		dat += "<tr><td><A href='?src=[REF(src)];item=[SLOT_SHIRT]'>[(wear_shirt && !(wear_shirt.item_flags & ABSTRACT)) ? wear_shirt : "<font color=grey>Shirt</font>"]</A></td></tr>"
+		// Show real shirt
+		var/shirt_display = (wear_shirt && !(wear_shirt.item_flags & ABSTRACT)) ? wear_shirt : "<font color=grey>Shirt</font>"
+		dat += "<tr><td><A href='?src=[REF(src)];item=[SLOT_SHIRT]'>[shirt_display]</A></td></tr>"
 
-	if(SLOT_GLOVES in obscured)
+	if(is_disguised && DS && DS.disguised_equipment && ("gloves" in DS.disguised_equipment))
+		var/item_data = DS.disguised_equipment["gloves"]
+		// Check if this is marked as obscured in the disguise or is actually obscured
+		if(item_data == "obscured" || (SLOT_GLOVES in obscured))
+			dat += "<tr><td><font color=grey>Obscured</font></td></tr>"
+		else
+			var/gloves_display = process_disguised_item_display(item_data, (gloves && !(gloves.item_flags & ABSTRACT)) ? gloves : "<font color=grey>Gloves</font>")
+			dat += "<tr><td><A href='?src=[REF(src)];item=[SLOT_GLOVES]'>[gloves_display]</A></td></tr>"
+	else if(SLOT_GLOVES in obscured)
 		dat += "<tr><td><font color=grey>Obscured</font></td></tr>"
 	else
-		dat += "<tr><td><A href='?src=[REF(src)];item=[SLOT_GLOVES]'>[(gloves && !(gloves.item_flags & ABSTRACT)) ? gloves : "<font color=grey>Gloves</font>"]</A></td></tr>"
+		// Show real gloves
+		var/gloves_display = (gloves && !(gloves.item_flags & ABSTRACT)) ? gloves : "<font color=grey>Gloves</font>"
+		dat += "<tr><td><A href='?src=[REF(src)];item=[SLOT_GLOVES]'>[gloves_display]</A></td></tr>"
 
-	if(SLOT_RING in obscured)
+	if(is_disguised && DS && DS.disguised_equipment && ("wear_ring" in DS.disguised_equipment))
+		var/item_data = DS.disguised_equipment["wear_ring"]
+		// Check if this is marked as obscured in the disguise or is actually obscured
+		if(item_data == "obscured" || (SLOT_RING in obscured))
+			dat += "<tr><td><font color=grey>Obscured</font></td></tr>"
+		else
+			var/ring_display = process_disguised_item_display(item_data, (wear_ring && !(wear_ring.item_flags & ABSTRACT)) ? wear_ring : "<font color=grey>Ring</font>")
+			dat += "<tr><td><A href='?src=[REF(src)];item=[SLOT_RING]'>[ring_display]</A></td></tr>"
+	else if(SLOT_RING in obscured)
 		dat += "<tr><td><font color=grey>Obscured</font></td></tr>"
 	else
-		dat += "<tr><td><A href='?src=[REF(src)];item=[SLOT_RING]'>[(wear_ring && !(wear_ring.item_flags & ABSTRACT)) ? wear_ring : "<font color=grey>Ring</font>"]</A></td></tr>"
+		// Show real ring
+		var/ring_display = (wear_ring && !(wear_ring.item_flags & ABSTRACT)) ? wear_ring : "<font color=grey>Ring</font>"
+		dat += "<tr><td><A href='?src=[REF(src)];item=[SLOT_RING]'>[ring_display]</A></td></tr>"
 
-	if(SLOT_WRISTS in obscured)
+	if(is_disguised && DS && DS.disguised_equipment && ("wear_wrists" in DS.disguised_equipment))
+		var/item_data = DS.disguised_equipment["wear_wrists"]
+		// Check if this is marked as obscured in the disguise or is actually obscured
+		if(item_data == "obscured" || (SLOT_WRISTS in obscured))
+			dat += "<tr><td><font color=grey>Obscured</font></td></tr>"
+		else
+			var/wrists_display = process_disguised_item_display(item_data, (wear_wrists && !(wear_wrists.item_flags & ABSTRACT)) ? wear_wrists : "<font color=grey>Wrists</font>")
+			dat += "<tr><td><A href='?src=[REF(src)];item=[SLOT_WRISTS]'>[wrists_display]</A></td></tr>"
+	else if(SLOT_WRISTS in obscured)
 		dat += "<tr><td><font color=grey>Obscured</font></td></tr>"
 	else
-		dat += "<tr><td><A href='?src=[REF(src)];item=[SLOT_WRISTS]'>[(wear_wrists && !(wear_wrists.item_flags & ABSTRACT)) ? wear_wrists : "<font color=grey>Wrists</font>"]</A></td></tr>"
+		// Show real wrists
+		var/wrists_display = (wear_wrists && !(wear_wrists.item_flags & ABSTRACT)) ? wear_wrists : "<font color=grey>Wrists</font>"
+		dat += "<tr><td><A href='?src=[REF(src)];item=[SLOT_WRISTS]'>[wrists_display]</A></td></tr>"
 
 	dat += "<tr><td><hr></td></tr>"
 
 //	dat += "<tr><td><B>WAIST</B></td></tr>"
 
-	if(SLOT_BELT in obscured)
+	if(is_disguised && DS && DS.disguised_equipment && ("belt" in DS.disguised_equipment))
+		var/item_data = DS.disguised_equipment["belt"]
+		// Check if this is marked as obscured in the disguise or is actually obscured
+		if(item_data == "obscured" || (SLOT_BELT in obscured))
+			dat += "<tr><td><font color=grey>Obscured</font></td></tr>"
+		else
+			var/belt_display = process_disguised_item_display(item_data, (belt && !(belt.item_flags & ABSTRACT)) ? belt : "<font color=grey>Belt</font>")
+			dat += "<tr><td><A href='?src=[REF(src)];item=[SLOT_BELT]'>[belt_display]</A></td></tr>"
+	else if(SLOT_BELT in obscured)
 		dat += "<tr><td><font color=grey>Obscured</font></td></tr>"
 	else
-		dat += "<tr><td><A href='?src=[REF(src)];item=[SLOT_BELT]'>[(belt && !(belt.item_flags & ABSTRACT)) ? belt : "<font color=grey>Belt</font>"]</A></td></tr>"
+		// Show real belt
+		var/belt_display = (belt && !(belt.item_flags & ABSTRACT)) ? belt : "<font color=grey>Belt</font>"
+		dat += "<tr><td><A href='?src=[REF(src)];item=[SLOT_BELT]'>[belt_display]</A></td></tr>"
 
-	if(SLOT_BELT_R in obscured)
+	if(is_disguised && DS && DS.disguised_equipment && ("beltl" in DS.disguised_equipment))
+		var/item_data = DS.disguised_equipment["beltl"]
+		// Check if this is marked as obscured in the disguise or is actually obscured
+		if(item_data == "obscured" || (SLOT_BELT_L in obscured))
+			dat += "<tr><td><font color=grey>Obscured</font></td></tr>"
+		else
+			var/beltl_display = process_disguised_item_display(item_data, (beltl && !(beltl.item_flags & ABSTRACT)) ? beltl : "<font color=grey>Left Belt</font>")
+			dat += "<tr><td><A href='?src=[REF(src)];item=[SLOT_BELT_L]'>[beltl_display]</A></td></tr>"
+	else if(SLOT_BELT_L in obscured)
 		dat += "<tr><td><font color=grey>Obscured</font></td></tr>"
 	else
-		dat += "<tr><td><A href='?src=[REF(src)];item=[SLOT_BELT_R]'>[(beltr && !(beltr.item_flags & ABSTRACT)) ? beltr : "<font color=grey>Hip</font>"]</A></td></tr>"
+		// Show real beltl
+		var/beltl_display = (beltl && !(beltl.item_flags & ABSTRACT)) ? beltl : "<font color=grey>Left Belt</font>"
+		dat += "<tr><td><A href='?src=[REF(src)];item=[SLOT_BELT_L]'>[beltl_display]</A></td></tr>"
 
-	if(SLOT_BELT_L in obscured)
+	if(is_disguised && DS && DS.disguised_equipment && ("beltr" in DS.disguised_equipment))
+		var/item_data = DS.disguised_equipment["beltr"]
+		// Check if this is marked as obscured in the disguise or is actually obscured
+		if(item_data == "obscured" || (SLOT_BELT_R in obscured))
+			dat += "<tr><td><font color=grey>Obscured</font></td></tr>"
+		else
+			var/beltr_display = process_disguised_item_display(item_data, (beltr && !(beltr.item_flags & ABSTRACT)) ? beltr : "<font color=grey>Right Belt</font>")
+			dat += "<tr><td><A href='?src=[REF(src)];item=[SLOT_BELT_R]'>[beltr_display]</A></td></tr>"
+	else if(SLOT_BELT_R in obscured)
 		dat += "<tr><td><font color=grey>Obscured</font></td></tr>"
 	else
-		dat += "<tr><td><A href='?src=[REF(src)];item=[SLOT_BELT_L]'>[(beltl && !(beltl.item_flags & ABSTRACT)) ? beltl : "<font color=grey>Hip</font>"]</A></td></tr>"
+		// Show real beltr
+		var/beltr_display = (beltr && !(beltr.item_flags & ABSTRACT)) ? beltr : "<font color=grey>Right Belt</font>"
+		dat += "<tr><td><A href='?src=[REF(src)];item=[SLOT_BELT_R]'>[beltr_display]</A></td></tr>"
+
+	if(is_disguised && DS && DS.disguised_equipment && ("back" in DS.disguised_equipment))
+		var/item_data = DS.disguised_equipment["back"]
+		// Check if this is marked as obscured in the disguise or is actually obscured
+		if(item_data == "obscured" || (SLOT_BACK in obscured))
+			dat += "<tr><td><font color=grey>Obscured</font></td></tr>"
+		else
+			var/back_display = process_disguised_item_display(item_data, (back && !(back.item_flags & ABSTRACT)) ? back : "<font color=grey>Back</font>")
+			dat += "<tr><td><A href='?src=[REF(src)];item=[SLOT_BACK]'>[back_display]</A></td></tr>"
+	else if(SLOT_BACK in obscured)
+		dat += "<tr><td><font color=grey>Obscured</font></td></tr>"
+	else
+		// Show real back
+		var/back_display = (back && !(back.item_flags & ABSTRACT)) ? back : "<font color=grey>Back</font>"
+		dat += "<tr><td><A href='?src=[REF(src)];item=[SLOT_BACK]'>[back_display]</A></td></tr>"
 
 	dat += "<tr><td><hr></td></tr>"
 
 //	dat += "<tr><td><B>LEGS</B></td></tr>"
 
-	if(SLOT_PANTS in obscured)
+	if(is_disguised && DS && DS.disguised_equipment && ("wear_pants" in DS.disguised_equipment))
+		var/item_data = DS.disguised_equipment["wear_pants"]
+		// Check if this is marked as obscured in the disguise or is actually obscured
+		if(item_data == "obscured" || (SLOT_PANTS in obscured))
+			dat += "<tr><td><font color=grey>Obscured</font></td></tr>"
+		else
+			var/pants_display = process_disguised_item_display(item_data, (wear_pants && !(wear_pants.item_flags & ABSTRACT)) ? wear_pants : "<font color=grey>Trousers</font>")
+			dat += "<tr><td><A href='?src=[REF(src)];item=[SLOT_PANTS]'>[pants_display]</A></td></tr>"
+	else if(SLOT_PANTS in obscured)
 		dat += "<tr><td><font color=grey>Obscured</font></td></tr>"
 	else
-		dat += "<tr><td><A href='?src=[REF(src)];item=[SLOT_PANTS]'>[(wear_pants && !(wear_pants.item_flags & ABSTRACT)) ? wear_pants : "<font color=grey>Trousers</font>"]</A></td></tr>"
+		// Show real pants
+		var/pants_display = (wear_pants && !(wear_pants.item_flags & ABSTRACT)) ? wear_pants : "<font color=grey>Trousers</font>"
+		dat += "<tr><td><A href='?src=[REF(src)];item=[SLOT_PANTS]'>[pants_display]</A></td></tr>"
 
-	if(SLOT_SHOES in obscured)
+	if(is_disguised && DS && DS.disguised_equipment && ("shoes" in DS.disguised_equipment))
+		var/item_data = DS.disguised_equipment["shoes"]
+		// Check if this is marked as obscured in the disguise or is actually obscured
+		if(item_data == "obscured" || (SLOT_SHOES in obscured))
+			dat += "<tr><td><font color=grey>Obscured</font></td></tr>"
+		else
+			var/shoes_display = process_disguised_item_display(item_data, (shoes && !(shoes.item_flags & ABSTRACT)) ? shoes : "<font color=grey>Shoes</font>")
+			dat += "<tr><td><A href='?src=[REF(src)];item=[SLOT_SHOES]'>[shoes_display]</A></td></tr>"
+	else if(SLOT_SHOES in obscured)
 		dat += "<tr><td><font color=grey>Obscured</font></td></tr>"
 	else
-		dat += "<tr><td><A href='?src=[REF(src)];item=[SLOT_SHOES]'>[(shoes && !(shoes.item_flags & ABSTRACT)) ? shoes : "<font color=grey>Boots</font>"]</A></td></tr>"
+		// Show real shoes
+		var/shoes_display = (shoes && !(shoes.item_flags & ABSTRACT)) ? shoes : "<font color=grey>Shoes</font>"
+		dat += "<tr><td><A href='?src=[REF(src)];item=[SLOT_SHOES]'>[shoes_display]</A></td></tr>"
 
 	dat += "<tr><td><hr></td></tr>"
 
@@ -272,7 +529,7 @@
 
 	dat += {"</table>"}
 
-	var/datum/browser/popup = new(user, "mob[REF(src)]", "[src]", 220, 690)
+	var/datum/browser/popup = new(user, "mob[REF(src)]", "[disguise_name]", 220, 690)
 	popup.set_content(dat.Join())
 	popup.open()
 

@@ -405,6 +405,7 @@
 		obscured |= SLOT_GLOVES
 	if(hidden_slots & HIDEJUMPSUIT)
 		obscured |= SLOT_PANTS
+		obscured |= SLOT_SHIRT
 	if(hidden_slots & HIDESHOES)
 		obscured |= SLOT_SHOES
 	if(hidden_slots & HIDEBELT)
@@ -413,6 +414,9 @@
 		obscured |= SLOT_BELT
 	if(hidden_slots & HIDESUITSTORAGE)
 		obscured |= SLOT_S_STORE
+	if(hidden_slots & HIDEFACE)
+		obscured |= SLOT_MOUTH
+
 
 	return obscured
 

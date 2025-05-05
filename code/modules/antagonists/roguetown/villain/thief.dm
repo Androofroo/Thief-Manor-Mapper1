@@ -491,10 +491,111 @@
 		var/list/original_descriptors = user.mob_descriptors ? user.mob_descriptors.Copy() : list()
 		var/list/target_descriptors = target.mob_descriptors ? target.mob_descriptors.Copy() : list()
 		
-		// Capture the visible equipment from the target
-		var/list/equipment_data = target.get_visible_equipment_data()
+		// Properly process the equipment data
+		var/list/equipment_data = list()
 		
-		// Add our custom component
+		// 1. First, get the list of all slots that need to be processed - both for target and user
+		var/list/all_slot_names = list(
+			"head", "wear_mask", "mask", "mouth", "wear_neck", "neck", 
+			"cloak", "backr", "back_r", "backl", "back_l", "back",
+			"wear_armor", "armor", "wear_shirt", "shirt", "gloves",
+			"wear_ring", "ring", "wear_wrists", "wrists", 
+			"belt", "beltl", "belt_l", "beltr", "belt_r",
+			"wear_pants", "pants", "shoes"
+		)
+		
+		// 2. Initialize all slots as explicitly null first to handle empty slots
+		// This is critical - it ensures every slot without an item shows as empty in the UI
+		for(var/slot_name in all_slot_names)
+			equipment_data[slot_name] = null
+		
+		// 3. Process obscured slots next
+		var/list/obscured_slots = list()
+		if(ishuman(target))
+			var/mob/living/carbon/human/H = target
+			var/list/obscured = H.check_obscured_slots()
+			for(var/slot in obscured)
+				var/slot_name = ""
+				switch(slot)
+					if(SLOT_HEAD)
+						slot_name = "head"
+					if(SLOT_WEAR_MASK)
+						slot_name = "wear_mask"
+					if(SLOT_MOUTH)
+						slot_name = "mouth"
+					if(SLOT_NECK)
+						slot_name = "wear_neck"
+					if(SLOT_BACK)
+						slot_name = "back"
+					if(SLOT_BACK_L)
+						slot_name = "backl"
+					if(SLOT_BACK_R)
+						slot_name = "backr"
+					if(SLOT_CLOAK)
+						slot_name = "cloak"
+					if(SLOT_ARMOR)
+						slot_name = "wear_armor"
+					if(SLOT_SHIRT)
+						slot_name = "wear_shirt"
+					if(SLOT_PANTS)
+						slot_name = "wear_pants"
+					if(SLOT_GLOVES)
+						slot_name = "gloves"
+					if(SLOT_RING)
+						slot_name = "wear_ring"
+					if(SLOT_WRISTS)
+						slot_name = "wear_wrists"
+					if(SLOT_BELT)
+						slot_name = "belt"
+					if(SLOT_BELT_L)
+						slot_name = "beltl"
+					if(SLOT_BELT_R)
+						slot_name = "beltr"
+					if(SLOT_SHOES)
+						slot_name = "shoes"
+				
+				if(slot_name != "")
+					equipment_data[slot_name] = "obscured"
+					obscured_slots[slot_name] = TRUE
+		
+		// 4. Get visible equipment data from target for slots they have items in
+		var/list/target_equipment = target.get_visible_equipment_data(include_hands = FALSE, include_detailed_info = TRUE)
+		
+		// 5. For each slot that has an item in the target's inventory, copy that data
+		// Note: This won't override null/empty slots for slots the target doesn't have items in
+		for(var/slot_name in target_equipment)
+			if(obscured_slots[slot_name])
+				continue // Skip obscured slots
+			
+			// Target has item in this slot, use its data
+			equipment_data[slot_name] = target_equipment[slot_name]
+		
+		// 6. Set up aliases to ensure all slot name variations work
+		var/list/slot_aliases = list(
+			"mask" = "wear_mask",
+			"armor" = "wear_armor",
+			"shirt" = "wear_shirt",
+			"pants" = "wear_pants",
+			"neck" = "wear_neck",
+			"ring" = "wear_ring",
+			"wrists" = "wear_wrists",
+			"belt_l" = "beltl",
+			"belt_r" = "beltr",
+			"back_l" = "backl",
+			"back_r" = "backr"
+		)
+		
+		// Create aliases for slots
+		for(var/slot_name in slot_aliases)
+			var/alias = slot_aliases[slot_name]
+			// Only set the alias if it doesn't already have a value or if the original has a value
+			if((slot_name in equipment_data) && equipment_data[slot_name] != null)
+				equipment_data[alias] = equipment_data[slot_name]
+			// Also check the reverse direction
+			else if((alias in equipment_data) && equipment_data[alias] != null)
+				equipment_data[slot_name] = equipment_data[alias]
+		
+		// Use our carefully constructed equipment data for the disguise
 		user.AddComponent(/datum/component/disguised_species, target.dna.species.name, target_descriptors, original_descriptors, equipment_data, stored_appearance.disguised_as_unknown, stored_appearance.target_visible_name, stored_appearance.fake_traits)
 		
 		// Replace the user's descriptors with the target's after gender has been set
@@ -520,9 +621,6 @@
 	
 	// Override attack and equip functions to break the disguise
 	ADD_TRAIT(user, TRAIT_DISGUISE_ACTIVE, MAGICAL_DISGUISE_TRAIT)
-	
-	// Add the break disguise verb to the user
-	user.verbs |= /mob/proc/break_magical_disguise
 	
 	// Set up a timer to remove the disguise
 	addtimer(CALLBACK(src, PROC_REF(remove_disguise), user), disguise_duration)
@@ -667,9 +765,6 @@
 	REMOVE_TRAIT(user, TRAIT_DISGUISED_SPECIES, MAGICAL_DISGUISE_TRAIT)
 	REMOVE_TRAIT(user, TRAIT_DISGUISE_ACTIVE, MAGICAL_DISGUISE_TRAIT)
 	
-	// Remove the break disguise verb
-	user.verbs -= /mob/proc/break_magical_disguise
-	
 	// Clear stored data
 	stored_appearance = null
 	original_held_items.Cut()
@@ -777,7 +872,7 @@
 	
 	. = ..()
 
-// Update the break_magical_disguise verb to use our new helper
+
 /mob/proc/break_magical_disguise()
 	set name = "Break Disguise"
 	set desc = "Voluntarily break your magical disguise."
@@ -845,14 +940,93 @@
 	var/list/fake_traits = list() // List of traits to fake having during examine
 
 /datum/component/disguised_species/Initialize(species_name, list/disguised_descriptors, list/original_descriptors, list/disguised_equipment, is_face_hidden = FALSE, visible_name = null, list/fake_traits = list())
+	if(!ismob(parent))
+		return COMPONENT_INCOMPATIBLE
+		
 	src.species_name = species_name
 	src.disguised_descriptors = disguised_descriptors
 	src.original_descriptors = original_descriptors
-	src.disguised_equipment = disguised_equipment
 	src.is_face_hidden = is_face_hidden
 	src.visible_name = visible_name
 	src.fake_traits = fake_traits
 	
+	// Process the equipment data for use in the strip menu
+	src.disguised_equipment = list()
+	
+	// Define our slot mappings
+	var/list/slot_aliases = list(
+		"mask" = "wear_mask", "wear_mask" = "mask",
+		"armor" = "wear_armor", "wear_armor" = "armor",
+		"shirt" = "wear_shirt", "wear_shirt" = "shirt",
+		"pants" = "wear_pants", "wear_pants" = "pants", 
+		"neck" = "wear_neck", "wear_neck" = "neck",
+		"ring" = "wear_ring", "wear_ring" = "ring",
+		"wrists" = "wear_wrists", "wear_wrists" = "wrists",
+		"beltl" = "belt_l", "belt_l" = "beltl",
+		"beltr" = "belt_r", "belt_r" = "beltr",
+		"backl" = "back_l", "back_l" = "backl",
+		"backr" = "back_r", "back_r" = "backr"
+	)
+	
+	// First, explicitly initialize all equipment slots as null
+	// This ensures that all slots without target items will show as empty
+	var/list/all_slot_names = list(
+		"head", "wear_mask", "mask", "mouth", "wear_neck", "neck", 
+		"cloak", "backr", "back_r", "backl", "back_l", "back",
+		"wear_armor", "armor", "wear_shirt", "shirt", "gloves",
+		"wear_ring", "ring", "wear_wrists", "wrists", 
+		"belt", "beltl", "belt_l", "beltr", "belt_r",
+		"wear_pants", "pants", "shoes"
+	)
+	
+	// 1. Important - initialize all slot names to null explicitly
+	// This ensures empty slots remain empty in the UI
+	for(var/slot_name in all_slot_names)
+		src.disguised_equipment[slot_name] = null
+	
+	// 2. Copy equipment data from the target's visible items
+	if(islist(disguised_equipment))
+		for(var/slot_name in disguised_equipment)
+			var/item_data = disguised_equipment[slot_name]
+			
+			// Make sure we maintain the explicit null values
+			if(item_data == null)
+				continue
+				
+			// Process based on type
+			if(istype(item_data, /obj/item))
+				var/obj/item/I = item_data
+				if(!I)
+					src.disguised_equipment[slot_name] = null
+					continue
+				
+				src.disguised_equipment[slot_name] = list(
+					"name" = I.name || "Unknown Item",
+					"desc" = I.desc,
+					"icon_state" = I.icon_state,
+					"is_rogueweapon" = istype(I, /obj/item/rogueweapon),
+					"ref" = REF(I)
+				)
+			else if(islist(item_data))
+				src.disguised_equipment[slot_name] = item_data
+			else if(istext(item_data))
+				if(item_data == "obscured")
+					src.disguised_equipment[slot_name] = "obscured"
+				else
+					src.disguised_equipment[slot_name] = list(
+						"name" = item_data
+					)
+	
+	// 3. Process aliases to ensure consistent data across all slot names
+	for(var/slot_name in slot_aliases)
+		var/alias = slot_aliases[slot_name]
+		// Important: Only copy if the destination doesn't already have a value
+		// This preserves null values that represent empty slots
+		if((slot_name in src.disguised_equipment) && !(alias in src.disguised_equipment))
+			src.disguised_equipment[alias] = src.disguised_equipment[slot_name]
+		else if((alias in src.disguised_equipment) && !(slot_name in src.disguised_equipment))
+			src.disguised_equipment[slot_name] = src.disguised_equipment[alias]
+
 /datum/component/disguised_species/proc/get_disguise_data(data_type)
 	switch(data_type)
 		if("species_name")

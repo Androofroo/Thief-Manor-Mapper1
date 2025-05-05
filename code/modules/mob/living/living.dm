@@ -1188,6 +1188,64 @@
 	if(istype(src, /mob/living/carbon/spirit))
 		to_chat(src, span_warning("Your hands pass right through \the [what]!"))
 		return
+		
+	// Check if the slot is obscured before attempting to strip
+	if(ishuman(who) && isnum(where))
+		var/mob/living/carbon/human/H = who
+		
+		// Check regular obscured slots
+		var/list/obscured = H.check_obscured_slots(TRUE)
+		if(where in obscured)
+			to_chat(src, span_warning("I can't reach that! Something is covering it."))
+			return
+			
+		// Check disguise-based obscured slots
+		if(HAS_TRAIT(H, TRAIT_DISGUISE_ACTIVE))
+			var/datum/component/disguised_species/DS = H.GetComponent(/datum/component/disguised_species)
+			if(DS && DS.disguised_equipment)
+				// Convert slot number to slot name
+				var/slot_name = ""
+				switch(where)
+					if(SLOT_HEAD)
+						slot_name = "head"
+					if(SLOT_WEAR_MASK)
+						slot_name = "wear_mask"
+					if(SLOT_MOUTH)
+						slot_name = "mouth"
+					if(SLOT_NECK)
+						slot_name = "wear_neck"
+					if(SLOT_BACK)
+						slot_name = "back"
+					if(SLOT_BACK_L)
+						slot_name = "backl"
+					if(SLOT_BACK_R)
+						slot_name = "backr"
+					if(SLOT_CLOAK)
+						slot_name = "cloak"
+					if(SLOT_ARMOR)
+						slot_name = "wear_armor" 
+					if(SLOT_SHIRT)
+						slot_name = "wear_shirt"
+					if(SLOT_PANTS)
+						slot_name = "wear_pants"
+					if(SLOT_GLOVES)
+						slot_name = "gloves"
+					if(SLOT_RING)
+						slot_name = "wear_ring"
+					if(SLOT_WRISTS)
+						slot_name = "wear_wrists"
+					if(SLOT_BELT)
+						slot_name = "belt"
+					if(SLOT_BELT_L)
+						slot_name = "beltl"
+					if(SLOT_BELT_R)
+						slot_name = "beltr"
+					if(SLOT_SHOES)
+						slot_name = "shoes"
+				
+				if(slot_name && (slot_name in DS.disguised_equipment) && DS.disguised_equipment[slot_name] == "obscured")
+					to_chat(src, span_warning("I can't reach that! Something is covering it."))
+					return
 
 	var/surrender_mod = 1
 
@@ -1201,10 +1259,65 @@
 
 	if(!who.Adjacent(src))
 		return
-		
-	who.visible_message(span_warning("[src] tries to remove [who]'s [what.name]."), \
-					span_danger("[src] tries to remove my [what.name]."), null, null, src)
-	to_chat(src, span_danger("I try to remove [who]'s [what.name]..."))
+
+	// Check if this is a disguised person and get the disguised item name if it exists
+	var/item_display_name = what.name
+	if(istype(who, /mob/living) && istype(what))
+		var/mob/living/L = who
+		var/datum/component/disguised_species/DS = L.GetComponent(/datum/component/disguised_species)
+		if(DS && HAS_TRAIT(L, TRAIT_DISGUISE_ACTIVE) && DS.disguised_equipment)
+			// Try to find the corresponding slot for this item
+			var/slot_name = ""
+			if(islist(where)) // If it's a hand item
+				slot_name = "held_items"
+			else if(ishuman(L)) // Check common equipment slots for humans
+				var/mob/living/carbon/human/H = L
+				if(H.belt == what)
+					slot_name = "belt"
+				else if(H.beltl == what)
+					slot_name = "beltl"
+				else if(H.beltr == what)
+					slot_name = "beltr"
+				else if(H.wear_mask == what)
+					slot_name = "wear_mask"
+				else if(H.head == what)
+					slot_name = "head"
+				else if(H.wear_armor == what)
+					slot_name = "wear_armor"
+				else if(H.wear_shirt == what)
+					slot_name = "wear_shirt"
+				else if(H.wear_pants == what)
+					slot_name = "wear_pants"
+				else if(H.wear_neck == what)
+					slot_name = "wear_neck"
+				else if(H.wear_ring == what)
+					slot_name = "wear_ring"
+				else if(H.wear_wrists == what)
+					slot_name = "wear_wrists"
+				else if(H.gloves == what)
+					slot_name = "gloves"
+				else if(H.backl == what)
+					slot_name = "backl"
+				else if(H.backr == what)
+					slot_name = "backr"
+				else if(H.back == what)
+					slot_name = "back"
+				else if(H.shoes == what)
+					slot_name = "shoes"
+				else if(H.cloak == what)
+					slot_name = "cloak"
+			
+			// Check if we have a disguised item for this slot
+			if(slot_name && (slot_name in DS.disguised_equipment))
+				var/item_data = DS.disguised_equipment[slot_name]
+				if(istext(item_data))
+					item_display_name = item_data
+				else if(islist(item_data) && ("name" in item_data))
+					item_display_name = item_data["name"]
+
+	who.visible_message(span_warning("[src] tries to remove [who]'s [item_display_name]."), \
+					span_danger("[src] tries to remove my [item_display_name]."), null, null, src)
+	to_chat(src, span_danger("I try to remove [who]'s [item_display_name]..."))
 	what.add_fingerprint(src)
 	if(do_mob(src, who, what.strip_delay * surrender_mod))
 		if(what && Adjacent(who))
@@ -1213,10 +1326,22 @@
 				if(what == who.get_item_for_held_index(L[2]))
 					if(what.doStrip(src, who))
 						log_combat(src, who, "stripped [what] off")
+						
+						// Check if the target was disguised, and if so, break the disguise
+						if(ishuman(who))
+							var/mob/living/carbon/human/H = who
+							if(HAS_TRAIT(H, TRAIT_DISGUISE_ACTIVE))
+								H.remove_all_disguise_effects("My disguise is broken as [src] removes my [item_display_name]!")
 			if(what == who.get_item_by_slot(where))
 				if(what.doStrip(src, who))
 					log_combat(src, who, "stripped [what] off")
 					who.update_fov_angles()
+					
+					// Check if the target was disguised, and if so, break the disguise
+					if(ishuman(who))
+						var/mob/living/carbon/human/H = who
+						if(HAS_TRAIT(H, TRAIT_DISGUISE_ACTIVE))
+							H.remove_all_disguise_effects("My disguise is broken as [src] removes my [item_display_name]!")
 
 	if(Adjacent(who)) //update inventory window
 		who.show_inv(src)
