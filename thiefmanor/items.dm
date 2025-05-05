@@ -168,7 +168,7 @@
 	var/turf/T = find_random_indoor_turf()
 	if(T)
 		forceMove(T)
-		message_admins("Kassidy's Leotard spawned at [ADMIN_VERBOSEJMP(T)]")
+		message_admins("Kassidy doll spawned at [ADMIN_VERBOSEJMP(T)]")
 	else
 		// Fallback location - try to find a closet in the town area
 		var/list/possible_closets = list()
