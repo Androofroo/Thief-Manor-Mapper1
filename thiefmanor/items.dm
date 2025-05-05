@@ -208,51 +208,12 @@
 		to_chat(user, span_warning("You need to hold the mirror steady!"))
 		return
 	
-	// Get say logs from the target's logging list
-	var/list/say_log_messages = list()
+	// Check for speech logs from the target
+	var/message = find_speech_log(L)
 	
-	// Check EVERY POSSIBLE FORMAT we've found in the codebase
-	// First, check standard LOG_SAY (1<<1 = 2)
-	if(L.logging && L.logging["2"])
-		for(var/entry in L.logging["2"])
-			var/msg = L.logging["2"][entry]
-			extract_speech(msg, say_log_messages)
-	
-	// Second variation, number as text "1" even though code defines LOG_SAY as 2
-	if(L.logging && L.logging["1"]) 
-		for(var/entry in L.logging["1"])
-			var/msg = L.logging["1"][entry]
-			extract_speech(msg, say_log_messages)
-	
-	// Check client logs if available
-	if(L.client && L.client.player_details && L.client.player_details.logging)
-		// Check both "2" and "1" for client logs
-		if(L.client.player_details.logging["2"])
-			for(var/entry in L.client.player_details.logging["2"])
-				var/msg = L.client.player_details.logging["2"][entry]
-				extract_speech(msg, say_log_messages)
-		
-		if(L.client.player_details.logging["1"]) 
-			for(var/entry in L.client.player_details.logging["1"])
-				var/msg = L.client.player_details.logging["1"][entry]
-				extract_speech(msg, say_log_messages)
-	
-	// This is a custom fallback that will listen to the say logs in real-time
-	// We should be able to capture at least one line this way
-	if(!length(say_log_messages) && ishuman(L))
-		if(ishuman(user))
-			var/mob/living/carbon/human/human_user = user
-			to_chat(human_user, span_warning("The mirror can't reveal anything... Try asking them to speak while you hold it up."))
-			// Start monitoring their next speech
-			addtimer(CALLBACK(src, PROC_REF(listen_for_speech), user, L), 5)
-			return
-	
-	if(!length(say_log_messages))
+	if(!message)
 		to_chat(user, span_warning("The mirror reveals nothing from [L]'s past words."))
 		return
-	
-	// Get a random message from their speech logs
-	var/message = pick(say_log_messages)
 	
 	to_chat(user, span_notice("The mirror shimmers, and you hear a whisper: \"[message]\""))
 	playsound(get_turf(user), 'sound/foley/glassbreak.ogg', 25, TRUE)
@@ -263,12 +224,41 @@
 	var/obj/effect/temp_visual/lens_shimmer/shimmer = new(get_turf(L))
 	shimmer.color = "#c0ffff"
 
-// Helper proc to extract speech from log entries
+// Find speech in logs
+/obj/item/treasure/lens_of_truth/proc/find_speech_log(mob/living/L)
+	if(!L)
+		return null
+		
+	var/list/say_log_messages = list()
+	
+	// Check for logs using different possible formats
+	var/list/log_keys = list("2", "1") // LOG_SAY is sometimes 2, sometimes 1
+	
+	// Check mob logs
+	if(L.logging)
+		for(var/key in log_keys)
+			if(L.logging[key])
+				for(var/entry in L.logging[key])
+					extract_speech(L.logging[key][entry], say_log_messages)
+	
+	// Check client logs
+	if(L.client?.player_details?.logging)
+		for(var/key in log_keys)
+			if(L.client.player_details.logging[key])
+				for(var/entry in L.client.player_details.logging[key])
+					extract_speech(L.client.player_details.logging[key][entry], say_log_messages)
+	
+	if(length(say_log_messages))
+		return pick(say_log_messages)
+	
+	return null
+
+// Extract speech from log entries
 /obj/item/treasure/lens_of_truth/proc/extract_speech(log_entry, list/output_list)
 	if(!istext(log_entry) || !islist(output_list))
 		return
 	
-	// First pattern: standard log format with quotes
+	// Try to find quoted text first
 	var/quote_start = findtext(log_entry, "\"")
 	if(quote_start)
 		var/quote_end = findtext(log_entry, "\"", quote_start + 1)
@@ -278,47 +268,13 @@
 				output_list |= spoken_text
 				return
 	
-	// Second pattern: possible alternate format without quotes
+	// Try to find text after "says, "
 	var/says_pos = findtext(log_entry, "says, ")
 	if(says_pos)
 		var/message_part = copytext(log_entry, says_pos + 6)
 		if(message_part && length(message_part) > 0)
 			output_list |= message_part
 			return
-
-// Sets up a listening callback for the target's next speech
-/obj/item/treasure/lens_of_truth/proc/listen_for_speech(mob/user, mob/living/target)
-	if(!user || !target || QDELETED(src) || QDELETED(user) || QDELETED(target))
-		return
-		
-	var/datum/callback/speech_callback = CALLBACK(src, PROC_REF(capture_speech), user, target)
-	RegisterSignal(target, COMSIG_MOB_SAY, speech_callback)
-	addtimer(CALLBACK(src, PROC_REF(clear_speech_listener), target, speech_callback), 300) // 30 seconds max wait
-
-// Captures speech when the target speaks
-/obj/item/treasure/lens_of_truth/proc/capture_speech(mob/user, mob/living/target, message)
-	SIGNAL_HANDLER
-	
-	if(!user || !target || QDELETED(src) || QDELETED(user) || QDELETED(target))
-		return
-	
-	UnregisterSignal(target, COMSIG_MOB_SAY)
-	
-	to_chat(user, span_notice("The mirror shimmers, and captures the words: \"[message]\""))
-	playsound(get_turf(user), 'sound/foley/glassbreak.ogg', 25, TRUE)
-	
-	next_use = world.time + cooldown_time
-	
-	// Visual effect
-	var/obj/effect/temp_visual/lens_shimmer/shimmer = new(get_turf(target))
-	shimmer.color = "#c0ffff"
-
-// Cleans up the signal registration if no speech was captured
-/obj/item/treasure/lens_of_truth/proc/clear_speech_listener(mob/living/target, datum/callback/callback)
-	if(!target || QDELETED(src) || QDELETED(target))
-		return
-		
-	UnregisterSignal(target, COMSIG_MOB_SAY)
 
 /obj/effect/temp_visual/lens_shimmer
 	name = "lens shimmer"
