@@ -57,7 +57,7 @@
 	if(HAS_TRAIT(src, TRAIT_DISGUISED_SPECIES))
 		DS = GetComponent(/datum/component/disguised_species)
 		if(DS)
-			race_name = DS.get_species_name()
+			race_name = DS.get_disguise_data("species_name")
 
 	var/m1 = "[t_He] [t_is]"
 	var/m2 = "[t_his]"
@@ -70,7 +70,7 @@
 	// Get the disguised equipment info if available
 	var/list/disguised_equipment = null
 	if(DS)
-		disguised_equipment = DS.get_disguised_equipment()
+		disguised_equipment = DS.get_disguise_data("equipment")
 
 	if(isliving(user))
 		var/mob/living/L = user
@@ -86,7 +86,7 @@
 		obscure_name = TRUE
 	
 	// If using magical disguise and the target's face was hidden, enforce unknown identity
-	if(DS && DS.is_identity_concealed())
+	if(DS && DS.get_disguise_data("concealed"))
 		obscure_name = TRUE
 
 	if(observer_privilege)
@@ -94,8 +94,8 @@
 
 	if(obscure_name)
 		// If we have a magical disguise with a specific "Unknown" name variant, use it
-		if(DS && DS.is_identity_concealed() && DS.get_visible_name())
-			. = list(span_info("ø ------------ ø\nThis is <EM>[DS.get_visible_name()]</EM>."))
+		if(DS && DS.get_disguise_data("concealed") && DS.get_disguise_data("visible_name"))
+			. = list(span_info("ø ------------ ø\nThis is <EM>[DS.get_disguise_data("visible_name")]</EM>."))
 		else
 			. = list(span_info("ø ------------ ø\nThis is <EM>Unknown</EM>."))
 	else
@@ -124,7 +124,7 @@
 			. = list(span_info("ø ------------ ø\nThis is the <EM>[used_name]</EM>, the [race_name]."))
 
 		// For traits that appear during examination, we need to handle both real and fake traits
-		if(HAS_TRAIT(src, TRAIT_WITCH) || (HAS_TRAIT(src, TRAIT_HAS_FAKE_TRAITS) && (TRAIT_WITCH in GetComponent(/datum/component/disguised_species)?.fake_traits)))
+		if(HAS_TRAIT(src, TRAIT_WITCH) || (HAS_TRAIT(src, TRAIT_HAS_FAKE_TRAITS) && (TRAIT_WITCH in GetComponent(/datum/component/disguised_species)?.get_disguise_data("fake_traits"))))
 			if(HAS_TRAIT(user, TRAIT_NOBLE) || HAS_TRAIT(user, TRAIT_INQUISITION) || HAS_TRAIT(user, TRAIT_WITCH))
 				. += span_warning("A witch! Their presence brings an unsettling aura.")
 			else if(HAS_TRAIT(user, TRAIT_COMMIE) || HAS_TRAIT(user, TRAIT_CABAL) || HAS_TRAIT(user, TRAIT_HORDE) || HAS_TRAIT(user, TRAIT_DEPRAVED))
@@ -135,13 +135,13 @@
 		if(GLOB.lord_titles[name])
 			. += span_notice("[m3] been granted the title of \"[GLOB.lord_titles[name]]\".")
 
-		if(HAS_TRAIT(src, TRAIT_NOBLE) || (HAS_TRAIT(src, TRAIT_HAS_FAKE_TRAITS) && (TRAIT_NOBLE in GetComponent(/datum/component/disguised_species)?.fake_traits)))
+		if(HAS_TRAIT(src, TRAIT_NOBLE) || (HAS_TRAIT(src, TRAIT_HAS_FAKE_TRAITS) && (TRAIT_NOBLE in GetComponent(/datum/component/disguised_species)?.get_disguise_data("fake_traits"))))
 			if(HAS_TRAIT(user, TRAIT_NOBLE))
 				. += span_notice("A fellow noble.")
 			else
 				. += span_notice("A noble!")
 
-		if ((HAS_TRAIT(src, TRAIT_OUTLANDER) || (HAS_TRAIT(src, TRAIT_HAS_FAKE_TRAITS) && (TRAIT_OUTLANDER in GetComponent(/datum/component/disguised_species)?.fake_traits))) && !HAS_TRAIT(user, TRAIT_OUTLANDER)) 
+		if ((HAS_TRAIT(src, TRAIT_OUTLANDER) || (HAS_TRAIT(src, TRAIT_HAS_FAKE_TRAITS) && (TRAIT_OUTLANDER in GetComponent(/datum/component/disguised_species)?.get_disguise_data("fake_traits")))) && !HAS_TRAIT(user, TRAIT_OUTLANDER)) 
 			. += span_phobia("A foreigner...")
 
 		if(ishuman(user))
@@ -204,7 +204,7 @@
 		if(leprosy == 1)
 			. += span_necrosis("A LEPER...")
 	
-		if (HAS_TRAIT(src, TRAIT_BEAUTIFUL) || (HAS_TRAIT(src, TRAIT_HAS_FAKE_TRAITS) && (TRAIT_BEAUTIFUL in GetComponent(/datum/component/disguised_species)?.fake_traits)))
+		if (HAS_TRAIT(src, TRAIT_BEAUTIFUL) || (HAS_TRAIT(src, TRAIT_HAS_FAKE_TRAITS) && (TRAIT_BEAUTIFUL in GetComponent(/datum/component/disguised_species)?.get_disguise_data("fake_traits"))))
 			switch (pronouns)
 				if (HE_HIM)
 					. += span_beautiful_masc("[m1] handsome!")
@@ -213,7 +213,7 @@
 				if (THEY_THEM, THEY_THEM_F, IT_ITS)
 					. += span_beautiful_nb("[m1] good-looking!")
 
-		if (HAS_TRAIT(src, TRAIT_UNSEEMLY) || (HAS_TRAIT(src, TRAIT_HAS_FAKE_TRAITS) && (TRAIT_UNSEEMLY in GetComponent(/datum/component/disguised_species)?.fake_traits)))
+		if (HAS_TRAIT(src, TRAIT_UNSEEMLY) || (HAS_TRAIT(src, TRAIT_HAS_FAKE_TRAITS) && (TRAIT_UNSEEMLY in GetComponent(/datum/component/disguised_species)?.get_disguise_data("fake_traits"))))
 			switch (pronouns)
 				if (HE_HIM)
 					. += span_redtext("[m1] revolting!")
