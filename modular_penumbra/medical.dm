@@ -139,8 +139,6 @@
 	user.visible_message(span_notice("[user] injects [M] with [src]."), span_notice("You inject [M] with [src]."))
 	
 	if(heal_timer)
-		icon_state = "15"
-		update_icon()
 		used = TRUE
 	return TRUE
 
