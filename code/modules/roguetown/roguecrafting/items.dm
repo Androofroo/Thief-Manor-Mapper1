@@ -582,6 +582,13 @@
 /obj/item/fishingrod/crafted
 	sellprice = 8
 
+/datum/crafting_recipe/roguetown/fishingcage
+	name = "fishing cage"
+	result = /obj/item/fishingcage
+	reqs = list(/obj/item/grown/log/tree/small = 1,
+		/obj/item/grown/log/tree/stick = 2)
+	craftdiff = 2
+
 /datum/crafting_recipe/roguetown/woodspade
 	name = "wood spade"
 	result = /obj/item/rogueweapon/shovel/small
@@ -589,6 +596,38 @@
 			/obj/item/grown/log/tree/stick = 1)
 /obj/item/rogueweapon/shovel/small/crafted
 	sellprice = 5
+
+/datum/crafting_recipe/roguetown/pearlcross
+	name = "amulet (pearls)"
+	result = /obj/item/clothing/neck/roguetown/psicross/pearl
+	reqs = list(/obj/item/natural/fibers = 1,
+			/obj/item/pearl = 3)
+	craftdiff = 2
+
+/datum/crafting_recipe/roguetown/bpearlcross
+	name = "amulet (blue pearls)"
+	result = /obj/item/clothing/neck/roguetown/psicross/bpearl
+	reqs = list(/obj/item/natural/fibers = 1,
+			/obj/item/pearl/blue = 3)
+	craftdiff = 2
+
+/datum/crafting_recipe/roguetown/shellnecklace
+	name = "shell necklace"
+	result = /obj/item/clothing/neck/roguetown/psicross/shell
+	reqs = list(/obj/item/oystershell = 5,
+			/obj/item/natural/fibers = 1)
+
+/datum/crafting_recipe/roguetown/shellbracelet
+	name = "shell bracelet"
+	result = /obj/item/clothing/neck/roguetown/psicross/shell/bracelet
+	reqs = list(/obj/item/oystershell = 3,
+			/obj/item/natural/fibers = 1)
+
+/datum/crafting_recipe/roguetown/abyssoramulet
+	name = "amulet of abyssor"
+	result = /obj/item/clothing/neck/roguetown/psicross/abyssor
+	reqs = list(/obj/item/natural/fibers = 1,
+			/obj/item/pearl/blue = 1)
 
 /datum/crafting_recipe/roguetown/broom
 	name = "broom"

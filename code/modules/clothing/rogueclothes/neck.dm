@@ -394,6 +394,31 @@
 	resistance_flags = FIRE_PROOF
 	sellprice = 100
 
+/obj/item/clothing/neck/roguetown/psicross/pearl //put it as a psycross so it can be used for miracles
+	name = "pearl amulet"
+	icon_state = "pearlcross"
+	desc = "An amulet made of white pearls, usually worn by fishers or sailors."
+	sellprice = 80
+
+/obj/item/clothing/neck/roguetown/psicross/bpearl
+	name = "blue pearl amulet"
+	icon_state = "bpearlcross"
+	desc = "An amulet made of rare blue pearls, usually worn by priests and worshippers of Abyssor, or as lucky charms for captains of ships."
+	sellprice = 220
+
+/obj/item/clothing/neck/roguetown/psicross/shell
+	name = "oyster shell necklace"
+	icon_state = "oyster_necklace"
+	desc = "A necklace of strung-up sea shells, the calming noise they make when they clack together is reminiscent of a shellfish's claws. They remind you that while men no longer live in water, Abyssor will always remember our origins."
+	sellprice = 25
+
+/obj/item/clothing/neck/roguetown/psicross/shell/bracelet
+	name = "shell bracelet"
+	icon_state = "oyster_bracelet"
+	desc = "A beaded bracelet made from sea shells, their rough exterior and glossy interior reminding you that Abyssor's children hide the best gifts at the deepest spots beneath the waves."
+	sellprice = 15
+	slot_flags = ITEM_SLOT_WRISTS
+
 /obj/item/clothing/neck/roguetown/talkstone
 	name = "talkstone"
 	desc = ""

@@ -90,3 +90,22 @@
 /obj/item/riddleofsteel/Initialize()
 	. = ..()
 	set_light(2, 2, 1, l_color = "#ff0d0d")
+
+/obj/item/pearl
+	name = "pearl"
+	icon_state = "pearl"
+	icon = 'icons/roguetown/items/gems.dmi'
+	desc = "A beautiful pearl. Can be strung up into an amulet."
+	lefthand_file = 'icons/mob/inhands/misc/food_lefthand.dmi'
+	righthand_file = 'icons/mob/inhands/misc/food_righthand.dmi'
+	w_class = WEIGHT_CLASS_TINY
+	slot_flags = ITEM_SLOT_MOUTH
+	dropshrink = 0.4
+	drop_sound = 'sound/items/gem.ogg'
+	sellprice = 20
+
+/obj/item/pearl/blue
+	name = "Blue pearl"
+	icon_state = "bpearl"
+	desc = "A beautiful blue pearl. A bounty of Abyssor. Can be strung up into amulets."
+	sellprice = 60
