@@ -497,3 +497,98 @@
 			bodyparts += BP
 			hand_bodyparts[i] = BP
 	..() //Don't redraw hands until we have organs for them
+
+/**
+ * Returns a list of equipped items with their variable names as keys
+ * 
+ * Generates a list of all equipped items with the variable names as keys
+ * and information about each item as values.
+ * 
+ * @param include_hands Whether to include items in the mob's hands
+ * @param include_detailed_info Whether to include detailed information like desc and icon_state
+ * @return A list of equipped items with their variable names as keys
+ */
+/mob/living/carbon/human/proc/get_visible_equipment_data(include_hands = TRUE, include_detailed_info = TRUE)
+	var/list/equipment_data = list()
+	
+	// Get all equipped items
+	var/list/items = get_equipped_items(TRUE)
+	
+	// Process each equipped item
+	for(var/obj/item/item in items)
+		// Figure out the variable name by looking at our variables
+		var/found_var_name = null
+		
+		// For each item, find which variable it's stored in
+		for(var/var_name in list(
+			"back", "wear_mask", "wear_neck", "handcuffed", "legcuffed", 
+			"belt", "wear_ring", "wear_wrists", "mouth", "wear_shirt",
+			"cloak", "backr", "backl", "beltl", "beltr", "glasses", 
+			"gloves", "head", "shoes", "wear_armor", "wear_pants",
+			"l_store", "r_store", "s_store", "ears"))
+			
+			if(vars[var_name] == item)
+				found_var_name = var_name
+				break
+		
+		// Skip if we couldn't find the variable name
+		if(!found_var_name)
+			continue
+			
+		// Store item data
+		if(include_detailed_info)
+			equipment_data[found_var_name] = list(
+				"name" = item.name,
+				"desc" = item.desc,
+				"icon_state" = item.icon_state,
+				"is_rogueweapon" = istype(item, /obj/item/rogueweapon),
+				"ref" = REF(item)
+			)
+		else
+			equipment_data[found_var_name] = item
+	
+	// Also capture any items in hands if requested
+	if(include_hands)
+		if(include_detailed_info)
+			equipment_data["held_items"] = list()
+			for(var/obj/item/I in held_items)
+				if(!(I.item_flags & ABSTRACT))
+					equipment_data["held_items"] += list(list(
+						"name" = I.name,
+						"desc" = I.desc,
+						"icon_state" = I.icon_state,
+						"held_index" = get_held_index_of_item(I),
+						"held_name" = get_held_index_name(get_held_index_of_item(I)),
+						"is_rogueweapon" = istype(I, /obj/item/rogueweapon),
+						"ref" = REF(I)
+					))
+		else
+			equipment_data["held_items"] = held_items.Copy()
+	
+	return equipment_data
+
+/**
+ * Gets the slot number for a given item on a human
+ * 
+ * Searches through all equipment slots and returns the slot ID
+ * where the item is found.
+ * 
+ * @param item The item to find the slot for
+ * @return The slot ID where the item is equipped, or NONE if not found
+ */
+/mob/living/carbon/human/proc/get_slot_from_item(obj/item/item)
+	// Go through all possible slots and check if the item is in that slot
+	for(var/slot in list(
+		SLOT_BELT, SLOT_BELT_R, SLOT_BELT_L, 
+		SLOT_ARMOR, SLOT_SHIRT, SLOT_PANTS, 
+		SLOT_HEAD, SLOT_SHOES, SLOT_GLOVES, 
+		SLOT_CLOAK, SLOT_NECK, SLOT_GLASSES, 
+		SLOT_WRISTS, SLOT_WEAR_MASK, SLOT_RING, 
+		SLOT_L_STORE, SLOT_R_STORE, SLOT_S_STORE, 
+		SLOT_BACK_R, SLOT_BACK_L, SLOT_BACK, 
+		SLOT_MOUTH))
+		
+		if(get_item_by_slot(slot) == item)
+			return slot
+			
+	return NONE

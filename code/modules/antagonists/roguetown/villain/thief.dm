@@ -373,34 +373,16 @@
 	
 	// Find and temporarily disable all of the user's own movement sound components
 	stored_appearance.original_movement_components = list()
-	var/list/user_equipped_items = list()
 	
-	// Add all of the user's equipped items that could have movement components
-	if(user.wear_armor)
-		user_equipped_items += user.wear_armor
-	if(user.wear_shirt)
-		user_equipped_items += user.wear_shirt
-	if(user.wear_pants)
-		user_equipped_items += user.wear_pants
-	if(user.head)
-		user_equipped_items += user.head
-	if(user.shoes)
-		user_equipped_items += user.shoes
-	if(user.gloves)
-		user_equipped_items += user.gloves
-	if(user.cloak)
-		user_equipped_items += user.cloak
-	if(user.wear_neck)
-		user_equipped_items += user.wear_neck
-	if(user.belt)
-		user_equipped_items += user.belt
-	if(user.beltl)
-		user_equipped_items += user.beltl
-	if(user.beltr)
-		user_equipped_items += user.beltr
-		
+	// Get all of the user's equipped items with their variable names using the helper function
+	var/list/user_equipment_data = user.get_visible_equipment_data(include_hands = TRUE, include_detailed_info = FALSE)
+	
 	// Store references to the user's original movement components and REMOVE them temporarily
-	for(var/obj/item/gear in user_equipped_items)
+	for(var/var_name in user_equipment_data)
+		if(var_name == "held_items")
+			continue // Skip held items for this processing
+		
+		var/obj/item/gear = user_equipment_data[var_name]
 		for(var/datum/component/item_equipped_movement_rustle/R in gear.GetComponents(/datum/component/item_equipped_movement_rustle))
 			// Store component parameters to recreate it later
 			var/list/component_params = list(
@@ -426,34 +408,16 @@
 	// Look for all equipped items on the target that have movement components
 	// and create a new sound mimicking component for the user
 	var/list/sound_parameters = list()
-	var/list/target_gear = list()
 	
-	// Add all equipped items that could potentially have movement components
-	if(target.wear_armor)
-		target_gear += target.wear_armor
-	if(target.wear_shirt)
-		target_gear += target.wear_shirt
-	if(target.wear_pants)
-		target_gear += target.wear_pants
-	if(target.head)
-		target_gear += target.head
-	if(target.shoes)
-		target_gear += target.shoes
-	if(target.gloves)
-		target_gear += target.gloves
-	if(target.cloak)
-		target_gear += target.cloak
-	if(target.wear_neck)
-		target_gear += target.wear_neck
-	if(target.belt)
-		target_gear += target.belt
-	if(target.beltl)
-		target_gear += target.beltl
-	if(target.beltr)
-		target_gear += target.beltr
+	// Get all equipped items from the target with their variable names
+	var/list/target_equipment_data = target.get_visible_equipment_data(include_hands = TRUE, include_detailed_info = FALSE)
 	
 	// Check each item for movement components and store their parameters
-	for(var/obj/item/gear in target_gear)
+	for(var/var_name in target_equipment_data)
+		if(var_name == "held_items")
+			continue // Skip held items for this processing
+			
+		var/obj/item/gear = target_equipment_data[var_name]
 		for(var/datum/component/item_equipped_movement_rustle/R in gear.GetComponents(/datum/component/item_equipped_movement_rustle))
 			sound_parameters += list(list(
 				"rustle_sounds" = R.rustle_sounds,
@@ -692,33 +656,12 @@
 					
 					// Manually trigger the on_equip signal to properly register the component
 					if(new_rustle && ishuman(M))
-						// Find which slot the item is in
 						var/mob/living/carbon/human/H = M
-						var/slot = NONE
-						if(H.belt == gear)
-							slot = SLOT_BELT
-						else if(H.beltr == gear)
-							slot = SLOT_BELT_R
-						else if(H.beltl == gear)
-							slot = SLOT_BELT_L
-						else if(H.wear_armor == gear)
-							slot = SLOT_ARMOR
-						else if(H.wear_shirt == gear)
-							slot = SLOT_SHIRT
-						else if(H.wear_pants == gear)
-							slot = SLOT_PANTS
-						else if(H.head == gear)
-							slot = SLOT_HEAD
-						else if(H.shoes == gear)
-							slot = SLOT_SHOES
-						else if(H.gloves == gear)
-							slot = SLOT_GLOVES
-						else if(H.cloak == gear)
-							slot = SLOT_CLOAK
-						else if(H.wear_neck == gear)
-							slot = SLOT_NECK
 						
-						// Manually call the on_equip proc to register signals properly
+						// Get the slot using the new generic helper function
+						var/slot = H.get_slot_from_item(gear)
+						
+						// Manually call the on_equip proc to register signals properly if we found a valid slot
 						if(slot != NONE)
 							new_rustle.on_equip(gear, H, slot)
 	
@@ -734,28 +677,10 @@
 	// Restore original obscured flags
 	user.obscured_flags = stored_appearance.original_obscured_flags
 	
-	// Make sure we update the user's appearance to reflect the restored obscured flags
-	user.update_hair()
-	user.update_body()
-	
 	// Force complete icon regeneration to ensure original appearance is fully restored
 	user.cut_overlays() 
 	user.overlays.Cut()
 	user.regenerate_icons()
-	user.update_body()
-	user.update_hair()
-	
-	// Force equipment-specific updates
-	user.update_inv_head()
-	user.update_inv_wear_mask()
-	user.update_inv_glasses()
-	user.update_inv_gloves()
-	user.update_inv_shoes()
-	user.update_inv_belt()
-	user.update_inv_armor()
-	user.update_inv_shirt()
-	user.update_inv_pants()
-	user.regenerate_icons() // Final regenerate to ensure everything is properly updated
 	
 	// Get the component and restore original descriptors
 	var/datum/component/disguised_species/DS = user.GetComponent(/datum/component/disguised_species)
@@ -829,23 +754,9 @@
 			break
 	
 	// Force a thorough visual refresh
-	cut_overlays() 
-	overlays.Cut()
-	regenerate_icons()
-	update_body()
-	update_hair()
-	
-	// Force equipment-specific updates
-	update_inv_head()
-	update_inv_wear_mask()
-	update_inv_glasses()
-	update_inv_gloves()
-	update_inv_shoes()
-	update_inv_belt()
-	update_inv_armor()
-	update_inv_shirt()
-	update_inv_pants()
-	regenerate_icons() // Final regenerate to ensure everything is properly updated
+	src.cut_overlays() 
+	src.overlays.Cut()
+	src.regenerate_icons() // Regenerate all icons at once
 
 // Update the original break_disguise_effect to use our new helper
 /mob/living/carbon/human/proc/break_disguise_effect(message = "Your actions have broken your magical disguise!")
@@ -910,23 +821,9 @@
 			break
 	
 	// Force a thorough visual refresh
-	cut_overlays() 
-	overlays.Cut()
-	regenerate_icons()
-	update_body()
-	update_hair()
-	
-	// Force equipment-specific updates
-	update_inv_head()
-	update_inv_wear_mask()
-	update_inv_glasses()
-	update_inv_gloves()
-	update_inv_shoes()
-	update_inv_belt()
-	update_inv_armor()
-	update_inv_shirt()
-	update_inv_pants()
-	regenerate_icons() // Final regenerate to ensure everything is properly updated
+	src.cut_overlays() 
+	src.overlays.Cut()
+	src.regenerate_icons() // Regenerate all icons at once
 
 // New method for the spell to completely reset someone's appearance
 /obj/effect/proc_holder/spell/self/magical_disguise/proc/force_reset_looks(mob/living/carbon/human/user)
@@ -1085,175 +982,7 @@
 
 // Helper function to capture visible equipment from the target
 /obj/effect/proc_holder/spell/self/magical_disguise/proc/capture_visible_equipment(mob/living/carbon/human/target)
-	var/list/equipment_data = list()
-	
-	// Check each equipment slot that would be visible during examination
-	if(target.wear_shirt)
-		equipment_data["wear_shirt"] = list(
-			"name" = target.wear_shirt.name,
-			"desc" = target.wear_shirt.desc,
-			"icon_state" = target.wear_shirt.icon_state,
-			"is_rogueweapon" = istype(target.wear_shirt, /obj/item/rogueweapon)
-		)
-	
-	if(target.wear_armor)
-		equipment_data["wear_armor"] = list(
-			"name" = target.wear_armor.name,
-			"desc" = target.wear_armor.desc,
-			"icon_state" = target.wear_armor.icon_state,
-			"is_rogueweapon" = istype(target.wear_armor, /obj/item/rogueweapon)
-		)
-	
-	if(target.wear_pants)
-		equipment_data["wear_pants"] = list(
-			"name" = target.wear_pants.name,
-			"desc" = target.wear_pants.desc,
-			"icon_state" = target.wear_pants.icon_state,
-			"is_rogueweapon" = istype(target.wear_pants, /obj/item/rogueweapon)
-		)
-	
-	if(target.head)
-		equipment_data["head"] = list(
-			"name" = target.head.name,
-			"desc" = target.head.desc,
-			"icon_state" = target.head.icon_state,
-			"is_rogueweapon" = istype(target.head, /obj/item/rogueweapon)
-		)
-	
-	if(target.belt)
-		equipment_data["belt"] = list(
-			"name" = target.belt.name,
-			"desc" = target.belt.desc,
-			"icon_state" = target.belt.icon_state,
-			"is_rogueweapon" = istype(target.belt, /obj/item/rogueweapon)
-		)
-	
-	if(target.beltr)
-		equipment_data["beltr"] = list(
-			"name" = target.beltr.name,
-			"desc" = target.beltr.desc,
-			"icon_state" = target.beltr.icon_state,
-			"is_rogueweapon" = istype(target.beltr, /obj/item/rogueweapon)
-		)
-	
-	if(target.beltl)
-		equipment_data["beltl"] = list(
-			"name" = target.beltl.name,
-			"desc" = target.beltl.desc,
-			"icon_state" = target.beltl.icon_state,
-			"is_rogueweapon" = istype(target.beltl, /obj/item/rogueweapon)
-		)
-	
-	if(target.wear_ring)
-		equipment_data["wear_ring"] = list(
-			"name" = target.wear_ring.name,
-			"desc" = target.wear_ring.desc,
-			"icon_state" = target.wear_ring.icon_state,
-			"is_rogueweapon" = istype(target.wear_ring, /obj/item/rogueweapon)
-		)
-	
-	if(target.gloves)
-		equipment_data["gloves"] = list(
-			"name" = target.gloves.name,
-			"desc" = target.gloves.desc,
-			"icon_state" = target.gloves.icon_state,
-			"is_rogueweapon" = istype(target.gloves, /obj/item/rogueweapon)
-		)
-	
-	if(target.wear_wrists)
-		equipment_data["wear_wrists"] = list(
-			"name" = target.wear_wrists.name,
-			"desc" = target.wear_wrists.desc,
-			"icon_state" = target.wear_wrists.icon_state,
-			"is_rogueweapon" = istype(target.wear_wrists, /obj/item/rogueweapon)
-		)
-	
-	if(target.backr)
-		equipment_data["backr"] = list(
-			"name" = target.backr.name,
-			"desc" = target.backr.desc,
-			"icon_state" = target.backr.icon_state,
-			"is_rogueweapon" = istype(target.backr, /obj/item/rogueweapon)
-		)
-	
-	if(target.backl)
-		equipment_data["backl"] = list(
-			"name" = target.backl.name,
-			"desc" = target.backl.desc,
-			"icon_state" = target.backl.icon_state,
-			"is_rogueweapon" = istype(target.backl, /obj/item/rogueweapon)
-		)
-	
-	if(target.cloak)
-		equipment_data["cloak"] = list(
-			"name" = target.cloak.name,
-			"desc" = target.cloak.desc,
-			"icon_state" = target.cloak.icon_state,
-			"is_rogueweapon" = istype(target.cloak, /obj/item/rogueweapon)
-		)
-	
-	if(target.shoes)
-		equipment_data["shoes"] = list(
-			"name" = target.shoes.name,
-			"desc" = target.shoes.desc,
-			"icon_state" = target.shoes.icon_state,
-			"is_rogueweapon" = istype(target.shoes, /obj/item/rogueweapon)
-		)
-	
-	if(target.wear_mask)
-		equipment_data["wear_mask"] = list(
-			"name" = target.wear_mask.name,
-			"desc" = target.wear_mask.desc,
-			"icon_state" = target.wear_mask.icon_state,
-			"is_rogueweapon" = istype(target.wear_mask, /obj/item/rogueweapon)
-		)
-	
-	if(target.mouth)
-		equipment_data["mouth"] = list(
-			"name" = target.mouth.name,
-			"desc" = target.mouth.desc,
-			"icon_state" = target.mouth.icon_state,
-			"is_rogueweapon" = istype(target.mouth, /obj/item/rogueweapon)
-		)
-	
-	if(target.wear_neck)
-		equipment_data["wear_neck"] = list(
-			"name" = target.wear_neck.name,
-			"desc" = target.wear_neck.desc,
-			"icon_state" = target.wear_neck.icon_state,
-			"is_rogueweapon" = istype(target.wear_neck, /obj/item/rogueweapon)
-		)
-	
-	if(target.glasses)
-		equipment_data["glasses"] = list(
-			"name" = target.glasses.name,
-			"desc" = target.glasses.desc,
-			"icon_state" = target.glasses.icon_state,
-			"is_rogueweapon" = istype(target.glasses, /obj/item/rogueweapon)
-		)
-	
-	if(target.ears)
-		equipment_data["ears"] = list(
-			"name" = target.ears.name,
-			"desc" = target.ears.desc,
-			"icon_state" = target.ears.icon_state,
-			"is_rogueweapon" = istype(target.ears, /obj/item/rogueweapon)
-		)
-
-	// Also capture any items in the target's hands
-	equipment_data["held_items"] = list()
-	for(var/obj/item/I in target.held_items)
-		if(!(I.item_flags & ABSTRACT))
-			equipment_data["held_items"] += list(list(
-				"name" = I.name,
-				"desc" = I.desc,
-				"icon_state" = I.icon_state,
-				"held_index" = target.get_held_index_of_item(I),
-				"held_name" = target.get_held_index_name(target.get_held_index_of_item(I)),
-				"is_rogueweapon" = istype(I, /obj/item/rogueweapon)
-			))
-	
-	return equipment_data
+	return target.get_visible_equipment_data()
 
 /obj/effect/proc_holder/spell/self/smoke_bomb
 	name = "Smoke Bomb"
