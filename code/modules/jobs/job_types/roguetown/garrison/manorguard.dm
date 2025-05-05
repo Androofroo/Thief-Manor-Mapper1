@@ -46,7 +46,7 @@
 
 /datum/outfit/job/roguetown/manorguard/footman
 	shirt = /obj/item/clothing/suit/roguetown/armor/gambeson/lord
-	armor = /obj/item/clothing/suit/roguetown/armor/leather/studded
+	armor = /obj/item/clothing/suit/roguetown/armor/plate/scale
 	head = /obj/item/clothing/head/roguetown/helmet/kettle
 	pants = /obj/item/clothing/under/roguetown/trou/leather
 	neck = /obj/item/clothing/neck/roguetown/chaincoif
