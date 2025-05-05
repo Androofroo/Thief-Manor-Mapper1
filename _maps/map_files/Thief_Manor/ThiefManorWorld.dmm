@@ -69,6 +69,7 @@
 "iE" = (/obj/machinery/light/rogue/wallfire/candle/l,/turf/open/floor/rogue/blocks/stonered/tiny,/area/rogue)
 "iF" = (/obj/item/rogue/painting,/turf/closed/wall/mineral/rogue/roofwall/middle,/area/rogue)
 "iH" = (/obj/structure/table/wood,/obj/item/treasure/marriagecontract,/turf/open/floor/rogue/wood,/area/rogue)
+"iK" = (/obj/structure/table/wood,/obj/item/treasure/quiet_blade,/turf/open/floor/rogue/wood,/area/rogue)
 "iM" = (/obj/machinery/light/rogue/wallfire,/turf/closed/wall/mineral/rogue/decostone/long,/area/rogue)
 "jb" = (/obj/effect/landmark/start/physician,/turf/open/floor/rogue/carpet/lord/center,/area/rogue/indoors/town/manor)
 "jd" = (/obj/structure/bookcase/random/nonfiction,/obj/machinery/light/rogue/wallfire/candle/l,/turf/open/floor/rogue/tile,/area/rogue)
@@ -105,6 +106,7 @@
 "nB" = (/obj/structure/bookcase/random/archive,/turf/open/floor/rogue/blocks/stonered,/area/rogue)
 "nO" = (/obj/item/roguebin/water,/turf/open/floor/rogue/wood/nosmooth,/area/rogue)
 "nR" = (/turf/closed/wall/mineral/rogue/decostone/end{dir = 4},/area/rogue/outdoors/rtfield)
+"oc" = (/obj/structure/table/wood,/obj/item/treasure/marvelous_compass,/turf/open/floor/rogue/wood,/area/rogue)
 "oj" = (/turf/closed/wall/mineral/rogue/stonebrick,/area/rogue)
 "oq" = (/obj/structure/table/church/m,/obj/item/clothing/neck/roguetown/psicross/g,/turf/open/floor/rogue/blocks/stonered,/area/rogue)
 "or" = (/obj/item/book/rogue/secret/ledger,/obj/structure/table/wood/poker,/turf/open/floor/rogue/blocks/stonered,/area/rogue)
@@ -130,6 +132,7 @@
 "rW" = (/obj/machinery/light/rogue/wallfire/candle/weak/r,/turf/open/floor/rogue/blocks/newstone/alt,/area/rogue)
 "ss" = (/obj/machinery/light/rogue/lanternpost{dir = 1},/turf/open/floor/rogue/dirt/road,/area/rogue/outdoors/rtfield)
 "sx" = (/turf/open/floor/rogue/dirt/road,/area/rogue)
+"sz" = (/obj/structure/table/wood,/obj/item/treasure/obsidian_comb,/turf/open/floor/rogue/wood,/area/rogue)
 "sC" = (/obj/effect/landmark/start/manorguardsman,/turf/open/floor/rogue/carpet/lord/center,/area/rogue/indoors/town/manor)
 "sO" = (/obj/structure/table/wood{dir = 5; icon_state = "largetable"},/turf/open/floor/rogue/carpet,/area/rogue)
 "sR" = (/obj/structure/closet/crate/roguecloset/inn/south,/obj/item/clothing/mask/cigarette/rollie/cannabis,/obj/item/clothing/mask/cigarette/rollie/cannabis,/obj/item/clothing/mask/cigarette/rollie/cannabis,/turf/open/floor/rogue/blocks/newstone/alt,/area/rogue)
@@ -151,11 +154,13 @@
 "uU" = (/obj/structure/fluff/railing/border,/obj/structure/bars/passage/shutter,/turf/open/floor/rogue/carpet,/area/rogue)
 "vh" = (/obj/machinery/light/rogue/campfire/longlived,/turf/open/floor/rogue/grass,/area/rogue)
 "vi" = (/turf/open/floor/rogue/carpet/lord/center,/area/rogue/indoors/town/manor)
+"vj" = (/obj/structure/table/wood,/obj/item/treasure/silverstake,/turf/open/floor/rogue/wood,/area/rogue)
 "vn" = (/obj/machinery/light/rogue/wallfire/candle/r,/turf/open/floor/rogue/blocks/newstone/alt,/area/rogue)
 "vw" = (/obj/structure/mineral_door/wood/violet,/turf/open/floor/rogue/tile,/area/rogue)
 "vz" = (/turf/closed/wall/mineral/rogue/wooddark/horizontal,/area/rogue)
 "vH" = (/obj/structure/rack/rogue,/obj/item/rogueweapon/shovel/small,/obj/item/rogueweapon/shovel/small,/turf/open/floor/rogue/wood/nosmooth,/area/rogue)
 "vM" = (/obj/structure/closet/crate/drawer,/obj/item/clothing/mask/rogue/exoticsilkmask,/obj/item/clothing/mask/rogue/exoticsilkmask,/obj/item/clothing/mask/rogue/eyepatch,/obj/item/clothing/mask/rogue/eyepatch,/obj/item/clothing/mask/rogue/lordmask/l,/obj/item/clothing/mask/rogue/ragmask,/obj/item/clothing/mask/rogue/ragmask,/obj/item/clothing/mask/rogue/shepherd/shadowmask,/obj/item/clothing/mask/rogue/shepherd/shadowmask,/obj/item/clothing/mask/rogue/shepherd,/obj/item/clothing/mask/rogue/skullmask,/obj/item/clothing/mask/rogue/spectacles,/obj/item/clothing/mask/rogue/spectacles,/obj/item/clothing/neck/roguetown/collar/bell_collar,/obj/item/clothing/neck/roguetown/collar/bell_collar,/obj/item/clothing/under/roguetown/tights/stockings/silk/black,/obj/item/clothing/under/roguetown/tights/stockings/silk/purple,/obj/item/clothing/under/roguetown/tights/stockings/silk/red,/obj/item/clothing/under/roguetown/tights/stockings/silk/white,/turf/open/floor/rogue/wood/nosmooth,/area/rogue)
+"vO" = (/obj/structure/table/wood/fancy/red,/obj/item/treasure/bond,/turf/open/floor/rogue/wood,/area/rogue)
 "vT" = (/obj/machinery/tanningrack,/turf/open/floor/rogue/wood/nosmooth,/area/rogue)
 "wb" = (/obj/structure/roguewindow/stained/yellow,/turf/open/floor/rogue/ruinedwood/platform,/area/rogue)
 "wd" = (/turf/open/floor/rogue/carpet/lord/center,/area/rogue)
@@ -318,6 +323,7 @@
 "Vl" = (/obj/effect/landmark/observer_start,/turf/open/floor/rogue/carpet/lord/center,/area/rogue/indoors/town/manor)
 "Wa" = (/obj/structure/fluff/railing/border{dir = 4; pixel_y = -3},/turf/open/floor/rogue/ruinedwood/platform,/area/rogue)
 "Wf" = (/obj/structure/bed/rogue/inn/wool,/turf/open/floor/rogue/blocks/stonered,/area/rogue)
+"Wi" = (/obj/structure/table/wood,/obj/item/treasure/lens_of_truth,/turf/open/floor/rogue/wood,/area/rogue)
 "Wt" = (/obj/structure/table/wood{icon_state = "largetable_mid"; dir = 1},/turf/open/floor/rogue/carpet,/area/rogue)
 "Wz" = (/obj/effect/landmark/start/marshal,/turf/open/floor/rogue/carpet/lord/center,/area/rogue/indoors/town/manor)
 "WD" = (/turf/open/water/bath,/area/rogue)
@@ -896,12 +902,12 @@ dEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdE
 dEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEmpYmYmYmYmvzememememHeBkQQQQDyDyIdTqTqTqTqTqTqTqTqasDpDprtjGjGjGjGjGjGjGjGjGlPDpDpasHSHSHSdEdEdEdEYmYmYmYmYmYmYmYmYmYmYmYmYmdEdEdEdEYmYmYmYmYmYmYmYmYmYmdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdE
 dEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEmpSkYmYmYmvzememememXeaJeAYAYAYAmeTqTqTqTqTqTqTqTqasDpDprtjGjGjGjGjGjGjGjGjGlPDpDpasHSHSHSdEdEdEdEYmYmYmYmYmYmYmYmYmYmYmYmYmdEdEdEdEYmYmYmYmYmYmYmYmYmYmdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdE
 dEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEmpYmYmYmYmvzememememXeaJeAJDUdYAmeTqTqTqTqTqTqTqrWasnfnfFpuUuUuUuUuUuUuUuUuUbgnfnfasHSHSHSdEdEdEdEYmYmYmYmYmYmYmYmYmYmYmYmYmdEdEdEdEYmYmYmYmYmYmYmYmYmYmdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdE
-dEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEmpYmYmYmYmvzememememcNaJeAYAYAYAYXTqTqTqTqTqTqTqTqasNlNlFLapapapapapapapapapFLNlNlasHSHSdEdEdEdEdEYmYmYmYmYmYmYmYmYmYmYmYmYmdEdEdEdEYmYmYmYmYmYmYmYmYmYmdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdE
+dEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEmpYmYmYmYmvzememememcNaJeAYAYAYAYXTqTqTqTqTqTqTqTqasNlNlFLapapapvOapapapapapFLNlNlasHSHSdEdEdEdEdEYmYmYmYmYmYmYmYmYmYmYmYmYmdEdEdEdEYmYmYmYmYmYmYmYmYmYmdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdE
 dEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEmpYmYmYmYmvzvzvzvzvzvzvzvzvzvzvzvzFdTqTqTqTqTqTqTqasNlNlSpQaQaQaQaQaQaQaQaQaSpNlNlasHSHSdEdEdEdEdEYmYmYmYmYmYmYmYmYmYmYmYmYmdEdEdEdEYmYmYmYmYmYmYmYmYmYmdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdE
 dEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEmpmpmpmpYmYmYmYmbdYmYmYmbdYmYmYmYmYmYmvzvzvzvzvzxwxwTqTqiMNlNlNlNlNlNlNlNlNlNlNlNlNlNlNliMHSHSdEdEdEdEdEYmYmYmYmYmYmYmYmYmYmYmYmYmdEdEdEdEYmYmYmYmYmYmYmYmYmYmdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdE
-dEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEmpYmYmYmYmYmYmYmYmYmYmYmYmYmYmYmYmYmYmYmYmicYmvwxwxwTqTqasNlNlgQcGNlNlNlovEPNlNlNlgQgQNlasHSHSdEdEdEdEdEYmYmYmYmYmYmYmYmYmYmYmYmYmdEdEdEdEYmYmYmYmYmYmYmYmYmYmdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdE
-dEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEmpYmYmYmYmYmYmYmYmYmYmYmYmYmYmYmYmYmYmYmYmYmYmvwxwxwTqTqukNlNlgQgQNlNlNlCNqXNlNlNlgQgQNlasHSHSdEdEdEdEdEYmYmYmYmYmYmYmYmYmYmYmYmYmdEdEdEdEYmYmYmYmYmYmYmYmYmYmdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdE
-dEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEmpYmYmYmYmYmYmYmYmYmYmYmYmmpmpmpYmYmYmYmYmYmYmvzxwxwTqTqukNlNlgQgQNlNlNlnhiHNlNlNlgQgQNlasHSHSdEdEdEdEdEYmYmYmYmYmYmYmYmYmYmYmYmYmdEdEdEdEYmYmYmYmYmYmYmYmYmYmdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdE
+dEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEmpYmYmYmYmYmYmYmYmYmYmYmYmYmYmYmYmYmYmYmYmicYmvwxwxwTqTqasNlNloccGNlNlNlovEPNlNlNlgQgQNlasHSHSdEdEdEdEdEYmYmYmYmYmYmYmYmYmYmYmYmYmdEdEdEdEYmYmYmYmYmYmYmYmYmYmdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdE
+dEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEmpYmYmYmYmYmYmYmYmYmYmYmYmYmYmYmYmYmYmYmYmYmYmvwxwxwTqTqukNlNlWiszNlNlNlCNqXNlNlNlgQgQNlasHSHSdEdEdEdEdEYmYmYmYmYmYmYmYmYmYmYmYmYmdEdEdEdEYmYmYmYmYmYmYmYmYmYmdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdE
+dEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEmpYmYmYmYmYmYmYmYmYmYmYmYmmpmpmpYmYmYmYmYmYmYmvzxwxwTqTqukNlNlvjiKNlNlNlnhiHNlNlNlgQgQNlasHSHSdEdEdEdEdEYmYmYmYmYmYmYmYmYmYmYmYmYmdEdEdEdEYmYmYmYmYmYmYmYmYmYmdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdE
 dEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEmpYmYmYmYmYmYmYmYmYmYmYmBnmpdEmpSkYmYmYmYmYmLhvzTqTqTqTqasxhNlNlNlNlNlNlNlNlNlNlNlNlNlnAasmpmpmpmpmpmpmpYmYmYmYmYmYmYmYmYmYmYmYmYmYmYmYmYmYmYmYmYmYmYmYmYmYmYmdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdE
 dEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEmpmpYmYmYmYmYmYmYmYmYmYmYmmpdEmpYmYmYmYmYmYmYmvzTqTqTqTqasmpmpXiXimpmpmpNwmpmpmpXiXimpmpemmpNYNYNYNYNYNYNYmpdEdEmpmpmpmpmpmpmpYmYmYmYmYmYmdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdE
 dEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEmpmpmpYmYmYmYmYmYmYmYmmpmpYmmpmpmpmpmpmpYmmpmpmpmpmpmpmpmpuFututeNeKmfmfmfzHDHututuFmpuTmpjGjGNYSObiSObimpdEdEmpdEdEdEdEdEmpYmYmYmYmYmYmdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdEdE
