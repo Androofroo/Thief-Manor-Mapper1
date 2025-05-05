@@ -330,4 +330,10 @@
 	icon_state = "shield-flash"
 	duration = 5
 
-
+/obj/item/treasure/silverstake
+	name = "Silver Stake"
+	desc = "A blessed silver stake rumored to have been used by the famed Monster Hunter, Lord Dokato."
+	is_silver = TRUE
+	icon = 'icons/roguetown/items/misc.dmi'
+	icon_state = "silverstake"
+	difficulty = 4
