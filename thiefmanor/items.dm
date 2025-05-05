@@ -1061,7 +1061,7 @@ GLOBAL_LIST_EMPTY(all_treasures)
 /obj/item/treasure/pathmakers_parchment
 	name = "Pathmaker's Parchment"
 	desc = "An ancient, crackling parchment with a map that seems to shift and change as you look at it. Strange symbols glow along its weathered edges."
-	icon_state = "paper"
+	icon_state = "map"
 	difficulty = 4
 	resistance_flags = FIRE_PROOF
 	var/treasures_collected = 0
