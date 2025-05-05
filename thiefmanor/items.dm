@@ -147,10 +147,8 @@
 	for(var/turf/open/floor/T in world)
 		if(!T.is_blocked_turf(TRUE)) // Only check if the turf isn't blocked
 			var/area/A = get_area(T)
-			if(A && !A.outdoors) // Only check if the area is not outdoors
-				// Skip centcom map (Z-level 2 is typically centcom)
-				if(T.z == 2)
-					continue
+			// Only check if the area is of type /area/rogue/indoors/town
+			if(A && istype(A, /area/rogue/indoors/town))
 				valid_turfs += T
 	
 	if(valid_turfs.len)
@@ -159,32 +157,28 @@
 
 /obj/item/treasure/kassidy/Initialize(mapload)
 	. = ..()
-	if(!mapload)
-		// Skip if we're on centcom (Z-level 2)
-		if(src.z == 2)
-			log_game("Kassidy's Leotard creation skipped on centcom map")
-			return
-		
-		// If created during gameplay (not from map loading), place it in a random location
-		var/turf/T = find_random_indoor_turf()
-		if(T)
-			forceMove(T)
-			log_game("Kassidy's Leotard spawned at [AREACOORD(T)]")
-		else
-			// Fallback location - try to find a closet
-			var/list/possible_closets = list()
-			for(var/obj/structure/closet/C in world)
-				// Skip closets on centcom
-				if(C.z == 2)
-					continue
+	
+	// If created during gameplay (not from map loading), place it in a random location
+	var/turf/T = find_random_indoor_turf()
+	if(T)
+		forceMove(T)
+		message_admins("Kassidy's Leotard spawned at [ADMIN_VERBOSEJMP(T)]")
+	else
+		// Fallback location - try to find a closet in the town area
+		var/list/possible_closets = list()
+		for(var/obj/structure/closet/C in world)
+			// Only consider closets in the town
+			var/area/A = get_area(C)
+			if(A && istype(A, /area/rogue/indoors/town))
 				possible_closets += C
-			
-			if(length(possible_closets))
-				var/obj/structure/closet/C = pick(possible_closets)
-				forceMove(C)
-				log_game("Kassidy's Leotard spawned in a closet at [AREACOORD(C)]")
-			else
-				log_game("ERROR: Failed to place Kassidy's Leotard anywhere on the map")
+		
+		if(length(possible_closets))
+			var/obj/structure/closet/C = pick(possible_closets)
+			forceMove(C)
+			message_admins("Kassidy's Leotard spawned in a closet at [ADMIN_VERBOSEJMP(C)]")
+		else
+			message_admins("ERROR: Failed to place Kassidy's Leotard in town area - no valid locations found")
+			qdel(src) // Delete the item if we can't find a valid location
 
 /obj/item/treasure/lens_of_truth
 	name = "Mirror of Truth"
