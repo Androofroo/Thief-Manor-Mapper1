@@ -216,29 +216,32 @@
 
 /obj/effect/proc_holder/spell/self/snuff_light
 	name = "Snuff Light"
-	desc = "Silently extinguish nearby lights to enhance your stealth operations."
+	desc = "Silently extinguish lights in your view to enhance your stealth operations."
 	overlay_state = "sacredflame"
 	antimagic_allowed = TRUE
-	charge_max = 50 // 5 seconds
+	charge_max = 3000 // 5 minutes (300 seconds)
 	clothes_req = FALSE
 	action_icon = 'icons/mob/actions/roguespells.dmi'
 	action_icon_state = "spell0"
 
 /obj/effect/proc_holder/spell/self/snuff_light/cast(mob/user = usr)
 	var/snuffed = FALSE
+	var/snuff_count = 0
 	
-	// Find all lights in range around the user
-	for(var/obj/machinery/light/rogue/L in range(1, user))
+	// Find all lights visible to the user
+	for(var/obj/machinery/light/rogue/L in view(user))
 		if(L.on)
 			L.burn_out() // Extinguish the light
 			snuffed = TRUE
+			snuff_count++
 	
 	if(snuffed)
-		to_chat(user, "<span class='notice'>You silently extinguish nearby lights.</span>")
+		to_chat(user, "<span class='notice'>You silently extinguish [snuff_count] nearby lights.</span>")
+		return TRUE // Return TRUE to trigger cooldown
 	else
-		to_chat(user, "<span class='warning'>There are no lit lights within reach.</span>")
-	
-	return TRUE
+		to_chat(user, "<span class='warning'>There are no lit lights within sight.</span>")
+		revert_cast() // Revert spell cast to reset cooldown
+		return FALSE // Return FALSE to prevent cooldown
 
 // New spell for thieves to magically disguise themselves as someone else
 /obj/effect/proc_holder/spell/self/magical_disguise
@@ -262,7 +265,7 @@
 /obj/effect/proc_holder/spell/self/magical_disguise/cast(list/targets, mob/living/carbon/human/user)
 	if(disguise_active)
 		remove_disguise(user)
-		return
+		return TRUE // Return TRUE to trigger cooldown when removing an active disguise
 		
 	var/list/mob/living/carbon/human/targets_with_minds = list()
 	
@@ -277,24 +280,29 @@
 	
 	if(!length(targets_with_minds))
 		to_chat(user, "<span class='warning'>No valid targets found!</span>")
-		return
+		revert_cast() // Use revert_cast to properly reset spell charge
+		return FALSE // Don't trigger cooldown
 	
 	// Let the user select from the list with formatted names
 	var/choice = input("Select a target to disguise as.", "Disguise Target") as null|anything in targets_with_minds
 	if(!choice)
 		to_chat(user, "<span class='warning'>No target selected!</span>")
-		return
+		revert_cast() // Use revert_cast to properly reset spell charge
+		return FALSE // Don't trigger cooldown
 	
 	var/mob/living/carbon/human/selected_target = targets_with_minds[choice]
 	if(!selected_target || QDELETED(selected_target))
 		to_chat(user, "<span class='warning'>Invalid target!</span>")
-		return
+		revert_cast() // Use revert_cast to properly reset spell charge
+		return FALSE // Don't trigger cooldown
 	
 	if(!do_after(user, 50, target = user))
 		to_chat(user, "<span class='warning'>You were interrupted!</span>")
-		return
+		revert_cast() // Use revert_cast to properly reset spell charge
+		return FALSE // Don't trigger cooldown
 	
 	apply_disguise(user, selected_target)
+	return TRUE // Return TRUE to trigger cooldown
 
 /obj/effect/proc_holder/spell/self/magical_disguise/proc/apply_disguise(mob/living/carbon/human/user, mob/living/carbon/human/target)
 	// Store original appearance info for later restoration
