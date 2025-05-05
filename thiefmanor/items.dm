@@ -345,3 +345,25 @@
 		switch(tag)
 			if("gen")
 				return list("shrink" = 0.4,"sx" = -10,"sy" = -6,"nx" = 11,"ny" = -6,"wx" = -4,"wy" = -3,"ex" = 2,"ey" = -3,"northabove" = 0,"southabove" = 1,"eastabove" = 1,"westabove" = 0,"nturn" = 0,"sturn" = 0,"wturn" = 0,"eturn" = 0,"nflip" = 0,"sflip" = 8,"wflip" = 8,"eflip" = 0)
+
+/obj/item/clothing/suit/roguetown/armor/plate/kassarmor
+	name = "Kassidy's Armor"
+	desc = "A suit of armor worn by Kassidy the Red. Red chainmail reinforced with dyed steel plates."
+	icon = 'icons/roguetown/items/misc.dmi'
+	icon_state = "rmerc"
+	body_parts_covered = CHEST|GROIN|ARMS|LEGS|NECK|VITALS
+	armor = list("blunt" = 100, "slash" = 100, "stab" = 100, "fire" = 100, "acid" = 100)
+	prevent_crits = list(BCLASS_CUT, BCLASS_STAB, BCLASS_CHOP, BCLASS_BLUNT, BCLASS_TWIST)
+	resistance_flags = FIRE_PROOF
+	experimental_inhand = TRUE
+	anvilrepair = /datum/skill/craft/armorsmithing
+	slot_flags = ITEM_SLOT_ARMOR
+	mob_overlay_icon = 'icons/roguetown/clothing/onmob/armor.dmi'
+	sleeved = 'icons/roguetown/clothing/onmob/helpers/sleeves_armor.dmi'
+	sleevetype = "rmerc"
+	armor_class = ARMOR_CLASS_HEAVY
+	nodismemsleeves = TRUE
+	drop_sound = 'sound/foley/dropsound/armor_drop.ogg'
+	allowed_race = NON_DWARVEN_RACE_TYPES
+	r_sleeve_status = SLEEVE_NORMAL
+	l_sleeve_status = SLEEVE_NORMAL
