@@ -579,12 +579,21 @@
 	
 	to_chat(user, "<span class='notice'>[disguise_message]</span>")
 
-/obj/effect/proc_holder/spell/self/magical_disguise/proc/remove_disguise(mob/living/carbon/human/user)
-	if(!disguise_active || !stored_appearance)
+/obj/effect/proc_holder/spell/self/magical_disguise/proc/remove_disguise(mob/living/carbon/human/user, force_update = FALSE)
+	if(!disguise_active && !force_update)
 		return
 	
 	// Mark as not active early to prevent recursion
 	disguise_active = FALSE
+	
+	// Clear the snapshot and active target first to ensure we don't use old data
+	snapshot = null
+	current_target = null
+	
+	// If we don't have stored appearance data, just regenerate icons and return
+	if(!stored_appearance)
+		user.regenerate_icons()
+		return
 	
 	// Restore original icon data
 	user.icon = stored_appearance.original_icon
@@ -597,16 +606,10 @@
 	user.real_name = stored_appearance.real_name
 	user.name = stored_appearance.name
 	user.gender = stored_appearance.gender
-	
-	// Restore pronouns
 	user.pronouns = stored_appearance.pronouns
-	
-	// Restore voice type, color, and pitch
 	user.voice_type = stored_appearance.voice_type
 	user.voice_color = stored_appearance.original_voice_color
 	user.voice_pitch = stored_appearance.original_voice_pitch
-	
-	// Restore name_override
 	user.name_override = stored_appearance.original_name_override
 	
 	// Restore job if it was changed
@@ -649,7 +652,7 @@
 	
 	// Restore original traits by removing disguise trait versions
 	for(var/trait in list(TRAIT_NOBLE, TRAIT_OUTLANDER, TRAIT_WITCH, TRAIT_BEAUTIFUL, TRAIT_UNSEEMLY, 
-                          TRAIT_INQUISITION, TRAIT_COMMIE, TRAIT_CABAL, TRAIT_HORDE, TRAIT_DEPRAVED))
+						  TRAIT_INQUISITION, TRAIT_COMMIE, TRAIT_CABAL, TRAIT_HORDE, TRAIT_DEPRAVED))
 		REMOVE_TRAIT(user, trait, MAGICAL_DISGUISE_TRAIT)
 	
 	// Re-add original traits
@@ -666,20 +669,6 @@
 	// Force complete icon regeneration to ensure original appearance is fully restored
 	user.regenerate_icons()
 	
-	// Force a final update by temporarily moving the player
-	var/turf/current_loc = get_turf(user)
-	if(current_loc)
-		user.forceMove(current_loc)
-	
-	// Remove the target species name trait
-	REMOVE_TRAIT(user, TRAIT_DISGUISED_SPECIES, MAGICAL_DISGUISE_TRAIT)
-	
-	// Remove the disguise active trait
-	REMOVE_TRAIT(user, TRAIT_DISGUISE_ACTIVE, MAGICAL_DISGUISE_TRAIT)
-	
-	// Remove the break disguise verb
-	user.verbs -= /mob/proc/break_magical_disguise
-	
 	// Get the component and restore original descriptors
 	var/datum/component/disguised_species/DS = user.GetComponent(/datum/component/disguised_species)
 	if(DS)
@@ -692,29 +681,88 @@
 		// Remove the component
 		qdel(DS)
 	
+	// Remove all disguise-related traits
+	REMOVE_TRAIT(user, TRAIT_DISGUISED_SPECIES, MAGICAL_DISGUISE_TRAIT)
+	REMOVE_TRAIT(user, TRAIT_DISGUISE_ACTIVE, MAGICAL_DISGUISE_TRAIT)
+	
+	// Remove the break disguise verb
+	user.verbs -= /mob/proc/break_magical_disguise
+	
 	// Clear stored data
-	snapshot = null
 	stored_appearance = null
-	current_target = null
 	original_held_items.Cut()
+	
+	// Force a final update by temporarily moving the player
+	var/turf/current_loc = get_turf(user)
+	if(current_loc)
+		// Try to find an adjacent turf to move to and back
+		var/attempted_moves = 0
+		while(attempted_moves < 4) // Try all four cardinal directions
+			var/move_dir = pick(NORTH, SOUTH, EAST, WEST)
+			attempted_moves++
+			var/turf/step_to = get_step(current_loc, move_dir)
+			if(step_to && !step_to.is_blocked_turf(TRUE))
+				user.forceMove(step_to)
+				user.forceMove(current_loc)
+				break
+		
+		// If no adjacent moves worked, just try to refresh in place
+		if(attempted_moves >= 4)
+			user.forceMove(current_loc)
 	
 	playsound(get_turf(user), 'sound/magic/swap.ogg', 50, TRUE)
 	to_chat(user, "<span class='warning'>Your magical disguise wears off!</span>")
 
-// Add a new verb that humans can use to break their disguise voluntarily
-/mob/proc/break_magical_disguise()
-	set name = "Break Disguise"
-	set desc = "Voluntarily break your magical disguise."
-	set category = "Abilities"
+// We also need to handle item pickup properly
+/mob/living/carbon/human/put_in_hands(obj/item/I, del_on_fail = FALSE, merge_stacks = TRUE, forced = FALSE)
+	if(HAS_TRAIT(src, TRAIT_DISGUISE_ACTIVE) && !forced && !istype(I, /obj/item/clothing/head/mob_holder))
+		remove_all_disguise_effects("Holding an item breaks your magical disguise!")
 	
-	// Find any active magical disguise spell
+	. = ..()
+
+// Also override attack_hand for items
+/mob/living/carbon/human/attack_hand(atom/movable/AM)
+	if(HAS_TRAIT(src, TRAIT_DISGUISE_ACTIVE) && isitem(AM))
+		remove_all_disguise_effects("Picking up an item breaks your magical disguise!")
+	
+	. = ..()
+
+// New helper proc to completely remove all disguise effects
+/mob/living/carbon/human/proc/remove_all_disguise_effects(message)
+	to_chat(src, "<span class='warning'>[message]</span>")
+	playsound(get_turf(src), 'sound/magic/swap.ogg', 50, TRUE)
+	
+	// Visual effect to indicate the disguise breaking
+	var/datum/effect_system/spark_spread/sparks = new
+	sparks.set_up(5, 0, src)
+	sparks.attach(src)
+	sparks.start()
+	
+	// Remove disguise active trait first to prevent recursive calls
+	REMOVE_TRAIT(src, TRAIT_DISGUISE_ACTIVE, MAGICAL_DISGUISE_TRAIT)
+	
+	// Find and remove the disguise
 	for(var/obj/effect/proc_holder/spell/self/magical_disguise/spell in src.mind.spell_list)
 		if(spell.disguise_active)
-			to_chat(src, "<span class='notice'>You dispel your magical disguise.</span>")
-			spell.remove_disguise(src)
-			return
+			spell.remove_disguise(src, force_update = TRUE)
+			break
 	
-	to_chat(src, "<span class='warning'>You don't have an active disguise to break!</span>")
+	// Force regenerate icons as a fallback
+	regenerate_icons()
+	
+	// Force refresh appearance by briefly moving
+	var/turf/T = get_turf(src)
+	if(T)
+		var/turf/T2 = get_step(T, pick(NORTH, SOUTH, EAST, WEST))
+		if(T2)
+			forceMove(T2)
+			forceMove(T)
+		else
+			forceMove(T)
+
+// Update the original break_disguise_effect to use our new helper
+/mob/living/carbon/human/proc/break_disguise_effect(message = "Your actions have broken your magical disguise!")
+	remove_all_disguise_effects(message)
 
 // Override these functions in the mob/living/carbon/human type to detect when the disguise should break
 /mob/living/carbon/human/ClickOn(atom/A, params)
@@ -727,35 +775,15 @@
 		
 		if(get_dist(src, A) <= 1 && isliving(A) && A != src)
 			// This is likely an attack on a nearby living mob
-			break_disguise_effect("Attempting to attack breaks your magical disguise!")
+			remove_all_disguise_effects("Attempting to attack breaks your magical disguise!")
 			return ..()
 	
 	return ..()
 
-/mob/living/carbon/human/proc/break_disguise_effect(message = "Your actions have broken your magical disguise!")
-	to_chat(src, "<span class='warning'>[message]</span>")
-	playsound(get_turf(src), 'sound/magic/swap.ogg', 50, TRUE)
-	
-	// Visual effect to indicate the disguise breaking
-	var/datum/effect_system/spark_spread/sparks = new
-	sparks.set_up(5, 0, src)
-	sparks.attach(src)
-	sparks.start()
-	
-	// Find and remove the disguise
-	for(var/obj/effect/proc_holder/spell/self/magical_disguise/spell in src.mind.spell_list)
-		if(spell.disguise_active)
-			spell.remove_disguise(src)
-			
-			// Force a complete appearance update to fix any stuck items
-			regenerate_icons()
-			
-			break
-
 // Hook into item equipping/unequipping
 /mob/living/carbon/human/equip_to_slot(obj/item/I, slot, initial = FALSE, redraw_mob = FALSE, silent = FALSE)
 	if(HAS_TRAIT(src, TRAIT_DISGUISE_ACTIVE) && !initial && !silent)
-		break_disguise_effect("Equipping an item breaks your magical disguise!")
+		remove_all_disguise_effects("Equipping an item breaks your magical disguise!")
 	
 	. = ..()
 
@@ -765,43 +793,192 @@
 	
 	// If we successfully unequipped the item and we have a disguise active
 	if(success && HAS_TRAIT(src, TRAIT_DISGUISE_ACTIVE) && !silent)
-		break_disguise_effect("Unequipping an item breaks your magical disguise!")
+		// Instead of just breaking the disguise, we need to do a full sprite reset
+		force_sprite_reset("Unequipping an item breaks your magical disguise!")
 	
 	return success
 
-// Override put_in_hands to detect when items are placed in hands
+// New method to completely reset sprite when unequipping items during disguise
+/mob/living/carbon/human/proc/force_sprite_reset(message)
+	to_chat(src, "<span class='warning'>[message]</span>")
+	playsound(get_turf(src), 'sound/magic/swap.ogg', 50, TRUE)
+	
+	// Create some visual effects
+	var/datum/effect_system/spark_spread/sparks = new
+	sparks.set_up(5, 0, src)
+	sparks.attach(src)
+	sparks.start()
+	
+	// First, remove the disguise trait to avoid recursion
+	REMOVE_TRAIT(src, TRAIT_DISGUISE_ACTIVE, MAGICAL_DISGUISE_TRAIT)
+	
+	// Find and remove the disguise
+	for(var/obj/effect/proc_holder/spell/self/magical_disguise/spell in src.mind.spell_list)
+		if(spell.disguise_active)
+			spell.force_reset_looks(src)
+			break
+	
+	// Force refresh everything
+	regenerate_icons()
+	cut_overlays() // Cut all overlays
+	overlays.Cut() // Make sure the overlays list is empty
+	
+	// Extreme measures: delete all visuals and regenerate from scratch
+	var/icon/blank = new('icons/effects/effects.dmi', "nothing")
+	icon = blank
+	icon_state = null
+	
+	// Completely rebuild the mob's appearance
+	regenerate_icons()
+	update_body()
+	update_hair()
+	for(var/datum/component/C in GetComponents(/datum/component))
+		qdel(C) // Remove ALL components that might interfere
+	
+	// Apply all equipment-specific update procs
+	// This is based on the code in regenerate_icons()
+	update_inv_head()
+	update_inv_wear_mask()
+	update_inv_glasses()
+	update_inv_gloves()
+	update_inv_shoes()
+	regenerate_icons() // This will handle all equipment at once
+
+// New method for the spell to completely reset someone's appearance
+/obj/effect/proc_holder/spell/self/magical_disguise/proc/force_reset_looks(mob/living/carbon/human/user)
+	// Mark as not active early to prevent recursion
+	disguise_active = FALSE
+	
+	// Clear all references
+	snapshot = null
+	current_target = null
+	
+	// Restore identity information
+	if(stored_appearance)
+		user.real_name = stored_appearance.real_name
+		user.name = stored_appearance.name
+		user.gender = stored_appearance.gender
+		user.pronouns = stored_appearance.pronouns
+		user.voice_type = stored_appearance.voice_type
+		user.voice_color = stored_appearance.original_voice_color
+		user.voice_pitch = stored_appearance.original_voice_pitch
+		user.name_override = stored_appearance.original_name_override
+		
+		// Restore job if it was changed
+		if(stored_appearance.original_job)
+			user.job = stored_appearance.original_job
+		
+		// Restore advjob if it was changed
+		if(stored_appearance.original_advjob)
+			user.advjob = stored_appearance.original_advjob
+		
+		// Restore original obscured flags
+		user.obscured_flags = stored_appearance.original_obscured_flags
+	
+	// Remove ALL magical disguise traits
+	REMOVE_TRAIT(user, TRAIT_FAKE_STRENGTH, MAGICAL_DISGUISE_TRAIT)
+	REMOVE_TRAIT(user, TRAIT_HAS_FAKE_TRAITS, MAGICAL_DISGUISE_TRAIT)
+	REMOVE_TRAIT(user, TRAIT_DISGUISED_SPECIES, MAGICAL_DISGUISE_TRAIT)
+	REMOVE_TRAIT(user, TRAIT_DISGUISE_ACTIVE, MAGICAL_DISGUISE_TRAIT)
+	
+	// Remove disguise-related components
+	var/datum/component/disguise_sound_mimic/sound_mimic = user.GetComponent(/datum/component/disguise_sound_mimic)
+	if(sound_mimic)
+		qdel(sound_mimic)
+	
+	var/datum/component/disguised_species/DS = user.GetComponent(/datum/component/disguised_species)
+	if(DS)
+		// Restore original descriptors
+		user.clear_mob_descriptors()
+		var/list/original_descriptors = DS.get_original_descriptors()
+		if(length(original_descriptors))
+			user.mob_descriptors = original_descriptors.Copy()
+		
+		// Remove the component
+		qdel(DS)
+	
+	// Re-add original traits
+	if(stored_appearance && length(stored_appearance.original_traits))
+		for(var/trait in stored_appearance.original_traits)
+			ADD_TRAIT(user, trait, TRAIT_GENERIC)
+	
+	// Remove the break disguise verb
+	user.verbs -= /mob/proc/break_magical_disguise
+	
+	// Clear stored data
+	stored_appearance = null
+	original_held_items.Cut()
+
+// We also need to modify the equip and put_in methods to use our new force_sprite_reset
+/mob/living/carbon/human/equip_to_slot(obj/item/I, slot, initial = FALSE, redraw_mob = FALSE, silent = FALSE)
+	if(HAS_TRAIT(src, TRAIT_DISGUISE_ACTIVE) && !initial && !silent)
+		force_sprite_reset("Equipping an item breaks your magical disguise!")
+	
+	. = ..()
+
 /mob/living/carbon/human/put_in_hands(obj/item/I, del_on_fail = FALSE, merge_stacks = TRUE, forced = FALSE)
 	if(HAS_TRAIT(src, TRAIT_DISGUISE_ACTIVE) && !forced && !istype(I, /obj/item/clothing/head/mob_holder))
-		break_disguise_effect("Holding an item breaks your magical disguise!")
+		force_sprite_reset("Holding an item breaks your magical disguise!")
 	
 	. = ..()
 
-// Also override put_in_hand_check which gets called before put_in_hands in some cases
 /mob/living/carbon/human/put_in_hand_check(obj/item/I, hand_index, forced = FALSE)
 	if(HAS_TRAIT(src, TRAIT_DISGUISE_ACTIVE) && !forced && !istype(I, /obj/item/clothing/head/mob_holder))
-		break_disguise_effect("Holding an item breaks your magical disguise!")
+		force_sprite_reset("Holding an item breaks your magical disguise!")
 	
 	. = ..()
 
-// Override put_in_active_hand and put_in_inactive_hand specifically
 /mob/living/carbon/human/put_in_active_hand(obj/item/I, forced = FALSE)
 	if(HAS_TRAIT(src, TRAIT_DISGUISE_ACTIVE) && !forced && !istype(I, /obj/item/clothing/head/mob_holder))
-		break_disguise_effect("Holding an item breaks your magical disguise!")
+		force_sprite_reset("Holding an item breaks your magical disguise!")
 	
 	. = ..()
 
 /mob/living/carbon/human/put_in_inactive_hand(obj/item/I, forced = FALSE)
 	if(HAS_TRAIT(src, TRAIT_DISGUISE_ACTIVE) && !forced && !istype(I, /obj/item/clothing/head/mob_holder))
-		break_disguise_effect("Holding an item breaks your magical disguise!")
+		force_sprite_reset("Holding an item breaks your magical disguise!")
 	
 	. = ..()
 
-// Instead of pickup, override attack_hand for items which is called when picking up items
 /mob/living/carbon/human/attack_hand(atom/movable/AM)
 	if(HAS_TRAIT(src, TRAIT_DISGUISE_ACTIVE) && isitem(AM))
-		break_disguise_effect("Picking up an item breaks your magical disguise!")
+		force_sprite_reset("Picking up an item breaks your magical disguise!")
 	
 	. = ..()
+
+/mob/living/carbon/human/ClickOn(atom/A, params)
+	if(HAS_TRAIT(src, TRAIT_DISGUISE_ACTIVE))
+		// Check if the user is trying to attack something
+		var/list/modifiers = params2list(params)
+		if(modifiers["shift"] || modifiers["alt"] || modifiers["ctrl"])
+			// Likely not an attack, let it proceed
+			return ..()
+		
+		if(get_dist(src, A) <= 1 && isliving(A) && A != src)
+			// This is likely an attack on a nearby living mob
+			force_sprite_reset("Attempting to attack breaks your magical disguise!")
+			return ..()
+	
+	return ..()
+
+// Update the break_magical_disguise verb to use our new force_sprite_reset
+/mob/proc/break_magical_disguise()
+	set name = "Break Disguise"
+	set desc = "Voluntarily break your magical disguise."
+	set category = "Abilities"
+	
+	if(!ishuman(src))
+		return
+		
+	var/mob/living/carbon/human/H = src
+	
+	// Check if they have an active disguise
+	if(HAS_TRAIT(H, TRAIT_DISGUISE_ACTIVE))
+		to_chat(H, "<span class='notice'>You dispel your magical disguise.</span>")
+		H.force_sprite_reset("You voluntarily break your magical disguise.")
+		return
+	
+	to_chat(H, "<span class='warning'>You don't have an active disguise to break!</span>")
 
 // Simplified helper datum to store original appearance information
 /datum/disguise_info
