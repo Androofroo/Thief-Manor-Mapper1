@@ -104,7 +104,7 @@
 	name = "Countess Elira's Brooch"
 	desc = "A golden heirloom set with a rare violet gem. Missing for years… or was it just hidden?"
 	icon = 'icons/roguetown/items/misc.dmi'
-	icon_state = "ring_onyx"
+	icon_state = "brooch"
 	difficulty = 5
 
 /obj/item/treasure/wine
@@ -575,6 +575,7 @@
 /obj/item/treasure/gossamer_bell
 	name = "The Gossamer Bell"
 	desc = "A delicate silver bell with intricate engravings of flowing mist. It's said to ring on its own when spirits are near."
+	is_silver = TRUE
 	icon = 'icons/roguetown/items/misc.dmi'
 	icon_state = "churchbell"
 	w_class = WEIGHT_CLASS_TINY
@@ -673,10 +674,8 @@
 	desc = "An ornate brass compass with intricate engravings. Instead of cardinal directions, it has symbols of precious items around its face. The needle seems to point toward valuable treasures."
 	icon = 'icons/roguetown/items/misc.dmi'
 	icon_state = "compass"
-	w_class = WEIGHT_CLASS_SMALL
 	difficulty = 4
 	resistance_flags = FIRE_PROOF
-	slot_flags = ITEM_SLOT_BELT
 	var/next_scan = 0
 	var/scan_interval = 5 SECONDS
 	var/active = FALSE
