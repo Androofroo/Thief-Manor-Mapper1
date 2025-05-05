@@ -333,7 +333,20 @@
 /obj/item/treasure/silverstake
 	name = "Silver Stake"
 	desc = "A blessed silver stake rumored to have been used by the famed Monster Hunter, Lord Dokato."
+	possible_item_intents = list(/datum/intent/stab, /datum/intent/pick)
+	force = 10
+	throwforce = 5
 	is_silver = TRUE
 	icon = 'icons/roguetown/items/misc.dmi'
 	icon_state = "silverstake"
 	difficulty = 4
+	max_integrity = 200
+	resistance_flags = FIRE_PROOF
+	experimental_inhand = TRUE
+	anvilrepair = /datum/skill/craft/blacksmithing
+
+/obj/item/treasure/silverstake/getonmobprop(tag)
+	if(tag)
+		switch(tag)
+			if("gen")
+				return list("shrink" = 0.4,"sx" = -10,"sy" = -6,"nx" = 11,"ny" = -6,"wx" = -4,"wy" = -3,"ex" = 2,"ey" = -3,"northabove" = 0,"southabove" = 1,"eastabove" = 1,"westabove" = 0,"nturn" = 0,"sturn" = 0,"wturn" = 0,"eturn" = 0,"nflip" = 0,"sflip" = 8,"wflip" = 8,"eflip" = 0)
