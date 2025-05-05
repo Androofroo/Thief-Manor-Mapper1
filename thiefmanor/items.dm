@@ -5,11 +5,8 @@
 	desc = "A mysterious ring that absorbs all sound from the wearer's movements. Perfect for those who prefer to remain unheard."
 	icon_state = "dragonring" // Using existing icon temporarily
 	w_class = WEIGHT_CLASS_TINY
-	icon = 'icons/roguetown/clothing/rings.dmi'
-	mob_overlay_icon = 'icons/roguetown/clothing/onmob/rings.dmi'
-	sleeved = 'icons/roguetown/clothing/onmob/rings.dmi'
-	sleevetype = "shirt"
-	icon_state = "dragonring"
+	icon = 'icons/roguetown/items/misc.dmi'
+	icon_state = "silentstep"
 	slot_flags = ITEM_SLOT_RING
 	resistance_flags = FIRE_PROOF | ACID_PROOF
 	anvilrepair = /datum/skill/craft/armorsmithing
