@@ -137,8 +137,7 @@
 /obj/item/treasure/kassidy
 	name = "Kassidy Doll"
 	desc = "A strange plush doll that resembles Kassidy the Red."
-	icon = 'icons/roguetown/items/misc.dmi'
-	icon_state = "kassidy"
+	icon_state = "kass"
 	difficulty = 9
 
 /obj/item/treasure/snake
