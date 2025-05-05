@@ -76,6 +76,9 @@
 	// This component does nothing - it just prevents normal footstep sounds
 	return
 
+// Global list to track all treasures
+GLOBAL_LIST_EMPTY(all_treasures)
+
 /obj/item/treasure
 	name = "Treasure"
 	desc = "How are you seeing this?"
@@ -83,6 +86,16 @@
 	icon = 'icons/roguetown/items/misc.dmi'
 	icon_state = "treasure"
 	var/difficulty = 0
+
+/obj/item/treasure/Initialize()
+	. = ..()
+	// Add this treasure to the global list when created
+	GLOB.all_treasures += src
+
+/obj/item/treasure/Destroy()
+	// Remove this treasure from the global list when destroyed
+	GLOB.all_treasures -= src
+	return ..()
 
 /obj/item/treasure/marriagecontract
 	name = "Forged Marriage Contract"
@@ -688,12 +701,22 @@
 	resistance_flags = FIRE_PROOF
 	var/next_scan = 0
 	var/scan_interval = 5 SECONDS
+	var/passive_scan_interval = 10 SECONDS // Slower interval for passive scanning
 	var/active = FALSE
 	var/atom/target_treasure = null
+	var/max_scan_range = 100 // Maximum range to consider treasures, in tiles
+	var/last_pos_x = 0 // For caching position
+	var/last_pos_y = 0
+	var/last_pos_z = 0
+	var/toggle_cooldown = 0
+	var/toggle_cooldown_time = 10 SECONDS
 
 /obj/item/treasure/marvelous_compass/Initialize()
 	. = ..()
 	update_icon()
+	last_pos_x = 0 
+	last_pos_y = 0
+	last_pos_z = 0
 
 /obj/item/treasure/marvelous_compass/update_icon()
 	. = ..()
@@ -715,15 +738,29 @@
 		add_overlay(overlay)
 
 /obj/item/treasure/marvelous_compass/attack_self(mob/user)
+	// Check cooldown
+	if(world.time < toggle_cooldown)
+		to_chat(user, span_warning("The compass mechanics are still settling. You'll need to wait [round((toggle_cooldown - world.time)/10)] more seconds."))
+		return FALSE
+		
 	active = !active
 	if(active)
 		to_chat(user, span_notice("You activate [src]. The needle starts moving..."))
 		START_PROCESSING(SSobj, src)
-		scan_for_treasure(user)
+		// Immediate scan and update position cache
+		var/turf/T = get_turf(src)
+		if(T)
+			last_pos_x = T.x
+			last_pos_y = T.y
+			last_pos_z = T.z
+		scan_for_treasure(user, TRUE) // Force scan on activation
 	else
 		to_chat(user, span_notice("You deactivate [src]. The needle stops moving."))
 		STOP_PROCESSING(SSobj, src)
 		target_treasure = null
+	
+	// Set cooldown
+	toggle_cooldown = world.time + toggle_cooldown_time
 	
 	update_icon()
 	return TRUE
@@ -732,69 +769,119 @@
 	if(!active || world.time < next_scan)
 		return
 	
-	next_scan = world.time + scan_interval
+	// Determine if we're being held or not
+	var/being_held = ismob(loc)
 	
-	if(ismob(loc))
-		var/mob/M = loc
-		scan_for_treasure(M)
-	else
-		scan_for_treasure(null)
+	// Set next scan time based on whether being held (more frequent) or not
+	next_scan = world.time + (being_held ? scan_interval : passive_scan_interval)
+	
+	// Check if we've moved significantly before performing a new scan
+	var/turf/T = get_turf(src)
+	if(!T)
+		return
+		
+	// Only scan if our position has changed or we don't have a target
+	var/position_changed = (T.x != last_pos_x || T.y != last_pos_y || T.z != last_pos_z)
+	if(position_changed || !target_treasure)
+		// Update position cache
+		last_pos_x = T.x
+		last_pos_y = T.y
+		last_pos_z = T.z
+		
+		// Only do visuals for held compass
+		if(being_held)
+			var/mob/M = loc
+			scan_for_treasure(M, FALSE)
+		else
+			scan_for_treasure(null, FALSE)
 
-/obj/item/treasure/marvelous_compass/proc/scan_for_treasure(mob/user)
+/obj/item/treasure/marvelous_compass/proc/scan_for_treasure(mob/user, force_visuals = FALSE)
 	var/list/possible_treasures = list()
 	var/list/objective_treasures = list()
+	var/turf/our_turf = get_turf(src)
 	
-	// Get all treasures in the world
-	for(var/obj/item/treasure/T in world)
+	if(!our_turf)
+		return
+	
+	// Filter treasures by distance first
+	for(var/obj/item/treasure/T in GLOB.all_treasures)
 		if(T == src) // Don't point to ourselves
 			continue
-		possible_treasures += T
+			
+		// Ignore treasures carried by the user
+		if(user && (T.loc == user || recursive_loc_check(T, user)))
+			continue
+			
+		var/turf/T_turf = get_turf(T)
+		if(!T_turf)
+			continue
+			
+		// Check if the treasure is in range
+		if(get_dist_euclidian(our_turf, T_turf) <= max_scan_range)
+			possible_treasures += T
 	
 	// If we have a user with a thief antagonist, check for objective items
 	if(user && ishuman(user))
 		var/mob/living/carbon/human/H = user
 		if(H.mind && H.mind.has_antag_datum(/datum/antagonist/thief))
 			var/datum/antagonist/thief/thief_antag = H.mind.has_antag_datum(/datum/antagonist/thief)
-			// Check each objective
+			
+			// Pre-filter the thief's objectives to avoid nested loops
+			var/list/target_types = list()
 			for(var/datum/objective/steal/O in thief_antag.objectives)
 				if(istype(O) && O.steal_target)
-					// Look for all treasures matching the objective
-					for(var/obj/item/treasure/T in possible_treasures)
-						if(istype(T, O.steal_target))
-							objective_treasures += T
+					target_types += O.steal_target
+			
+			// Now check each possible treasure against the filtered objectives
+			for(var/obj/item/treasure/T in possible_treasures)
+				for(var/obj_type in target_types)
+					if(istype(T, obj_type))
+						objective_treasures += T
+						break
 	
 	// Determine target based on what we found
+	var/old_target = target_treasure // Store old target to check if it changed
+	
 	if(length(objective_treasures) > 0)
 		// Randomly pick one of the objective treasures
 		target_treasure = pick(objective_treasures)
-		if(user)
-			to_chat(user, span_notice("The compass needle spins rapidly before settling on a direction. It seems to be pointing toward something you seek."))
+		if(user && (force_visuals || old_target != target_treasure))
+			to_chat(user, span_notice("The compass needle spins rapidly before settling on a direction. The ornate symbol of [get_treasure_symbol(target_treasure)] glows faintly. It seems to be pointing toward something you seek."))
 	else if(length(possible_treasures) > 0)
 		// Find the closest treasure
 		var/obj/item/treasure/closest = null
 		var/closest_dist = INFINITY
-		var/turf/our_turf = get_turf(src)
 		
 		for(var/obj/item/treasure/T in possible_treasures)
-			var/dist = get_dist(our_turf, get_turf(T))
+			var/turf/T_turf = get_turf(T)
+			if(!T_turf)
+				continue
+				
+			var/dist = get_dist_euclidian(our_turf, T_turf)
 			if(dist < closest_dist)
 				closest_dist = dist
 				closest = T
 		
 		target_treasure = closest
-		if(user)
-			to_chat(user, span_notice("The compass needle points toward the nearest treasure."))
+		if(user && (force_visuals || old_target != target_treasure))
+			to_chat(user, span_notice("The compass needle points toward the nearest treasure. The symbol of [get_treasure_symbol(target_treasure)] on the compass face shimmers."))
 	else
 		// No treasures found
 		target_treasure = null
-		if(user)
-			to_chat(user, span_warning("The compass needle spins aimlessly, unable to detect any treasures."))
+		if(user && (force_visuals || old_target != null))
+			to_chat(user, span_warning("The compass needle spins aimlessly, unable to detect any treasures. All symbols on the face remain dim."))
 	
-	// Create a direction arrow and tell the user which direction
-	if(target_treasure && user)
+	// Create a direction arrow and tell the user which direction only if target changed or forced
+	if(target_treasure && user && (force_visuals || old_target != target_treasure))
 		show_direction_to_user(user)
 	
 	update_icon()
+
+// Euclidean distance for more accurate distance calculation
+/obj/item/treasure/marvelous_compass/proc/get_dist_euclidian(turf/T1, turf/T2)
+	if(!T1 || !T2 || T1.z != T2.z)
+		return INFINITY
+	return sqrt((T2.x - T1.x) * (T2.x - T1.x) + (T2.y - T1.y) * (T2.y - T1.y))
 
 /obj/item/treasure/marvelous_compass/proc/show_direction_to_user(mob/user)
 	if(!target_treasure || !user)
@@ -822,9 +909,9 @@
 	
 	// Customize the message based on whether the target is on the same z-level or not
 	if(vertical_direction != "")
-		to_chat(user, span_notice("The compass needle quivers and points <b>[dir_text]</b> and <b>[vertical_direction]</b>. The treasure is ([dist] steps away) on another level."))
+		to_chat(user, span_notice("The compass needle quivers and points <b>[dir_text]</b> and <b>[vertical_direction]</b>. The [get_treasure_symbol(target_treasure)] symbol glows. The treasure is ([dist] steps away) on another level."))
 	else
-		to_chat(user, span_notice("The treasure is <b>[dir_text]</b> from here ([dist] steps away)."))
+		to_chat(user, span_notice("The treasure is <b>[dir_text]</b> from here ([dist] steps away). The [get_treasure_symbol(target_treasure)] symbol pulses with a soft light."))
 	
 	// Create a visible arrow icon for the user
 	var/obj/effect/temp_visual/dir_setting/compass_arrow/arrow
@@ -978,3 +1065,73 @@
 /obj/item/treasure/marvelous_compass/equipped()
 	. = ..()
 	update_icon()
+
+// Helper proc to get a descriptive symbol for each type of treasure
+/obj/item/treasure/marvelous_compass/proc/get_treasure_symbol(obj/item/treasure/T)
+	if(!T)
+		return "an unknown item"
+		
+	// Return a thematic symbol based on treasure type
+	if(istype(T, /obj/item/treasure/brooch))
+		return "a glittering gemstone"
+	else if(istype(T, /obj/item/treasure/marriagecontract))
+		return "a sealed document"
+	else if(istype(T, /obj/item/treasure/ledger))
+		return "an open book"
+	else if(istype(T, /obj/item/treasure/wine))
+		return "an ornate bottle"
+	else if(istype(T, /obj/item/treasure/gemerald))
+		return "an emerald stone"
+	else if(istype(T, /obj/item/treasure/blackmail))
+		return "a sealed envelope"
+	else if(istype(T, /obj/item/treasure/bond))
+		return "a royal certificate"
+	else if(istype(T, /obj/item/treasure/kassidy))
+		return "a mysterious figure"
+	else if(istype(T, /obj/item/treasure/morgan))
+		return "a hooded figure"
+	else if(istype(T, /obj/item/treasure/snake))
+		return "a coiled serpent"
+	else if(istype(T, /obj/item/treasure/lens_of_truth))
+		return "a reflective surface"
+	else if(istype(T, /obj/item/treasure/silverstake))
+		return "a silver weapon"
+	else if(istype(T, /obj/item/treasure/quiet_blade))
+		return "a curved dagger"
+	else if(istype(T, /obj/item/treasure/obsidian_comb))
+		return "a dark comb"
+	else if(istype(T, /obj/item/treasure/gossamer_bell))
+		return "a small bell"
+	else if(istype(T, /obj/item/treasure/silent_steps))
+		return "a circular band"
+	
+	// Generic fallback based on name
+	var/name_parts = splittext(T.name, " ")
+	if(length(name_parts) > 0)
+		return "a [lowertext(name_parts[length(name_parts)])]"
+	
+	return "a mysterious object"
+
+// Helper function to check if an item is inside a container carried by the user
+/obj/item/treasure/marvelous_compass/proc/recursive_loc_check(obj/item/target, mob/user)
+	if(!target || !user)
+		return FALSE
+		
+	var/atom/current_loc = target.loc
+	
+	// Check up to 5 levels deep to avoid infinite recursion
+	for(var/i in 1 to 5)
+		if(!current_loc)
+			return FALSE
+			
+		if(current_loc == user)
+			return TRUE
+			
+		// Check if we're inside a storage item
+		if(istype(current_loc, /obj/item/storage))
+			current_loc = current_loc.loc
+		else
+			// Not in a storage item and not on user
+			return FALSE
+	
+	return FALSE
