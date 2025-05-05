@@ -553,11 +553,11 @@
 	for(var/overlay in snapshot.overlays)
 		user.add_overlay(overlay)
 	
-	// Force an immediate appearance update by "moving" the player to their current location
-	// This is a reliable way to get BYOND to refresh the player's appearance for all clients
-	var/turf/current_loc = get_turf(user)
-	if(current_loc)
-		user.forceMove(current_loc)
+	// Force an immediate appearance update using setDir to toggle direction briefly
+	// This is a reliable BYOND trick to force a client appearance update without regenerating icons
+	var/original_dir = user.dir
+	user.setDir(turn(original_dir, 90))  // Change direction
+	user.setDir(original_dir)  // Change back to original direction
 	
 	// Override attack and equip functions to break the disguise
 	ADD_TRAIT(user, TRAIT_DISGUISE_ACTIVE, MAGICAL_DISGUISE_TRAIT)
@@ -576,6 +576,10 @@
 	if(target.job)
 		disguise_message += ", the [target.get_role_title()]"
 	disguise_message += "! Attacking, putting anything in your hands or changing your clothing will break the disguise."
+	
+	// Add visual effect - lens shimmer effect from the Mirror of Truth
+	var/obj/effect/temp_visual/lens_shimmer/shimmer = new(get_turf(user))
+	shimmer.color = "#c0ffff"
 	
 	to_chat(user, "<span class='notice'>[disguise_message]</span>")
 
@@ -750,23 +754,12 @@
 	stored_appearance = null
 	original_held_items.Cut()
 	
-	// Force a final update by temporarily moving the player
-	var/turf/current_loc = get_turf(user)
-	if(current_loc)
-		// Try to find an adjacent turf to move to and back
-		var/attempted_moves = 0
-		while(attempted_moves < 4) // Try all four cardinal directions
-			var/move_dir = pick(NORTH, SOUTH, EAST, WEST)
-			attempted_moves++
-			var/turf/step_to = get_step(current_loc, move_dir)
-			if(step_to && !step_to.is_blocked_turf(TRUE))
-				user.forceMove(step_to)
-				user.forceMove(current_loc)
-				break
-		
-		// If no adjacent moves worked, just try to refresh in place
-		if(attempted_moves >= 4)
-			user.forceMove(current_loc)
+	// Final appearance refresh without moving the player
+	user.regenerate_icons()
+	
+	// Add visual effect when removing the disguise
+	var/obj/effect/temp_visual/lens_shimmer/shimmer = new(get_turf(user))
+	shimmer.color = "#ffc0ff" // Light pink color for the reversal effect
 	
 	playsound(get_turf(user), 'sound/magic/swap.ogg', 50, TRUE)
 	to_chat(user, "<span class='warning'>Your magical disguise wears off!</span>")
@@ -796,6 +789,10 @@
 	sparks.attach(src)
 	sparks.start()
 	
+	// Add lens shimmer effect when breaking the disguise
+	var/obj/effect/temp_visual/lens_shimmer/shimmer = new(get_turf(src))
+	shimmer.color = "#ff7070" // Reddish color for the broken effect
+	
 	// Remove disguise active trait first to prevent recursive calls
 	REMOVE_TRAIT(src, TRAIT_DISGUISE_ACTIVE, MAGICAL_DISGUISE_TRAIT)
 	
@@ -823,16 +820,6 @@
 	update_inv_shirt()
 	update_inv_pants()
 	regenerate_icons() // Final regenerate to ensure everything is properly updated
-	
-	// Force refresh appearance by briefly moving
-	var/turf/T = get_turf(src)
-	if(T)
-		var/turf/T2 = get_step(T, pick(NORTH, SOUTH, EAST, WEST))
-		if(T2)
-			forceMove(T2)
-			forceMove(T)
-		else
-			forceMove(T)
 
 // Update the original break_disguise_effect to use our new helper
 /mob/living/carbon/human/proc/break_disguise_effect(message = "Your actions have broken your magical disguise!")
@@ -882,6 +869,10 @@
 	sparks.set_up(5, 0, src)
 	sparks.attach(src)
 	sparks.start()
+	
+	// Add lens shimmer effect for forced reset
+	var/obj/effect/temp_visual/lens_shimmer/shimmer = new(get_turf(src))
+	shimmer.color = "#ff7070" // Reddish color for the broken effect
 	
 	// First, remove the disguise trait to avoid recursion
 	REMOVE_TRAIT(src, TRAIT_DISGUISE_ACTIVE, MAGICAL_DISGUISE_TRAIT)
