@@ -3,9 +3,7 @@
 /obj/item/treasure/silent_steps
 	name = "Ring of Silent Steps"
 	desc = "A mysterious ring that absorbs all sound from the wearer's movements. Perfect for those who prefer to remain unheard."
-	icon_state = "dragonring" // Using existing icon temporarily
 	w_class = WEIGHT_CLASS_TINY
-	icon = 'icons/roguetown/items/misc.dmi'
 	icon_state = "silentstep"
 	slot_flags = ITEM_SLOT_RING
 	resistance_flags = FIRE_PROOF | ACID_PROOF
@@ -83,9 +81,10 @@ GLOBAL_LIST_EMPTY(all_treasures)
 	name = "Treasure"
 	desc = "How are you seeing this?"
 	w_class = WEIGHT_CLASS_TINY
-	icon = 'icons/roguetown/items/misc.dmi'
+	icon = 'thiefmanor/icons/treasures.dmi'
 	icon_state = "treasure"
 	var/difficulty = 0
+	var/can_be_objective = TRUE
 
 /obj/item/treasure/Initialize()
 	. = ..()
@@ -107,15 +106,13 @@ GLOBAL_LIST_EMPTY(all_treasures)
 /obj/item/treasure/ledger
 	name = "Manor Ledger"
 	desc = "A ledger that contains the records of the manor. Who knows what blackmail material is hidden within?"
-	icon = 'icons/roguetown/items/books.dmi'
-	icon_state = "spellbookyellow_0"
+	icon_state = "ledger"
 	difficulty = 1
 	drop_sound = 'sound/foley/dropsound/book_drop.ogg'
 
 /obj/item/treasure/brooch
 	name = "Countess Elira's Brooch"
 	desc = "A golden heirloom set with a rare violet gem. Missing for years… or was it just hidden?"
-	icon = 'icons/roguetown/items/misc.dmi'
 	icon_state = "brooch"
 	dropshrink = 0.5
 	difficulty = 5
@@ -124,7 +121,6 @@ GLOBAL_LIST_EMPTY(all_treasures)
 /obj/item/treasure/wine
 	name = "Vintage Wine"
 	desc = "A bottle of luxurious wine aged since year 401. It's said to have a unique flavor that can only be found in the finest vintages. Far too valuable to drink."
-	icon = 'icons/roguetown/items/misc.dmi'
 	icon_state = "wine"
 	drop_sound = 'sound/foley/dropsound/glass_drop.ogg'
 	difficulty = 1
@@ -132,7 +128,6 @@ GLOBAL_LIST_EMPTY(all_treasures)
 /obj/item/treasure/gemerald
 	name = "Massive Gemerald"
 	desc = "An absurdly large green gemstone—gaudy, cut, and almost too heavy to wear—rumored to have been pried from the eye socket of a fallen statue in an ancient ruin. Its true value is debated, but its sheer size makes it irresistible to thieves and impossible to hide discreetly."
-	icon = 'icons/roguetown/items/gems.dmi'
 	icon_state = "emerald_cut"
 	difficulty = 4
 	drop_sound = 'sound/items/gem.ogg'
@@ -204,7 +199,6 @@ GLOBAL_LIST_EMPTY(all_treasures)
 /obj/item/treasure/snake
 	name = "Emerald Idol of Ithulu"
 	desc = "A six-inch tall statue of a forgotten serpent god, carved from raw emerald. Recovered from an expedition to the jungle of the cursed island of Ithulu."
-	icon = 'icons/roguetown/items/misc.dmi'
 	icon_state = "snake"
 	difficulty = 3
 	drop_sound = 'sound/items/gem.ogg'
@@ -355,7 +349,6 @@ GLOBAL_LIST_EMPTY(all_treasures)
 	force = 10
 	throwforce = 5
 	is_silver = TRUE
-	icon = 'icons/roguetown/items/misc.dmi'
 	icon_state = "silverstake"
 	difficulty = 4
 	max_integrity = 200
@@ -372,7 +365,7 @@ GLOBAL_LIST_EMPTY(all_treasures)
 /obj/item/clothing/suit/roguetown/armor/plate/kassarmor
 	name = "Kassidy's Armor"
 	desc = "A suit of armor worn by Kassidy the Red. Red chainmail reinforced with dyed steel plates."
-	icon = 'icons/roguetown/items/misc.dmi'
+	icon = 'thiefmanor/icons/treasures.dmi'
 	icon_state = "rmerc"
 	body_parts_covered = CHEST|GROIN|ARMS|LEGS|NECK|VITALS
 	armor = list("blunt" = 100, "slash" = 100, "stab" = 100, "fire" = 100, "acid" = 100)
@@ -441,7 +434,6 @@ GLOBAL_LIST_EMPTY(all_treasures)
 /obj/item/treasure/obsidian_comb
 	name = "The Obsidian Comb"
 	desc = "A sleek black comb with intricate carvings along its spine. It's said to grant irresistible beauty to anyone who uses it, but at a price: once its magic fades, one is left longing for the beauty they briefly possessed."
-	icon = 'icons/roguetown/items/misc.dmi'
 	icon_state = "comb"
 	w_class = WEIGHT_CLASS_TINY
 	difficulty = 1
@@ -599,7 +591,6 @@ GLOBAL_LIST_EMPTY(all_treasures)
 	name = "The Gossamer Bell"
 	desc = "A delicate silver bell with intricate engravings of flowing mist. It's said to ring on its own when spirits are near."
 	is_silver = TRUE
-	icon = 'icons/roguetown/items/misc.dmi'
 	icon_state = "bell"
 	w_class = WEIGHT_CLASS_TINY
 	difficulty = 3
@@ -695,7 +686,6 @@ GLOBAL_LIST_EMPTY(all_treasures)
 /obj/item/treasure/marvelous_compass
 	name = "Marvelous Compass"
 	desc = "An ornate brass compass with intricate engravings. Instead of cardinal directions, it has symbols of precious items around its face. The needle seems to point toward valuable treasures."
-	icon = 'icons/roguetown/items/misc.dmi'
 	icon_state = "compass"
 	difficulty = 4
 	resistance_flags = FIRE_PROOF
@@ -807,6 +797,10 @@ GLOBAL_LIST_EMPTY(all_treasures)
 	for(var/obj/item/treasure/T in GLOB.all_treasures)
 		if(T == src) // Don't point to ourselves
 			continue
+		
+		// Ignore treasures that can't be objectives
+		if(!T.can_be_objective)
+			continue
 			
 		// Ignore treasures carried by the user
 		if(user && (T.loc == user || recursive_loc_check(T, user)))
@@ -877,7 +871,6 @@ GLOBAL_LIST_EMPTY(all_treasures)
 	
 	update_icon()
 
-// Euclidean distance for more accurate distance calculation
 /obj/item/treasure/marvelous_compass/proc/get_dist_euclidian(turf/T1, turf/T2)
 	if(!T1 || !T2 || T1.z != T2.z)
 		return INFINITY
@@ -958,7 +951,6 @@ GLOBAL_LIST_EMPTY(all_treasures)
 	// Remove the image after a short delay
 	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(remove_image_from_client), I, user.client), 3 SECONDS)
 
-// Updated arrow effect that points to the target
 /obj/effect/temp_visual/dir_setting/compass_arrow
 	name = "compass arrow"
 	icon = 'icons/mob/screen_gen.dmi'
@@ -1066,54 +1058,347 @@ GLOBAL_LIST_EMPTY(all_treasures)
 	. = ..()
 	update_icon()
 
-// Helper proc to get a descriptive symbol for each type of treasure
-/obj/item/treasure/marvelous_compass/proc/get_treasure_symbol(obj/item/treasure/T)
-	if(!T)
-		return "an unknown item"
-		
-	// Return a thematic symbol based on treasure type
-	if(istype(T, /obj/item/treasure/brooch))
-		return "a glittering gemstone"
-	else if(istype(T, /obj/item/treasure/marriagecontract))
-		return "a sealed document"
-	else if(istype(T, /obj/item/treasure/ledger))
-		return "an ominous book"
-	else if(istype(T, /obj/item/treasure/wine))
-		return "an ornate bottle"
-	else if(istype(T, /obj/item/treasure/gemerald))
-		return "an emerald stone"
-	else if(istype(T, /obj/item/treasure/blackmail))
-		return "a sealed envelope"
-	else if(istype(T, /obj/item/treasure/bond))
-		return "a royal certificate"
-	else if(istype(T, /obj/item/treasure/kassidy))
-		return "a mysterious figure"
-	else if(istype(T, /obj/item/treasure/morgan))
-		return "a beloved figure"
-	else if(istype(T, /obj/item/treasure/snake))
-		return "a coiled serpent"
-	else if(istype(T, /obj/item/treasure/lens_of_truth))
-		return "a reflective surface"
-	else if(istype(T, /obj/item/treasure/silverstake))
-		return "a silver weapon"
-	else if(istype(T, /obj/item/treasure/quiet_blade))
-		return "a curved dagger"
-	else if(istype(T, /obj/item/treasure/obsidian_comb))
-		return "a dark comb"
-	else if(istype(T, /obj/item/treasure/gossamer_bell))
-		return "a small bell"
-	else if(istype(T, /obj/item/treasure/silent_steps))
-		return "a circular band"
-	
-	// Generic fallback based on name
-	var/name_parts = splittext(T.name, " ")
-	if(length(name_parts) > 0)
-		return "a [lowertext(name_parts[length(name_parts)])]"
-	
-	return "a mysterious object"
+/obj/item/treasure/pathmakers_parchment
+	name = "Pathmaker's Parchment"
+	desc = "An ancient, crackling parchment with a map that seems to shift and change as you look at it. Strange symbols glow along its weathered edges."
+	icon_state = "paper"
+	difficulty = 4
+	resistance_flags = FIRE_PROOF
+	var/treasures_collected = 0
+	var/target_max = 5
+	var/next_use = 0
+	var/use_cooldown = 10 SECONDS
+	var/obj/item/treasure/current_target = null
+	var/list/collected_treasures = list()
+	var/max_scan_range = 100 // Maximum range to consider treasures, in tiles
 
-// Helper function to check if an item is inside a container carried by the user
-/obj/item/treasure/marvelous_compass/proc/recursive_loc_check(obj/item/target, mob/user)
+/obj/item/treasure/pathmakers_parchment/Initialize()
+	. = ..()
+	find_new_target()
+
+/obj/item/treasure/pathmakers_parchment/examine(mob/user)
+	. = ..()
+	if(treasures_collected < target_max)
+		. += span_notice("The parchment shows [treasures_collected]/[target_max] treasures collected.")
+	else
+		. += span_warning("The parchment's magic has been exhausted.")
+		
+	if(world.time < next_use)
+		var/time_left = round((next_use - world.time)/10)
+		. += span_warning("The ink seems to be settling. It will be usable again in [time_left] seconds.")
+
+/obj/item/treasure/pathmakers_parchment/attackby(obj/item/I, mob/user, params)
+	if(istype(I, /obj/item/treasure))
+		var/obj/item/treasure/T = I
+		
+		// Check if this is our current target
+		if(T == current_target)
+			// Success! Treasure found
+			to_chat(user, span_notice("You place [T] on the parchment. The map glows brightly as it recognizes the treasure!"))
+			playsound(get_turf(src), 'sound/magic/swap.ogg', 50, TRUE)
+			
+			// Create visual effects
+			var/turf/turf_loc = get_turf(src)
+			var/number_of_sparkles = 5
+			for(var/i in 1 to number_of_sparkles)
+				var/obj/effect/temp_visual/parchment_reveal/spark = new(turf_loc)
+				spark.pixel_x = rand(-16, 16)
+				spark.pixel_y = rand(-16, 16)
+				spark.color = pick("#ffd700", "#c0c0c0", "#b87333") // Gold, silver, bronze colors
+			
+			// Add to our collection
+			treasures_collected++
+			collected_treasures += T.type
+			
+			// Check if we're done
+			if(treasures_collected >= target_max)
+				to_chat(user, span_warning("The parchment begins to tremble with power as the final treasure completes its collection!"))
+				transform_to_key(user)
+				return
+			
+			// Find a new target
+			find_new_target()
+			to_chat(user, span_notice("The parchment's map shifts and changes, now pointing to a different treasure."))
+			return TRUE
+		else
+			to_chat(user, span_warning("You place [T] on the parchment, but it doesn't react. This isn't the treasure it's seeking."))
+			return FALSE
+	
+	return ..()
+
+/obj/item/treasure/pathmakers_parchment/proc/find_new_target()
+	var/list/potential_treasures = list()
+	
+	for(var/obj/item/treasure/T in GLOB.all_treasures)
+		// Don't target ourselves
+		if(T == src)
+			continue
+			
+		// Don't target treasures that can't be objectives
+		if(!T.can_be_objective)
+			continue
+			
+		// Don't select treasures we've already collected
+		if(T.type in collected_treasures)
+			continue
+			
+		var/turf/T_turf = get_turf(T)
+		if(!T_turf)
+			continue
+			
+		// Don't select treasures that are being held by mobs
+		if(ismob(T.loc))
+			continue
+			
+		// Add to potential targets
+		potential_treasures += T
+	
+	// If we have potential targets, select one randomly
+	if(length(potential_treasures) > 0)
+		current_target = pick(potential_treasures)
+	else
+		// If no targets available, set to null
+		current_target = null
+
+/obj/item/treasure/pathmakers_parchment/attack_self(mob/user)
+	if(treasures_collected >= target_max)
+		to_chat(user, span_warning("The parchment's magic has been exhausted. It's just an old piece of paper now."))
+		return
+		
+	if(world.time < next_use)
+		var/time_left = round((next_use - world.time)/10)
+		to_chat(user, span_warning("The ink on the parchment is still settling. You'll need to wait [time_left] more seconds before using it again."))
+		return
+	
+	if(!current_target)
+		to_chat(user, span_warning("The parchment's surface ripples, but no treasures are revealed. Perhaps there are none nearby."))
+		// Find a new target anyway, in case something became available
+		find_new_target()
+		next_use = world.time + use_cooldown
+		return
+	
+	// Show the user the location of the current target
+	show_treasure_location(user)
+	
+	// Set cooldown
+	next_use = world.time + use_cooldown
+	
+
+	playsound(get_turf(src), 'sound/magic/churn.ogg', 50, TRUE)
+	
+	// Visual effects
+	var/turf/T = get_turf(src)
+	var/number_of_sparkles = 3
+	for(var/i in 1 to number_of_sparkles)
+		var/obj/effect/temp_visual/parchment_reveal/spark = new(T)
+		spark.pixel_x = rand(-16, 16)
+		spark.pixel_y = rand(-16, 16)
+		spark.color = pick("#ffd700", "#c0c0c0", "#b87333") // Gold, silver, bronze colors
+
+/obj/item/treasure/pathmakers_parchment/proc/show_treasure_location(mob/user)
+	if(!current_target || !user)
+		return
+		
+	var/turf/user_turf = get_turf(user)
+	var/turf/target_turf = get_turf(current_target)
+	
+	if(!user_turf || !target_turf)
+		return
+		
+	// Get the direction to the target
+	var/direction = get_dir(user_turf, target_turf)
+	
+	// Create a description of the location
+	var/location_desc = get_location_description(user, current_target)
+	
+	// Tell the user the details
+	to_chat(user, span_notice("The parchment trembles in your hands as arcane energies ripple across its surface."))
+	to_chat(user, span_notice("You see a symbol of a [get_treasure_symbol(current_target)] on the map. [location_desc]"))
+	
+	// Direction hint
+	var/dir_text = dir2text(direction)
+	var/dist = get_dist(user_turf, target_turf)
+	
+	// Simple z-level hint
+	var/level_hint = ""
+	if(user_turf.z < target_turf.z)
+		level_hint = " above you"
+	else if(user_turf.z > target_turf.z)
+		level_hint = " below you"
+		
+	to_chat(user, span_notice("You sense the treasure lies <b>[dir_text]</b> from here ([dist] paces away)[level_hint]."))
+	
+	// Create a momentary animated arrow pointing in the treasure's direction
+	var/obj/effect/temp_visual/dir_setting/parchment_indicator/arrow = new(user_turf, direction)
+	
+	// Only make it visible to the user
+	var/image/I = image(arrow)
+	I.override = TRUE
+	user.client?.images += I
+	
+	// Remove after a few seconds
+	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(remove_image_from_client), I, user.client), 3 SECONDS)
+
+/obj/item/treasure/pathmakers_parchment/proc/get_location_description(mob/user, obj/item/treasure/target)
+	if(!user || !target)
+		return "The parchment reveals a mysterious location, but it's too vague to determine."
+		
+	var/turf/target_turf = get_turf(target)
+	if(!target_turf)
+		return "The parchment's image fades before you can make out where it points."
+	
+	// Get area information
+	var/area/target_area = get_area(target_turf)
+	var/area_name = "an unknown location"
+	if(target_area)
+		area_name = target_area.name
+	
+	// Get floor/level information
+	var/turf/user_turf = get_turf(user)
+	var/level_desc = ""
+	if(user_turf)
+		if(user_turf.z == target_turf.z)
+			level_desc = "on this floor"
+		else if(user_turf.z < target_turf.z)
+			var/levels_up = target_turf.z - user_turf.z
+			level_desc = levels_up == 1 ? "one floor above you" : "[levels_up] floors above you"
+		else
+			var/levels_down = user_turf.z - target_turf.z
+			level_desc = levels_down == 1 ? "one floor below you" : "[levels_down] floors below you"
+	else
+		level_desc = "on floor [target_turf.z]"
+	
+	// Determine room type or specific location
+	var/room_desc = get_room_description(target_area, target_turf)
+	
+	// Build the full description
+	var/treasure_symbol = get_treasure_symbol(target)
+	var/treasure_hint = get_treasure_type_hint(target)
+	
+	var/full_desc = "The parchment reveals a [treasure_symbol] located in [area_name], [level_desc]."
+	
+	if(room_desc)
+		full_desc += " It appears to be in [room_desc]."
+	
+	if(treasure_hint)
+		full_desc += " [treasure_hint]."
+	
+	return full_desc
+
+/obj/item/treasure/pathmakers_parchment/proc/get_room_description(area/target_area, turf/target_turf)
+	if(!target_area || !target_turf)
+		return null
+		
+	// Check for specific room features nearby
+	var/list/nearby_objects = list()
+	for(var/obj/structure/S in range(2, target_turf))
+		if(istype(S, /obj/structure/bed))
+			nearby_objects += "a bedroom"
+		else if(istype(S, /obj/structure/table))
+			nearby_objects += "a room with tables"
+		else if(istype(S, /obj/structure/bookcase))
+			nearby_objects += "a library or study"
+		else if(istype(S, /obj/structure/closet))
+			nearby_objects += "a room with storage"
+		else if(istype(S, /obj/structure/chair))
+			nearby_objects += "a sitting area"
+		// Use string matching instead of direct type checking for types that may not exist
+		else if(findtext("[S]", "fireplace"))
+			nearby_objects += "a room with a fireplace"
+		else if(findtext("[S]", "window"))
+			nearby_objects += "a room with windows to the outside"
+	
+	// If we found distinctive features
+	if(length(nearby_objects) > 0)
+		return pick(nearby_objects)
+	
+	// Fallback based on area type
+	var/area_type = target_area.type
+	if(findtext("[area_type]", "kitchen"))
+		return "a kitchen area"
+	else if(findtext("[area_type]", "garden"))
+		return "a garden"
+	else if(findtext("[area_type]", "bed"))
+		return "a bedroom"
+	else if(findtext("[area_type]", "bath"))
+		return "a bathroom"
+	else if(findtext("[area_type]", "hall"))
+		return "a hallway"
+	else if(findtext("[area_type]", "stairs"))
+		return "a stairwell"
+	else if(findtext("[area_type]", "storage"))
+		return "a storage area"
+	else if(findtext("[area_type]", "library"))
+		return "a library"
+	
+	// Generic fallback
+	return "some kind of room"
+
+/obj/item/treasure/pathmakers_parchment/proc/get_treasure_type_hint(obj/item/treasure/T)
+	if(!T)
+		return null
+		
+	// Return a hint about what type of treasure it is
+	if(istype(T, /obj/item/treasure/brooch) || istype(T, /obj/item/treasure/gemerald))
+		return "A shimmer of wealth catches your eye"
+		
+	else if(istype(T, /obj/item/treasure/marriagecontract) || istype(T, /obj/item/treasure/ledger) || istype(T, /obj/item/treasure/blackmail) || istype(T, /obj/item/treasure/bond))
+		return "The parchment shows written documents of importance"
+		
+	else if(istype(T, /obj/item/treasure/kassidy) || istype(T, /obj/item/treasure/morgan))
+		return "A curious figurine awaits discovery"
+		
+	else if(istype(T, /obj/item/treasure/wine))
+		return "Something aged and valuable is hidden there"
+		
+	else if(istype(T, /obj/item/treasure/lens_of_truth) || istype(T, /obj/item/treasure/obsidian_comb) || istype(T, /obj/item/treasure/gossamer_bell) || istype(T, /obj/item/treasure/marvelous_compass))
+		return "A magical tool of strange power calls to you"
+		
+	else if(istype(T, /obj/item/treasure/silverstake) || istype(T, /obj/item/treasure/quiet_blade))
+		return "A weapon of unique craftsmanship awaits"
+		
+	else if(istype(T, /obj/item/treasure/silent_steps))
+		return "Something to aid in stealth lies in wait"
+	
+	return "The treasure's nature remains mysterious"
+
+/obj/item/treasure/pathmakers_parchment/proc/transform_to_key(mob/user)
+	// Dramatic transformation
+	visible_message(span_warning("[src] trembles and shines with golden light, its form twisting and reshaping!"))
+	
+	if(user)
+		to_chat(user, span_notice("The parchment's magic has been fully utilized, revealing its true purpose - a key to hidden secrets within the manor!"))
+	
+	// Visual effects - use known existing sound from our search
+	playsound(get_turf(src), 'sound/magic/swap.ogg', 50, TRUE)
+	
+	// Create visual effects for the transformation
+	var/turf/T = get_turf(src)
+	var/number_of_sparkles = 5
+	for(var/i in 1 to number_of_sparkles)
+		var/obj/effect/temp_visual/parchment_reveal/spark = new(T)
+		spark.pixel_x = rand(-16, 16)
+		spark.pixel_y = rand(-16, 16)
+		spark.color = pick("#ffd700", "#c0c0c0", "#b87333") // Gold, silver, bronze colors
+	
+	// Create the key
+	var/obj/item/treasure/key/K = new(T)
+	
+	// Transfer any important properties
+	K.name = "Ornate Manor Key"
+	K.desc = "An ancient, intricate key formed from the magic of the Pathmaker's Parchment. It radiates with power and purpose, clearly meant to unlock a hidden place within the manor."
+	
+	// Delete the parchment
+	qdel(src)
+
+// Visual effect for parchment activation
+/obj/effect/temp_visual/parchment_reveal
+	name = "arcane energy"
+	icon = 'icons/effects/effects.dmi'
+	icon_state = "quantum_sparks"
+	duration = 10
+
+/obj/item/treasure/pathmakers_parchment/proc/recursive_loc_check(obj/item/target, mob/user)
 	if(!target || !user)
 		return FALSE
 		
@@ -1135,3 +1420,117 @@ GLOBAL_LIST_EMPTY(all_treasures)
 			return FALSE
 	
 	return FALSE
+
+// Global proc for get_treasure_symbol that all types can use
+/proc/get_treasure_symbol(obj/item/treasure/T)
+	if(!T)
+		return "mysterious item"
+		
+	// Return a thematic symbol based on treasure type
+	if(istype(T, /obj/item/treasure/brooch))
+		return "glittering gemstone"
+	else if(istype(T, /obj/item/treasure/marriagecontract))
+		return "sealed document"
+	else if(istype(T, /obj/item/treasure/ledger))
+		return "ominous book"
+	else if(istype(T, /obj/item/treasure/wine))
+		return "ornate bottle"
+	else if(istype(T, /obj/item/treasure/gemerald))
+		return "emerald stone"
+	else if(istype(T, /obj/item/treasure/blackmail))
+		return "sealed envelope"
+	else if(istype(T, /obj/item/treasure/bond))
+		return "royal certificate"
+	else if(istype(T, /obj/item/treasure/kassidy))
+		return "mysterious figure"
+	else if(istype(T, /obj/item/treasure/morgan))
+		return "beloved figure"
+	else if(istype(T, /obj/item/treasure/snake))
+		return "coiled serpent"
+	else if(istype(T, /obj/item/treasure/lens_of_truth))
+		return "reflective surface"
+	else if(istype(T, /obj/item/treasure/silverstake))
+		return "silver weapon"
+	else if(istype(T, /obj/item/treasure/quiet_blade))
+		return "curved dagger"
+	else if(istype(T, /obj/item/treasure/obsidian_comb))
+		return "dark comb"
+	else if(istype(T, /obj/item/treasure/gossamer_bell))
+		return "small bell"
+	else if(istype(T, /obj/item/treasure/silent_steps))
+		return "circular band"
+	else if(istype(T, /obj/item/treasure/pathmakers_parchment))
+		return "magical map"
+	else if(istype(T, /obj/item/treasure/key))
+		return "ornate key"
+	
+	// Generic fallback based on name
+	var/name_parts = splittext(T.name, " ")
+	if(length(name_parts) > 0)
+		return "mysterious [lowertext(name_parts[length(name_parts)])]"
+	
+	return "mysterious object"
+
+/obj/item/treasure/key
+	name = "Ornate Manor Key"
+	desc = "An ancient, intricate key that seems to radiate with hidden power. It bears the insignia of the manor's original founder."
+	icon_state = "ornatekey"
+	w_class = WEIGHT_CLASS_TINY
+	difficulty = 8
+	resistance_flags = FIRE_PROOF | ACID_PROOF
+	experimental_inhand = TRUE
+	can_be_objective = FALSE
+
+/obj/item/treasure/key/getonmobprop(tag)
+	if(tag)
+		switch(tag)
+			if("gen")
+				return list("shrink" = 0.4,"sx" = -10,"sy" = 0,"nx" = 11,"ny" = 0,"wx" = -4,"wy" = 0,"ex" = 2,"ey" = 0,"northabove" = 0,"southabove" = 1,"eastabove" = 1,"westabove" = 0,"nturn" = 0,"sturn" = 0,"wturn" = 0,"eturn" = 0,"nflip" = 0,"sflip" = 8,"wflip" = 8,"eflip" = 0)
+
+/obj/effect/temp_visual/dir_setting/parchment_indicator
+	name = "magical indicator"
+	icon = 'icons/mob/screen_gen.dmi'
+	icon_state = "arrowcompass" 
+	duration = 3 SECONDS
+	color = "#8A2BE2" // Purple color
+	layer = ABOVE_MOB_LAYER
+	pixel_y = 16
+
+/obj/effect/temp_visual/dir_setting/parchment_indicator/Initialize(mapload, set_dir)
+	. = ..()
+	
+	// Handle all directions by using transform matrix rotation
+	var/angle_offset = 0
+	
+	switch(dir)
+		// Cardinal directions
+		if(NORTH)
+			angle_offset = 0   
+		if(EAST)
+			angle_offset = 90  
+		if(SOUTH) 
+			angle_offset = 180 
+		if(WEST)
+			angle_offset = 270 
+		
+		// Diagonal directions
+		if(NORTHEAST)
+			angle_offset = 45  
+		if(SOUTHEAST)
+			angle_offset = 135 
+		if(SOUTHWEST)
+			angle_offset = 225 
+		if(NORTHWEST)
+			angle_offset = 315 
+	
+	// Always use the NORTH-facing sprite as base and rotate it
+	dir = NORTH
+	
+	// Apply rotation transform
+	var/matrix/M = matrix()
+	M.Turn(angle_offset)
+	transform = M
+	
+	// Animation
+	animate(src, pixel_y = pixel_y + 4, time = 5, loop = 6, flags = ANIMATION_RELATIVE)
+	animate(pixel_y = pixel_y - 4, time = 5)

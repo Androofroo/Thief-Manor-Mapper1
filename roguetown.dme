@@ -2053,6 +2053,7 @@
 #include "modular_penumbra\medical.dm"
 #include "modular_penumbra\oil.dm"
 #include "thiefmanor\items.dm"
+#include "thiefmanor\misc.dm"
 #include "thiefmanor\weapons.dm"
 // END_INCLUDE
 

@@ -122,6 +122,10 @@
 	for(var/treasure_path in treasure_types)
 		var/obj/item/treasure/T = treasure_path
 		
+		// Skip treasures that can't be objectives
+		if(!initial(T.can_be_objective))
+			continue
+		
 		// Create a new objective item for this treasure
 		var/datum/objective_item/steal/treasure_objective = new
 		treasure_objective.name = "the [initial(T.name)]"
