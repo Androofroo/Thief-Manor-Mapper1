@@ -85,7 +85,7 @@
 	// Handle weapon choices
 	addtimer(CALLBACK(src, PROC_REF(give_weapon_choices), H), 1)
 
-	backpack_contents = list(/obj/item/rogueweapon/huntingknife/idagger/steel/special = 1, /obj/item/rope/chain = 1, /obj/item/storage/keyring/guardcastle = 1)
+	backpack_contents = list(/obj/item/rope/chain = 1, /obj/item/storage/keyring/guardcastle = 1)
 	H.verbs |= /mob/proc/haltyell
 
 /datum/outfit/job/roguetown/manorguard/footman/proc/give_weapon_choices(mob/living/carbon/human/H)
@@ -96,7 +96,11 @@
 	
 	if(H.client)
 		var/weapons = list("Sword & Shield","Mace & Shield","Halberd")
-		weapon_choice = input(H, "Choose your weapon.", "TAKE UP ARMS") as null|anything in weapons
+		weapon_choice = timed_input_list(H, "Choose your weapon within 30 seconds.", "TAKE UP ARMS", weapons, 30 SECONDS)
+		if(!weapon_choice)
+			// If they didn't make a selection within 30 seconds or cancelled, pick a random one
+			weapon_choice = pick(weapons)
+			to_chat(H, "<span class='warning'>Time's up! A weapon has been selected for you.</span>")
 	else
 		// For roundstart guards with no client attached yet, use random selection
 		var/list/weapons = list("Sword & Shield","Mace & Shield","Halberd")
@@ -189,7 +193,7 @@
 	// Handle weapon choices
 	addtimer(CALLBACK(src, PROC_REF(give_weapon_choices), H), 1)
 
-	backpack_contents = list(/obj/item/rogueweapon/huntingknife/idagger/steel/special = 1, /obj/item/rope/chain = 1, /obj/item/storage/keyring/guardcastle = 1)
+	backpack_contents = list(/obj/item/rope/chain = 1, /obj/item/storage/keyring/guardcastle = 1)
 	H.verbs |= /mob/proc/haltyell
 
 /datum/outfit/job/roguetown/manorguard/gatewarden/proc/give_weapon_choices(mob/living/carbon/human/H)
@@ -200,7 +204,11 @@
 	
 	if(H.client)
 		var/weapons = list("Crossbow & Bolts","Yew Longbow & Arrows","Recurve Bow & Arrows")
-		weapon_choice = input(H, "Choose your ranged weapon.", "TAKE UP ARMS") as null|anything in weapons
+		weapon_choice = timed_input_list(H, "Choose your ranged weapon within 30 seconds.", "TAKE UP ARMS", weapons, 30 SECONDS)
+		if(!weapon_choice)
+			// If they didn't make a selection within 30 seconds or cancelled, pick a random one
+			weapon_choice = pick(weapons)
+			to_chat(H, "<span class='warning'>Time's up! A weapon has been selected for you.</span>")
 	else
 		// For roundstart guards with no client attached yet, use random selection
 		var/list/weapons = list("Crossbow & Bolts","Yew Longbow & Arrows","Recurve Bow & Arrows")
@@ -297,7 +305,7 @@
 	// Handle weapon choices
 	addtimer(CALLBACK(src, PROC_REF(give_weapon_choices), H), 1)
 
-	backpack_contents = list(/obj/item/rogueweapon/huntingknife/idagger/steel/special = 1, /obj/item/rope/chain = 1, /obj/item/storage/keyring/guardcastle = 1)
+	backpack_contents = list(/obj/item/rope/chain = 1, /obj/item/storage/keyring/guardcastle = 1)
 	H.verbs |= list(/mob/proc/haltyell, /mob/living/carbon/human/proc/torture_victim)
 
 /datum/outfit/job/roguetown/manorguard/witchfinder/proc/give_weapon_choices(mob/living/carbon/human/H)
@@ -308,7 +316,11 @@
 	
 	if(H.client)
 		var/weapons = list("Knife & Whip","Knife & Cudgel","Mace & Dagger")
-		weapon_choice = input(H, "Choose your implements.", "TOOLS OF INQUIRY") as null|anything in weapons
+		weapon_choice = timed_input_list(H, "Choose your implements within 30 seconds.", "TOOLS OF INQUIRY", weapons, 30 SECONDS)
+		if(!weapon_choice)
+			// If they didn't make a selection within 30 seconds or cancelled, pick a random one
+			weapon_choice = pick(weapons)
+			to_chat(H, "<span class='warning'>Time's up! Implements have been selected for you.</span>")
 	else
 		// For roundstart guards with no client attached yet, use random selection
 		var/list/weapons = list("Knife & Whip","Knife & Cudgel","Mace & Dagger")
@@ -417,7 +429,7 @@
 	// Handle weapon choices
 	addtimer(CALLBACK(src, PROC_REF(give_weapon_choices), H), 1)
 
-	backpack_contents = list(/obj/item/rogueweapon/huntingknife/idagger/steel/special = 1, /obj/item/rope/chain = 1, /obj/item/storage/keyring/guardcastle = 1)
+	backpack_contents = list(/obj/item/rope/chain = 1, /obj/item/storage/keyring/guardcastle = 1)
 	H.verbs |= /mob/proc/haltyell
 
 /datum/outfit/job/roguetown/manorguard/sentinel/proc/give_weapon_choices(mob/living/carbon/human/H)
@@ -428,7 +440,11 @@
 	
 	if(H.client)
 		var/weapons = list("Warhammer & Shield","Mace & Shield")
-		weapon_choice = input(H, "Choose your weapon.", "TAKE UP ARMS") as null|anything in weapons
+		weapon_choice = timed_input_list(H, "Choose your weapon within 30 seconds.", "TAKE UP ARMS", weapons, 30 SECONDS)
+		if(!weapon_choice)
+			// If they didn't make a selection within 30 seconds or cancelled, pick a random one
+			weapon_choice = pick(weapons)
+			to_chat(H, "<span class='warning'>Time's up! A weapon has been selected for you.</span>")
 	else
 		// For roundstart guards with no client attached yet, use random selection
 		var/list/weapons = list("Warhammer & Shield","Mace & Shield","Halberd")

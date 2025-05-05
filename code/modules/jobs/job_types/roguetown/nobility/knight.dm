@@ -137,13 +137,29 @@
 	if(H.client)
 		// Interactive selection for players with clients attached
 		var/weapons = list("Longsword + Tower Shield", "Warhammer + Buckler", "Steel Mace + Wooden Shield")
-		weapon_choice = input(H, "Choose your weapon.", "TAKE UP ARMS") as null|anything in weapons
+		weapon_choice = timed_input_list(H, "Choose your weapon within 30 seconds.", "TAKE UP ARMS", weapons, 30 SECONDS)
+		if(!weapon_choice)
+			// If they didn't make a selection within 30 seconds or cancelled, pick a random one
+			weapon_choice = pick(weapons)
+			to_chat(H, "<span class='warning'>Time's up! A weapon has been selected for you.</span>")
 		
 		// Helmet selection
-		helmchoice = input(H, "Choose your Helm.", "TAKE UP HELMS") as null|anything in helmets
+		helmchoice = timed_input_list(H, "Choose your Helm within 30 seconds.", "TAKE UP HELMS", helmets, 30 SECONDS)
+		if(!helmchoice)
+			// If they didn't make a selection within 30 seconds or cancelled, pick a random one
+			var/list/helmet_keys = list()
+			for(var/key in helmets)
+				if(key != "None")
+					helmet_keys += key
+			helmchoice = pick(helmet_keys)
+			to_chat(H, "<span class='warning'>Time's up! A helmet has been selected for you.</span>")
 		
 		// Armor selection
-		armorchoice = input(H, "Choose your armor.", "TAKE UP ARMOR") as null|anything in armors
+		armorchoice = timed_input_list(H, "Choose your armor within 30 seconds.", "TAKE UP ARMOR", armors, 30 SECONDS)
+		if(!armorchoice)
+			// If they didn't make a selection within 30 seconds or cancelled, pick a random one
+			armorchoice = pick(armors)
+			to_chat(H, "<span class='warning'>Time's up! Armor has been selected for you.</span>")
 	else
 		// For knights with no client attached, use random selection
 		var/list/weapons = list("Longsword + Tower Shield", "Warhammer + Buckler", "Steel Mace + Wooden Shield")
@@ -317,10 +333,22 @@
 	if(H.client)
 		// Interactive selection for players with clients attached
 		var/weapons = list("Great Axe", "Zweihander", "Grand Mace")
-		weapon_choice = input(H, "Choose your weapon.", "TAKE UP ARMS") as null|anything in weapons
+		weapon_choice = timed_input_list(H, "Choose your weapon within 30 seconds.", "TAKE UP ARMS", weapons, 30 SECONDS)
+		if(!weapon_choice)
+			// If they didn't make a selection within 30 seconds or cancelled, pick a random one
+			weapon_choice = pick(weapons)
+			to_chat(H, "<span class='warning'>Time's up! A weapon has been selected for you.</span>")
 		
 		// Helmet selection
-		helmchoice = input(H, "Choose your Helm.", "TAKE UP HELMS") as null|anything in helmets
+		helmchoice = timed_input_list(H, "Choose your Helm within 30 seconds.", "TAKE UP HELMS", helmets, 30 SECONDS)
+		if(!helmchoice)
+			// If they didn't make a selection within 30 seconds or cancelled, pick a random one
+			var/list/helmet_keys = list()
+			for(var/key in helmets)
+				if(key != "None")
+					helmet_keys += key
+			helmchoice = pick(helmet_keys)
+			to_chat(H, "<span class='warning'>Time's up! A helmet has been selected for you.</span>")
 	else
 		// For knights with no client attached, use random selection
 		var/list/weapons = list("Great Axe", "Zweihander", "Morningstar")
@@ -446,7 +474,11 @@
 	if(H.client)
 		// Interactive selection for players with clients attached
 		var/weapons = list("Longsword + Kite Shield","Steel Mace + Buckler","Warhammer + Wooden Shield")
-		weapon_choice = input(H, "Choose your weapon.", "TAKE UP ARMS") as null|anything in weapons
+		weapon_choice = timed_input_list(H, "Choose your weapon within 30 seconds.", "TAKE UP ARMS", weapons, 30 SECONDS)
+		if(!weapon_choice)
+			// If they didn't make a selection within 30 seconds or cancelled, pick a random one
+			weapon_choice = pick(weapons)
+			to_chat(H, "<span class='warning'>Time's up! A weapon has been selected for you.</span>")
 	else
 		// For knights with no client attached, use random selection
 		var/list/weapons = list("Longsword + Kite Shield","Steel Mace + Buckler","Warhammer + Wooden Shield")
@@ -557,13 +589,14 @@
 	if(H.client)
 		// Interactive selection for players with clients attached
 		var/classes = list("Swordsman", "Macebearer", "Flailman")
-		classchoice = input(H, "Choose your archetype", "Available archetypes") as null|anything in classes
+		classchoice = timed_input_list(H, "Choose your archetype within 30 seconds.", "Available archetypes", classes, 30 SECONDS)
+		if(!classchoice)
+			// If they didn't make a selection within 30 seconds or cancelled, pick a random one
+			classchoice = pick(classes)
+			to_chat(H, "<span class='warning'>Time's up! An archetype has been selected for you.</span>")
 	else
 		var/list/classes = list("Swordsman", "Macebearer", "Flailman")
 		classchoice = pick(classes)
-	
-	if(!classchoice)
-		classchoice = "Swordsman" // Default if they cancel
 	
 	// Create and equip the selected weapon and shield
 	var/obj/item/weapon_item
