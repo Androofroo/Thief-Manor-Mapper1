@@ -637,18 +637,60 @@
 		for(var/list/component_data in stored_appearance.original_movement_components)
 			var/obj/item/gear = component_data["item"]
 			
-			// Check if item still exists
-			if(gear && !QDELETED(gear))
-				// Recreate the original component with stored parameters
-				gear.AddComponent(/datum/component/item_equipped_movement_rustle, 
-					component_data["rustle_sounds"],
-					component_data["move_delay"],
-					component_data["volume"],
-					component_data["sound_vary"],
-					component_data["sound_extra_range"],
-					component_data["sound_falloff_exponent"],
-					component_data["sound_falloff_distance"]
-				)
+			// Check if item still exists and is currently equipped
+			if(gear && !QDELETED(gear) && ismob(gear.loc))
+				var/mob/M = gear.loc
+				
+				// First check if the item already has a rustle component
+				var/has_rustle_component = FALSE
+				for(var/datum/component/item_equipped_movement_rustle/existing in gear.GetComponents(/datum/component/item_equipped_movement_rustle))
+					has_rustle_component = TRUE
+					break
+				
+				// Only add a new component if there isn't one already
+				if(!has_rustle_component)
+					// Recreate the original component with stored parameters
+					var/datum/component/item_equipped_movement_rustle/new_rustle = gear.AddComponent(/datum/component/item_equipped_movement_rustle, 
+						component_data["rustle_sounds"],
+						component_data["move_delay"],
+						component_data["volume"],
+						component_data["sound_vary"],
+						component_data["sound_extra_range"],
+						component_data["sound_falloff_exponent"],
+						component_data["sound_falloff_distance"]
+					)
+					
+					// Manually trigger the on_equip signal to properly register the component
+					if(new_rustle && ishuman(M))
+						// Find which slot the item is in
+						var/mob/living/carbon/human/H = M
+						var/slot = NONE
+						if(H.belt == gear)
+							slot = SLOT_BELT
+						else if(H.beltr == gear)
+							slot = SLOT_BELT_R
+						else if(H.beltl == gear)
+							slot = SLOT_BELT_L
+						else if(H.wear_armor == gear)
+							slot = SLOT_ARMOR
+						else if(H.wear_shirt == gear)
+							slot = SLOT_SHIRT
+						else if(H.wear_pants == gear)
+							slot = SLOT_PANTS
+						else if(H.head == gear)
+							slot = SLOT_HEAD
+						else if(H.shoes == gear)
+							slot = SLOT_SHOES
+						else if(H.gloves == gear)
+							slot = SLOT_GLOVES
+						else if(H.cloak == gear)
+							slot = SLOT_CLOAK
+						else if(H.wear_neck == gear)
+							slot = SLOT_NECK
+						
+						// Manually call the on_equip proc to register signals properly
+						if(slot != NONE)
+							new_rustle.on_equip(gear, H, slot)
 	
 	// Restore original traits by removing disguise trait versions
 	for(var/trait in list(TRAIT_NOBLE, TRAIT_OUTLANDER, TRAIT_WITCH, TRAIT_BEAUTIFUL, TRAIT_UNSEEMLY, 
@@ -667,7 +709,23 @@
 	user.update_body()
 	
 	// Force complete icon regeneration to ensure original appearance is fully restored
+	user.cut_overlays() 
+	user.overlays.Cut()
 	user.regenerate_icons()
+	user.update_body()
+	user.update_hair()
+	
+	// Force equipment-specific updates
+	user.update_inv_head()
+	user.update_inv_wear_mask()
+	user.update_inv_glasses()
+	user.update_inv_gloves()
+	user.update_inv_shoes()
+	user.update_inv_belt()
+	user.update_inv_armor()
+	user.update_inv_shirt()
+	user.update_inv_pants()
+	user.regenerate_icons() // Final regenerate to ensure everything is properly updated
 	
 	// Get the component and restore original descriptors
 	var/datum/component/disguised_species/DS = user.GetComponent(/datum/component/disguised_species)
@@ -747,8 +805,24 @@
 			spell.remove_disguise(src, force_update = TRUE)
 			break
 	
-	// Force regenerate icons as a fallback
+	// Force a thorough visual refresh
+	cut_overlays() 
+	overlays.Cut()
 	regenerate_icons()
+	update_body()
+	update_hair()
+	
+	// Force equipment-specific updates
+	update_inv_head()
+	update_inv_wear_mask()
+	update_inv_glasses()
+	update_inv_gloves()
+	update_inv_shoes()
+	update_inv_belt()
+	update_inv_armor()
+	update_inv_shirt()
+	update_inv_pants()
+	regenerate_icons() // Final regenerate to ensure everything is properly updated
 	
 	// Force refresh appearance by briefly moving
 	var/turf/T = get_turf(src)
@@ -815,99 +889,33 @@
 	// Find and remove the disguise
 	for(var/obj/effect/proc_holder/spell/self/magical_disguise/spell in src.mind.spell_list)
 		if(spell.disguise_active)
-			spell.force_reset_looks(src)
+			spell.remove_disguise(src, force_update = TRUE)
 			break
 	
-	// Force refresh everything
-	regenerate_icons()
-	cut_overlays() // Cut all overlays
-	overlays.Cut() // Make sure the overlays list is empty
-	
-	// Extreme measures: delete all visuals and regenerate from scratch
-	var/icon/blank = new('icons/effects/effects.dmi', "nothing")
-	icon = blank
-	icon_state = null
-	
-	// Completely rebuild the mob's appearance
+	// Force a thorough visual refresh
+	cut_overlays() 
+	overlays.Cut()
 	regenerate_icons()
 	update_body()
 	update_hair()
-	for(var/datum/component/C in GetComponents(/datum/component))
-		qdel(C) // Remove ALL components that might interfere
 	
-	// Apply all equipment-specific update procs
-	// This is based on the code in regenerate_icons()
+	// Force equipment-specific updates
 	update_inv_head()
 	update_inv_wear_mask()
 	update_inv_glasses()
 	update_inv_gloves()
 	update_inv_shoes()
-	regenerate_icons() // This will handle all equipment at once
+	update_inv_belt()
+	update_inv_armor()
+	update_inv_shirt()
+	update_inv_pants()
+	regenerate_icons() // Final regenerate to ensure everything is properly updated
 
 // New method for the spell to completely reset someone's appearance
 /obj/effect/proc_holder/spell/self/magical_disguise/proc/force_reset_looks(mob/living/carbon/human/user)
-	// Mark as not active early to prevent recursion
-	disguise_active = FALSE
-	
-	// Clear all references
-	snapshot = null
-	current_target = null
-	
-	// Restore identity information
-	if(stored_appearance)
-		user.real_name = stored_appearance.real_name
-		user.name = stored_appearance.name
-		user.gender = stored_appearance.gender
-		user.pronouns = stored_appearance.pronouns
-		user.voice_type = stored_appearance.voice_type
-		user.voice_color = stored_appearance.original_voice_color
-		user.voice_pitch = stored_appearance.original_voice_pitch
-		user.name_override = stored_appearance.original_name_override
-		
-		// Restore job if it was changed
-		if(stored_appearance.original_job)
-			user.job = stored_appearance.original_job
-		
-		// Restore advjob if it was changed
-		if(stored_appearance.original_advjob)
-			user.advjob = stored_appearance.original_advjob
-		
-		// Restore original obscured flags
-		user.obscured_flags = stored_appearance.original_obscured_flags
-	
-	// Remove ALL magical disguise traits
-	REMOVE_TRAIT(user, TRAIT_FAKE_STRENGTH, MAGICAL_DISGUISE_TRAIT)
-	REMOVE_TRAIT(user, TRAIT_HAS_FAKE_TRAITS, MAGICAL_DISGUISE_TRAIT)
-	REMOVE_TRAIT(user, TRAIT_DISGUISED_SPECIES, MAGICAL_DISGUISE_TRAIT)
-	REMOVE_TRAIT(user, TRAIT_DISGUISE_ACTIVE, MAGICAL_DISGUISE_TRAIT)
-	
-	// Remove disguise-related components
-	var/datum/component/disguise_sound_mimic/sound_mimic = user.GetComponent(/datum/component/disguise_sound_mimic)
-	if(sound_mimic)
-		qdel(sound_mimic)
-	
-	var/datum/component/disguised_species/DS = user.GetComponent(/datum/component/disguised_species)
-	if(DS)
-		// Restore original descriptors
-		user.clear_mob_descriptors()
-		var/list/original_descriptors = DS.get_original_descriptors()
-		if(length(original_descriptors))
-			user.mob_descriptors = original_descriptors.Copy()
-		
-		// Remove the component
-		qdel(DS)
-	
-	// Re-add original traits
-	if(stored_appearance && length(stored_appearance.original_traits))
-		for(var/trait in stored_appearance.original_traits)
-			ADD_TRAIT(user, trait, TRAIT_GENERIC)
-	
-	// Remove the break disguise verb
-	user.verbs -= /mob/proc/break_magical_disguise
-	
-	// Clear stored data
-	stored_appearance = null
-	original_held_items.Cut()
+	// Simply call the remove_disguise proc with force_update set to true
+	// This ensures consistent behavior and avoids code duplication
+	remove_disguise(user, force_update = TRUE)
 
 // We also need to modify the equip and put_in methods to use our new force_sprite_reset
 /mob/living/carbon/human/equip_to_slot(obj/item/I, slot, initial = FALSE, redraw_mob = FALSE, silent = FALSE)
