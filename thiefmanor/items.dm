@@ -105,6 +105,7 @@
 	desc = "A golden heirloom set with a rare violet gem. Missing for years… or was it just hidden?"
 	icon = 'icons/roguetown/items/misc.dmi'
 	icon_state = "brooch"
+	dropshrink = 0.5
 	difficulty = 5
 
 /obj/item/treasure/wine
@@ -373,6 +374,7 @@
 	desc = "A perfectly balanced dagger of mysterious origin. Its edge is impossibly sharp and never seems to dull. Legend says it never misses its mark."
 	icon = 'icons/roguetown/weapons/32.dmi'
 	icon_state = "gsdagger"  // Similar to silverstake but should be changed
+	associated_skill = /datum/skill/combat/knives
 	w_class = WEIGHT_CLASS_TINY
 	force = 20
 	throwforce = 15
