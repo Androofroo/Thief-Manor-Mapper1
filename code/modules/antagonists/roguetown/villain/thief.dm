@@ -320,8 +320,15 @@
 		revert_cast() // Use revert_cast to properly reset spell charge
 		return FALSE // Don't trigger cooldown
 	
+	// Verify the target still exists after the do_after delay
+	if(QDELETED(selected_target))
+		to_chat(user, "<span class='warning'>Your target has disappeared!</span>")
+		revert_cast()
+		return FALSE
+	
 	apply_disguise(user, selected_target)
 	return TRUE // Return TRUE to trigger cooldown
+
 
 /obj/effect/proc_holder/spell/self/magical_disguise/proc/apply_disguise(mob/living/carbon/human/user, mob/living/carbon/human/target)
 	// Store original appearance info for later restoration
@@ -792,6 +799,9 @@
 
 // New helper proc to completely remove all disguise effects
 /mob/living/carbon/human/proc/remove_all_disguise_effects(message)
+	if(!HAS_TRAIT(src, TRAIT_DISGUISE_ACTIVE))
+		return FALSE // Return early if no disguise is active
+	
 	to_chat(src, "<span class='warning'>[message]</span>")
 	playsound(get_turf(src), 'sound/magic/swap.ogg', 50, TRUE)
 	
@@ -818,20 +828,20 @@
 	src.cut_overlays() 
 	src.overlays.Cut()
 	src.regenerate_icons() // Regenerate all icons at once
+	
+	return TRUE
 
 // Override these functions in the mob/living/carbon/human type to detect when the disguise should break
 /mob/living/carbon/human/ClickOn(atom/A, params)
 	if(HAS_TRAIT(src, TRAIT_DISGUISE_ACTIVE))
 		// Check if the user is trying to attack something
 		var/list/modifiers = params2list(params)
-		if(modifiers["shift"] || modifiers["alt"] || modifiers["ctrl"])
-			// Likely not an attack, let it proceed
-			return ..()
 		
-		if(get_dist(src, A) <= 1 && isliving(A) && A != src)
-			// This is likely an attack on a nearby living mob
-			remove_all_disguise_effects("Attempting to attack breaks your magical disguise!")
-			return ..()
+		// Allow modified clicks (shift, alt, ctrl) to pass through without breaking disguise
+		if(!modifiers["shift"] && !modifiers["alt"] && !modifiers["ctrl"])
+			// Check if this is likely a melee attack attempt
+			if(get_dist(src, A) <= 1 && isliving(A) && A != src)
+				remove_all_disguise_effects("Attempting to attack breaks your magical disguise!")
 	
 	return ..()
 
@@ -848,34 +858,33 @@
 	
 	// If we successfully unequipped the item and we have a disguise active
 	if(success && HAS_TRAIT(src, TRAIT_DISGUISE_ACTIVE) && !silent)
-		// Instead of just breaking the disguise, we need to do a full sprite reset
 		remove_all_disguise_effects("Unequipping an item breaks your magical disguise!")
 	
 	return success
 
 // Helper method to handle item interactions that break disguise
 /mob/living/carbon/human/proc/handle_item_interaction(obj/item/I, forced = FALSE)
-	if(HAS_TRAIT(src, TRAIT_DISGUISE_ACTIVE) && !forced && !istype(I, /obj/item/clothing/head/mob_holder))
-		remove_all_disguise_effects("Handling an item breaks your magical disguise!")
-		return TRUE
-	return FALSE
+	if(!HAS_TRAIT(src, TRAIT_DISGUISE_ACTIVE) || forced || istype(I, /obj/item/clothing/head/mob_holder))
+		return FALSE
+	remove_all_disguise_effects("Handling an item breaks your magical disguise!")
+	return TRUE // Return TRUE to indicate the disguise was broken, but let parent method continue
 
 // Override item handling methods to use the helper
 /mob/living/carbon/human/put_in_hands(obj/item/I, del_on_fail = FALSE, merge_stacks = TRUE, forced = FALSE)
-	handle_item_interaction(I, forced)
-	. = ..()
+	handle_item_interaction(I, forced) // Break disguise but continue action
+	. = ..() // Continue with parent method regardless
 
 /mob/living/carbon/human/put_in_hand_check(obj/item/I, hand_index, forced = FALSE)
-	handle_item_interaction(I, forced)
-	. = ..()
+	handle_item_interaction(I, forced) // Break disguise but continue action
+	. = ..() // Continue with parent method regardless
 
 /mob/living/carbon/human/put_in_active_hand(obj/item/I, forced = FALSE)
-	handle_item_interaction(I, forced)
-	. = ..()
+	handle_item_interaction(I, forced) // Break disguise but continue action
+	. = ..() // Continue with parent method regardless
 
 /mob/living/carbon/human/put_in_inactive_hand(obj/item/I, forced = FALSE)
-	handle_item_interaction(I, forced)
-	. = ..()
+	handle_item_interaction(I, forced) // Break disguise but continue action
+	. = ..() // Continue with parent method regardless
 
 /mob/living/carbon/human/attack_hand(atom/movable/AM)
 	if(HAS_TRAIT(src, TRAIT_DISGUISE_ACTIVE) && isitem(AM))
