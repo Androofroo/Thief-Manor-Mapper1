@@ -96,6 +96,8 @@ GLOBAL_LIST_EMPTY(all_treasures)
 	GLOB.all_treasures -= src
 	return ..()
 
+
+
 /obj/item/treasure/marriagecontract
 	name = "Forged Marriage Contract"
 	desc = "A forged marriage contract that may erupt scandal in the noble realm.."
@@ -1389,6 +1391,9 @@ GLOBAL_LIST_EMPTY(all_treasures)
 	else if(istype(T, /obj/item/treasure/silent_steps))
 		return "Something to aid in stealth lies in wait"
 	
+	else if(istype(T, /obj/item/treasure/witch_doll))
+		return "An uncanny figurine that sees into souls"
+	
 	return "The treasure's nature remains mysterious"
 
 /obj/item/treasure/pathmakers_parchment/proc/transform_to_key(mob/user)
@@ -1515,6 +1520,66 @@ GLOBAL_LIST_EMPTY(all_treasures)
 		switch(tag)
 			if("gen")
 				return list("shrink" = 0.4,"sx" = -10,"sy" = 0,"nx" = 11,"ny" = 0,"wx" = -4,"wy" = 0,"ex" = 2,"ey" = 0,"northabove" = 0,"southabove" = 1,"eastabove" = 1,"westabove" = 0,"nturn" = 0,"sturn" = 0,"wturn" = 0,"eturn" = 0,"nflip" = 0,"sflip" = 8,"wflip" = 8,"eflip" = 0)
+
+/obj/item/treasure/witch_doll
+	name = "Witch Doll"
+	desc = "Sewn by a forgotten highlands witch as a ward against betrayal, this doll was meant to protect a child from liars and spirits. Instead, it learned to listen... and remember. Passed down in secret, it now resides in the manor—quietly watching."
+	icon_state = "azusa"
+	w_class = WEIGHT_CLASS_TINY
+	difficulty = 3
+	resistance_flags = FIRE_PROOF
+	var/last_use = 0
+	var/cooldown_time = 10 SECONDS
+
+/obj/item/treasure/witch_doll/attack_self(mob/user)
+	if(world.time < last_use + cooldown_time)
+		to_chat(user, span_warning("The doll's eyes seem dull. It needs time to regain its power."))
+		return
+		
+	last_use = world.time
+	
+	to_chat(user, span_notice("You squeeze the doll and feel a subtle chill..."))
+	
+	// Find nearby people
+	var/found_anyone = FALSE
+	for(var/mob/living/carbon/human/H in view(7, user))
+		if(H == user)
+			continue
+			
+		found_anyone = TRUE
+		
+		// Get stress level
+		var/stress_amount = H.get_stress_amount()
+		var/stress_desc = get_stress_description(stress_amount)
+		
+		// Get intent information
+		var/intent_name = "unknown"
+		if(H.used_intent)
+			intent_name = H.used_intent.name
+		
+		// Display information to the user - only the user can see this
+		to_chat(user, "<span class='notice' style='color:#9932CC'><b>[H]</b> - Stress: [stress_desc], Intent: [intent_name]</span>")
+	
+	if(!found_anyone)
+		to_chat(user, "<span class='notice' style='color:#9932CC'>The doll whispers to your mind: no one is nearby.</span>")
+	
+	return TRUE
+
+/obj/item/treasure/witch_doll/proc/get_stress_description(stress_amount)
+	switch(stress_amount)
+		if(0)
+			return span_green("perfectly calm")
+		if(1 to 2)
+			return span_green("relaxed")
+		if(3 to 5)
+			return span_info("neutral")
+		if(6 to 10)
+			return span_warning("anxious")
+		if(11 to 20)
+			return span_red("stressed")
+		if(21 to INFINITY)
+			return span_boldred("panicking")
+	return "unknown"
 
 /obj/effect/temp_visual/dir_setting/parchment_indicator
 	name = "magical indicator"
