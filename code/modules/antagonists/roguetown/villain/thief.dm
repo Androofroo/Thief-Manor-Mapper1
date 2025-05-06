@@ -1108,8 +1108,7 @@
 	overlay_state = "smokebomb"
 	clothes_req = FALSE
 	human_req = TRUE
-	charge_max = 300
-	cooldown_min = 300
+	charge_max = 3000
 	action_icon = 'icons/mob/actions/roguespells.dmi'
 	action_icon_state = "spell0"
 	
