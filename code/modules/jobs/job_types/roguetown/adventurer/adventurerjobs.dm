@@ -170,6 +170,7 @@
 
 		if("Scoundrel")
 			to_chat(H, span_warning("You survive by your wits and quick reflexes, with a silver tongue to talk your way out of trouble."))
+			H.mind.adjust_skillrank(/datum/skill/combat/swords, 3, TRUE)
 			H.mind.adjust_skillrank(/datum/skill/combat/knives, 1, TRUE)
 			H.mind.adjust_skillrank(/datum/skill/misc/sneaking, 2, TRUE)
 			H.mind.adjust_skillrank(/datum/skill/misc/stealing, 2, TRUE)
