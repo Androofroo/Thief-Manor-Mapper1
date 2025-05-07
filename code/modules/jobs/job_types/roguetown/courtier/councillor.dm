@@ -6,7 +6,7 @@
 	total_positions = 3
 	spawn_positions = 3
 	allowed_ages = ALL_AGES_LIST
-	allowed_races = RACES_NO_CONSTRUCT		//Nobility, so no constructs.
+	allowed_races = NOBLE_RACES_TYPES
 	allowed_sexes = list(MALE, FEMALE)
 	display_order = JDO_COUNCILLOR
 	tutorial = "The councillor speaks softly but shapes the will of the court, weaving influence through debate, law, and veiled threats. Their counsel can save a house—or quietly doom it."

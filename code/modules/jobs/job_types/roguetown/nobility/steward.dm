@@ -6,7 +6,7 @@
 	total_positions = 1
 	spawn_positions = 1
 
-	allowed_races = RACES_NO_CONSTRUCT
+	allowed_races = NOBLE_RACES_TYPES
 	allowed_sexes = list(MALE, FEMALE)
 	display_order = JDO_STEWARD
 	tutorial = "Master of ledgers and coin, the steward manages the manor’s finances with meticulous care and quiet authority. Every tax, bribe, and missing gem passes through their records—making them both indispensable and quietly dangerous."
