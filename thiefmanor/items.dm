@@ -1625,3 +1625,159 @@ GLOBAL_LIST_EMPTY(all_treasures)
 	// Animation
 	animate(src, pixel_y = pixel_y + 4, time = 5, loop = 6, flags = ANIMATION_RELATIVE)
 	animate(pixel_y = pixel_y - 4, time = 5)
+
+/obj/item/clothing/neck/antimagic_collar
+	name = "Antimagic Collar"
+	desc = "A heavy collar made of special alloy that disrupts magical energies. It has a small keyhole and appears to be locked."
+	icon = 'icons/roguetown/clothing/neck.dmi'
+	icon_state = "cursed_collar"
+	item_state = "cursed_collar"
+	mob_overlay_icon = 'icons/roguetown/clothing/onmob/neck.dmi'
+	w_class = WEIGHT_CLASS_SMALL
+	slot_flags = ITEM_SLOT_NECK
+	resistance_flags = FIRE_PROOF | ACID_PROOF
+	var/locked = 1
+	
+/obj/item/clothing/neck/antimagic_collar/examine(mob/user)
+	. = ..()
+	if(locked)
+		. += span_warning("The collar is locked and requires a specific key to unlock.")
+	else
+		. += span_notice("The collar is unlocked and can be removed.")
+
+// Helper proc to handle locking/unlocking of the collar
+/obj/item/clothing/neck/antimagic_collar/proc/toggle_lock(mob/user, obj/item/key_item)
+	if(!ismob(loc))
+		to_chat(user, span_warning("The collar must be worn to be locked or unlocked."))
+		return FALSE
+		
+	var/mob/M = loc
+	if(M.get_item_by_slot(SLOT_NECK) != src)
+		to_chat(user, span_warning("The collar must be worn around the neck to be locked or unlocked."))
+		return FALSE
+		
+	if(locked)
+		locked = 0
+		playsound(src, 'sound/misc/click.ogg', 25, TRUE)
+		to_chat(user, span_notice("You unlock [src] with [key_item]."))
+		REMOVE_TRAIT(src, TRAIT_NODROP, "antimagic_lock")
+		to_chat(M, span_notice("The collar can now be removed."))
+		return TRUE
+	else
+		locked = 1
+		playsound(src, 'sound/misc/click.ogg', 25, TRUE)
+		to_chat(user, span_notice("You lock [src] with [key_item]."))
+		ADD_TRAIT(src, TRAIT_NODROP, "antimagic_lock")
+		to_chat(M, span_warning("The collar locks around your neck."))
+		return TRUE
+
+/obj/item/clothing/neck/antimagic_collar/attackby(obj/item/W, mob/user, params)
+	if(istype(W, /obj/item/roguekey/garrison) || istype(W, /obj/item/roguekey/lord))
+		return toggle_lock(user, W)
+	else if(istype(W, /obj/item/storage/keyring))
+		var/obj/item/storage/keyring/keyring = W
+		var/has_valid_key = FALSE
+		
+		// Check if keyring contains a valid key
+		for(var/obj/item/I in keyring.contents)
+			if(istype(I, /obj/item/roguekey/garrison) || istype(I, /obj/item/roguekey/lord))
+				has_valid_key = TRUE
+				break
+				
+		if(has_valid_key)
+			return toggle_lock(user, keyring)
+	return ..()
+
+/obj/item/clothing/neck/antimagic_collar/equipped(mob/living/carbon/human/user, slot)
+	. = ..()
+	if(slot == SLOT_NECK)
+		ADD_TRAIT(user, TRAIT_SPELLCOCKBLOCK, "antimagic_collar")
+		to_chat(user, span_warning("You feel magic energies being disrupted around you as the collar settles on your neck."))
+		if(locked)
+			ADD_TRAIT(src, TRAIT_NODROP, "antimagic_lock")
+			to_chat(user, span_danger("The collar clicks shut around your neck. You can't remove it while it's locked!"))
+
+/obj/item/clothing/neck/antimagic_collar/dropped(mob/living/carbon/human/user)
+	if(user && istype(user) && user.get_item_by_slot(SLOT_NECK) == src)
+		REMOVE_TRAIT(user, TRAIT_SPELLCOCKBLOCK, "antimagic_collar")
+		to_chat(user, span_notice("You feel magical energies flow around you once more as the collar is removed."))
+	return ..()
+
+// Helper proc to handle unlocking/locking a collar on someone's neck
+/proc/toggle_collar_on_target(obj/item/clothing/neck/antimagic_collar/collar, mob/user, obj/item/key_item, mob/living/carbon/human/target)
+	if(target.get_item_by_slot(SLOT_NECK) != collar)
+		to_chat(user, span_warning("The collar must be worn around the neck to be locked or unlocked."))
+		return FALSE
+		
+	if(collar.locked)
+		collar.locked = 0
+		playsound(collar, 'sound/misc/click.ogg', 25, TRUE)
+		to_chat(user, span_notice("You unlock [collar] on [target]'s neck with [key_item]."))
+		REMOVE_TRAIT(collar, TRAIT_NODROP, "antimagic_lock")
+		to_chat(target, span_notice("The collar around your neck can now be removed."))
+		return TRUE
+	else
+		collar.locked = 1
+		playsound(collar, 'sound/misc/click.ogg', 25, TRUE)
+		to_chat(user, span_notice("You lock [collar] on [target]'s neck with [key_item]."))
+		ADD_TRAIT(collar, TRAIT_NODROP, "antimagic_lock")
+		to_chat(target, span_warning("The collar locks around your neck."))
+		return TRUE
+
+// Add afterattack to the garrison key to unlock collars on neck slots
+/obj/item/roguekey/garrison/afterattack(atom/target, mob/user, proximity_flag, click_parameters)
+	if(!proximity_flag)
+		return ..()
+		
+	if(ishuman(target))
+		var/mob/living/carbon/human/H = target
+		if(user.zone_selected == BODY_ZONE_PRECISE_NECK)
+			var/obj/item/clothing/neck/antimagic_collar/collar = H.get_item_by_slot(SLOT_NECK)
+			if(istype(collar))
+				return toggle_collar_on_target(collar, user, src, H)
+	return ..()
+
+// Add afterattack to the lord key to unlock collars on neck slots
+/obj/item/roguekey/lord/afterattack(atom/target, mob/user, proximity_flag, click_parameters)
+	if(!proximity_flag)
+		return ..()
+		
+	if(ishuman(target))
+		var/mob/living/carbon/human/H = target
+		if(user.zone_selected == BODY_ZONE_PRECISE_NECK)
+			var/obj/item/clothing/neck/antimagic_collar/collar = H.get_item_by_slot(SLOT_NECK)
+			if(istype(collar))
+				return toggle_collar_on_target(collar, user, src, H)
+	return ..()
+
+// Add afterattack to the keyring to unlock collars on neck slots using a valid key
+/obj/item/storage/keyring/afterattack(atom/target, mob/user, proximity_flag, click_parameters)
+	if(!proximity_flag)
+		return ..()
+		
+	if(ishuman(target))
+		var/mob/living/carbon/human/H = target
+		if(user.zone_selected == BODY_ZONE_PRECISE_NECK)
+			var/obj/item/clothing/neck/antimagic_collar/collar = H.get_item_by_slot(SLOT_NECK)
+			if(istype(collar))
+				// Check if keyring contains a valid key
+				var/has_valid_key = FALSE
+				for(var/obj/item/I in contents)
+					if(istype(I, /obj/item/roguekey/garrison) || istype(I, /obj/item/roguekey/lord))
+						has_valid_key = TRUE
+						break
+						
+				if(has_valid_key)
+					return toggle_collar_on_target(collar, user, src, H)
+	else if(istype(target, /obj/item/clothing/neck/antimagic_collar))
+		var/obj/item/clothing/neck/antimagic_collar/collar = target
+		// Check if keyring contains a valid key
+		var/has_valid_key = FALSE
+		for(var/obj/item/I in contents)
+			if(istype(I, /obj/item/roguekey/garrison) || istype(I, /obj/item/roguekey/lord))
+				has_valid_key = TRUE
+				break
+				
+		if(has_valid_key)
+			return collar.toggle_lock(user, src)
+	return ..()
