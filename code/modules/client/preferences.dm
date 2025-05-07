@@ -1001,7 +1001,7 @@ GLOBAL_LIST_EMPTY(chosen_names)
 					if(is_banned_from(user.ckey, job_datum.title))
 						HTML += "<span class='banned'>[used_name]</span><font color='purple'><b> BANNED</b></font>"
 					else if(!species_allowed)
-						HTML += "<span class='incompatible'>[used_name]</span><font color='#666666'><b> INCOMPATIBLE</b></font>"
+						HTML += "<span class='incompatible'>[used_name]</span><font color='#666666'><b></b></font>"
 					else if(job_datum.required && !isnull(job_datum.min_pq) && (get_playerquality(user.ckey) < job_datum.min_pq))
 						var/pqp = FLOOR(get_playerquality(user.ckey), 1)
 						if(job_preferences[job_datum.title] == JP_LOW)
