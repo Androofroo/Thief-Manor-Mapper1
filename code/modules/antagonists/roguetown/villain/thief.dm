@@ -158,8 +158,8 @@
 			else if(istype(selected_item.targetitem, /obj/item/treasure/morgan))
 				new /obj/item/treasure/morgan()
 		
-		// Add survival objective
-		var/datum/objective/survive/survive_obj = new
+		// Add thief-specific survival objective
+		var/datum/objective/thief/survive/survive_obj = new
 		survive_obj.owner = owner
 		objectives += survive_obj
 		
@@ -208,8 +208,8 @@
 	if(istype(first_objective.targetitem, /obj/item/treasure/morgan) || istype(second_objective.targetitem, /obj/item/treasure/morgan))
 		new /obj/item/treasure/morgan() // Always spawn one regardless of whether one exists
 	
-	// Add survival objective
-	var/datum/objective/survive/survive_obj = new
+	// Add thief-specific survival objective
+	var/datum/objective/thief/survive/survive_obj = new
 	survive_obj.owner = owner
 	objectives += survive_obj
 	
@@ -1132,6 +1132,21 @@
 	smoke.set_up(8, T) // Large smoke radius of 8
 	smoke.start()
 	
+	return TRUE
+
+/datum/objective/thief/survive
+	name = "survive"
+	explanation_text = "Stay alive and avoid being caught and imprisoned."
+
+/datum/objective/thief/survive/check_completion()
+	var/list/datum/mind/owners = get_owners()
+	for(var/datum/mind/M in owners)
+		if(!considered_alive(M))
+			return FALSE
+		// Check if they're in jail
+		var/area/A = get_area(M.current)
+		if(istype(A, /area/rogue/indoors/town/manor/jail))
+			return FALSE
 	return TRUE
 
 

@@ -727,6 +727,17 @@ GLOBAL_LIST_INIT(roguetown_areas_typecache, typecacheof(/area/rogue/indoors/town
 	converted_type = /area/rogue/outdoors/exposed/manorgarri
 	keep_area = TRUE
 
+/area/rogue/indoors/town/manor/jail
+	name = "dungeon cell"
+	icon_state = "cell"
+	spookysounds = SPOOKY_DUNGEON
+	spookynight = SPOOKY_DUNGEON
+	droning_sound = 'sound/music/area/manorgarri.ogg'
+	droning_sound_dusk = null
+	droning_sound_night = null
+	converted_type = /area/rogue/outdoors/exposed/manorgarri
+	keep_area = TRUE
+
 
 /area/rogue/indoors/town/tavern
 	name = "tavern"
