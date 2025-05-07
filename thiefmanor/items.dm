@@ -130,6 +130,7 @@ GLOBAL_LIST_EMPTY(all_treasures)
 /obj/item/treasure/gemerald
 	name = "Massive Gemerald"
 	desc = "An absurdly large green gemstone—gaudy, cut, and almost too heavy to wear—rumored to have been pried from the eye socket of a fallen statue in an ancient ruin. Its true value is debated, but its sheer size makes it irresistible to thieves and impossible to hide discreetly."
+	icon = 'icons/roguetown/items/gems.dmi'
 	icon_state = "emerald_cut"
 	difficulty = 4
 	drop_sound = 'sound/items/gem.ogg'
