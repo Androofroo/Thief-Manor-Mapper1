@@ -7,7 +7,7 @@
 	spawn_positions = 1
 	selection_color = JCOLOR_CHURCH
 	f_title = "Deaconess"
-	allowed_races = RACES_NO_CONSTRUCT		//Too recent arrivals to ascend to priesthood.
+	allowed_races = NOBLE_RACES_TYPES
 	allowed_sexes = list(MALE, FEMALE)
 	tutorial = "The Deacon tends the humble chapel beyond the manor walls, offering guidance, comfort, and quiet prayers to those who seek them. Though gentle in demeanor, they are a vigilant guardian of sacred rites—and may know more about the manor’s buried sins than they let on."
 	whitelist_req = FALSE
