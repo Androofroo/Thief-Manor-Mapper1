@@ -21,58 +21,37 @@
 	return ..()
 
 /datum/antagonist/thief/proc/finalize_thief()
-	// Don't give the lockpick immediately - wait until class choice is made
-	// Will be handled in on_life
+	// Add thief kit to special loadout right away
+	var/mob/living/carbon/human/H = owner.current
+	if(istype(H))
+		add_loadout_item(H)
 
-/datum/antagonist/thief/on_life(mob/living/carbon/human/H)
-	// Performance optimized - only check if we haven't given the lockpick yet
-	if(!lockpick_given && istype(H) && H.mind && !H.advsetup)
-		check_and_give_lockpick(H)
-		lockpick_given = TRUE  // Mark as given to prevent future checks
-	
-	. = ..()
-
-/datum/antagonist/thief/proc/check_and_give_lockpick(mob/living/carbon/human/H)
-	if(!H || QDELETED(H))
+/datum/antagonist/thief/proc/add_loadout_item(mob/living/carbon/human/H)
+	if(!H || QDELETED(H) || !istype(H) || !H.client)
 		return
+		
+	// Add the thief kit to the player's mind.special_items instead of special_loadout
+	// This lets them keep their regular loadout items
 	
-	// First check if they already have a lockpick (some classes like Infiltrator get one by default)
-	var/has_lockpick = FALSE
-	
-	// Check various inventory locations for lockpicks
-	if(H.back && istype(H.back, /obj/item/storage))
-		var/obj/item/storage/S = H.back
-		for(var/obj/item/I in S.contents)
-			if(istype(I, /obj/item/lockpick) || istype(I, /obj/item/lockpickring))
-				has_lockpick = TRUE
-				break
-	
-	// Check all possible belt slots
-	var/list/belt_slots = list(SLOT_BELT, SLOT_BELT_L, SLOT_BELT_R)
-	for(var/belt_slot in belt_slots)
-		var/obj/item/belt = H.get_item_by_slot(belt_slot)
-		if(istype(belt, /obj/item/storage))
-			var/obj/item/storage/S = belt
-			for(var/obj/item/I in S.contents)
-				if(istype(I, /obj/item/lockpick) || istype(I, /obj/item/lockpickring))
-					has_lockpick = TRUE
-					break
-		if(has_lockpick)
+	// First, find the thief_kit loadout item path
+	var/thief_kit_path
+	for(var/path in GLOB.loadout_items)
+		var/datum/loadout_item/LI = GLOB.loadout_items[path]
+		if(LI.name == "thief kit")
+			thief_kit_path = path
 			break
-	
-	// Also check if they're directly holding a lockpick
-	for(var/obj/item/I in H.held_items)
-		if(istype(I, /obj/item/lockpick) || istype(I, /obj/item/lockpickring))
-			has_lockpick = TRUE
-			break
-	
-	// If they don't already have a lockpick, give them one
-	if(!has_lockpick)
-		give_lockpick(H)
-	else
-		to_chat(H, span_notice("Your class choice has already equipped you with lockpicking tools."))
-	
-	return
+			
+	if(thief_kit_path)
+		// Initialize special_items list if it doesn't exist
+		if(!H.mind.special_items)
+			H.mind.special_items = list()
+			
+		// Add the thief kit to the player's special items with a special name to identify it
+		H.mind.special_items["Thief Kit"] = GLOB.loadout_items[thief_kit_path].path
+		to_chat(H, span_notice("A <b>thief kit</b> has been added to your stash. You can retrieve it from any tree, statue, or clock by right-clicking on them."))
+		
+		// Mark as given so we don't try to add it again
+		lockpick_given = TRUE
 
 /datum/antagonist/thief/proc/equip_thief()
 	var/mob/living/carbon/human/H = owner.current
@@ -108,37 +87,11 @@
 	// Add thief traits
 	ADD_TRAIT(H, TRAIT_GENERIC, TRAIT_GENERIC)
 
-/datum/antagonist/thief/proc/give_lockpick(mob/living/carbon/human/H)
-	if(!H || !istype(H))
-		return
-	
-	// First check if the thief has a backpack or other storage
-	var/obj/item/storage/backpack = H.back
-	if(istype(backpack))
-		new /obj/item/lockpickring/mundane(backpack)
-		to_chat(H, span_notice("You find a lockpick ring in your backpack."))
-		return
-	
-	// Try to place it in various equipment slots
-	if(H.equip_to_slot_if_possible(new /obj/item/lockpickring/mundane(), SLOT_IN_BACKPACK))
-		to_chat(H, span_notice("You find a lockpick ring tucked away in your backpack."))
-		return
-	
-	// Try belt slots
-	var/list/belt_slots = list(SLOT_BELT, SLOT_BELT_L, SLOT_BELT_R)
-	for(var/belt_slot in belt_slots)
-		if(H.equip_to_slot_if_possible(new /obj/item/lockpickring/mundane(), belt_slot))
-			to_chat(H, span_notice("You find a lockpick ring attached to your belt."))
-			return
-	
-	// If all else fails, drop at feet
-	new /obj/item/lockpickring/mundane(get_turf(H))
-	to_chat(H, span_notice("A lockpick ring appears at your feet."))
-
 /datum/antagonist/thief/greet()
 	to_chat(owner.current, "<span class='userdanger'>You are a thief!</span>")
 	to_chat(owner.current, "<span class='boldwarning'>You've worked in the manor for years, always overlooked, always underappreciated. You know every corner, every secret passage. Now it's time to take what you deserve - precious treasures! Your insider knowledge gives you an advantage, but betrayal is punished harshly in these lands.</span>")
 	to_chat(owner.current, "<span class='boldnotice'>You've been trained in the art of the thief, and have stealthy abilities and tools to help you complete your mission.</span>")
+	to_chat(owner.current, "<span class='boldnotice'>A <b>thief kit</b> has been added to your stash. You can retrieve it by right-clicking on any tree, statue, or clock.</span>")
 	
 	
 	if(owner.current.mind)

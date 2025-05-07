@@ -169,6 +169,7 @@ GLOBAL_LIST_EMPTY(chosen_names)
 	var/datum/loadout_item/loadout
 	var/datum/loadout_item/loadout2
 	var/datum/loadout_item/loadout3
+	var/datum/loadout_item/special_loadout // Special hidden slot for antag items like thief kit
 
 	var/flavortext
 	var/flavortext_display
@@ -1838,6 +1839,8 @@ GLOBAL_LIST_EMPTY(chosen_names)
 							continue
 						if (!loadout.name)
 							continue
+						if (loadout.hidden)
+							continue // Skip hidden loadout items
 						loadouts_available[loadout.name] = loadout
 
 					var/loadout_input = input(user, "Choose your character's loadout item. RMB a tree, statue or clock to collect. I cannot stress this enough. YOU DON'T SPAWN WITH THESE. YOU HAVE TO MANUALLY PICK THEM UP!!", "LOADOUT THAT YOU GET FROM A TREE OR STATUE OR CLOCK") as null|anything in loadouts_available
@@ -1859,6 +1862,8 @@ GLOBAL_LIST_EMPTY(chosen_names)
 							continue
 						if (!loadout2.name)
 							continue
+						if (loadout2.hidden)
+							continue // Skip hidden loadout items
 						loadouts_available[loadout2.name] = loadout2
 
 					var/loadout_input2 = input(user, "Choose your character's loadout item. RMB a tree, statue or clock to collect. I cannot stress this enough. YOU DON'T SPAWN WITH THESE. YOU HAVE TO MANUALLY PICK THEM UP!!", "LOADOUT THAT YOU GET FROM A TREE OR STATUE OR CLOCK") as null|anything in loadouts_available
@@ -1880,6 +1885,8 @@ GLOBAL_LIST_EMPTY(chosen_names)
 							continue
 						if (!loadout3.name)
 							continue
+						if (loadout3.hidden)
+							continue // Skip hidden loadout items
 						loadouts_available[loadout3.name] = loadout3
 
 					var/loadout_input3 = input(user, "Choose your character's loadout item. RMB a tree, statue or clock to collect. I cannot stress this enough. YOU DON'T SPAWN WITH THESE. YOU HAVE TO MANUALLY PICK THEM UP!!", "LOADOUT THAT YOU GET FROM A TREE OR STATUE OR CLOCK") as null|anything in loadouts_available

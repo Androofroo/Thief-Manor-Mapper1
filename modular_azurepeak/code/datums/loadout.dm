@@ -6,6 +6,7 @@ GLOBAL_LIST_EMPTY(loadout_items)
 	var/path
 	var/donoritem			//autoset on new if null
 	var/list/ckeywhitelist
+	var/hidden = FALSE     // If TRUE, this item won't show in regular loadout selection
 
 /datum/loadout_item/New()
 	if(isnull(donoritem))
@@ -382,3 +383,10 @@ GLOBAL_LIST_EMPTY(loadout_items)
 	name = "Donator Kit - Gilded Sallet"
 	path = /obj/item/enchantingkit/rebel
 	ckeywhitelist = list("rebel0")
+
+/datum/loadout_item/thief_kit
+	name = "thief kit"
+	desc = "A small dark pouch containing essential tools of the trade for aspiring thieves. Only thieves can see this option."
+	path = /obj/item/storage/thief_kit
+	hidden = TRUE  // Hide this item from normal loadout selection
+	// This will be restricted to thieves in the antagonist code
