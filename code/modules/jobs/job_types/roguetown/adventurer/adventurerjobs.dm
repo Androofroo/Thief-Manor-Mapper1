@@ -428,7 +428,6 @@
 	category_tags = list(CTAG_ADVENTURERMANOR)
 	classes = list(
 		"Healer" = "You focus on healing wounds and curing ailments through divine magic.",
-		"Guardian" = "Your protective magic forms barriers and shields to protect allies.",
 		"Crusader" = "You channel divine power to oppose darkness and undeath."
 	)
 
