@@ -372,34 +372,25 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	*/
 
 /datum/preferences/proc/_load_loadout(S)
-	// Loadout items are disabled - always return null
-	/*
+	// Re-enabled loadout items
 	var/loadout_type
 	S["loadout"] >> loadout_type
 	if (loadout_type)
 		loadout = new loadout_type()
-	*/
-	loadout = null
 
 /datum/preferences/proc/_load_loadout2(S)
-	// Loadout items are disabled - always return null
-	/*
+	// Re-enabled loadout items
 	var/loadout_type2
 	S["loadout2"] >> loadout_type2
 	if (loadout_type2)
 		loadout2 = new loadout_type2()
-	*/
-	loadout2 = null
 
 /datum/preferences/proc/_load_loadout3(S)
-	// Loadout items are disabled - always return null
-	/*
+	// Re-enabled loadout items
 	var/loadout_type3
 	S["loadout3"] >> loadout_type3
 	if (loadout_type3)
 		loadout3 = new loadout_type3()
-	*/
-	loadout3 = null
 
 
 /datum/preferences/proc/_load_appearence(S)
@@ -690,11 +681,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	// Save job advclasses
 	WRITE_FILE(S["job_advclasses"], job_advclasses)
 	
-	// Loadout items are disabled - always save null
-	WRITE_FILE(S["loadout"] , null)
-	WRITE_FILE(S["loadout2"] , null)
-	WRITE_FILE(S["loadout3"] , null)
-	/*
+	// Re-enabled loadout items
 	if(loadout)
 		WRITE_FILE(S["loadout"] , loadout.type)
 	else
@@ -707,7 +694,6 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		WRITE_FILE(S["loadout3"] , loadout3.type)
 	else
 		WRITE_FILE(S["loadout3"] , null)
-	*/
 
 	return TRUE
 

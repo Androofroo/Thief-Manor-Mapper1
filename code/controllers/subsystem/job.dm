@@ -759,6 +759,20 @@ SUBSYSTEM_DEF(job)
 							
 					if(AC)
 						break
+				
+				// Make sure loadout items are added to special_items BEFORE applying the advclass
+				if(H.mind && M.client && M.client.prefs)
+					// Initialize special_items list if it doesn't exist
+					if(!H.mind.special_items)
+						H.mind.special_items = list()
+					
+					// Add loadout items to special_items
+					if(M.client.prefs.loadout)
+						H.mind.special_items[M.client.prefs.loadout.name] = M.client.prefs.loadout.path
+					if(M.client.prefs.loadout2)
+						H.mind.special_items[M.client.prefs.loadout2.name] = M.client.prefs.loadout2.path
+					if(M.client.prefs.loadout3)
+						H.mind.special_items[M.client.prefs.loadout3.name] = M.client.prefs.loadout3.path
 						
 				if(AC)
 					AC.equipme(H)
