@@ -21,18 +21,58 @@
 	return ..()
 
 /datum/antagonist/thief/proc/finalize_thief()
-	var/mob/living/carbon/human/H = owner.current
-	
-	// If advsetup is already 0, give the lockpick immediately
-	if(!H.advsetup)
-		give_lockpick(H)
+	// Don't give the lockpick immediately - wait until class choice is made
+	// Will be handled in on_life
 
 /datum/antagonist/thief/on_life(mob/living/carbon/human/H)
-	// Check if the lockpick needs to be given and advsetup is complete
-	if(!lockpick_given && !H.advsetup)
-		give_lockpick(H)
+	// Performance optimized - only check if we haven't given the lockpick yet
+	if(!lockpick_given && istype(H) && H.mind && !H.advsetup)
+		check_and_give_lockpick(H)
+		lockpick_given = TRUE  // Mark as given to prevent future checks
 	
 	. = ..()
+
+/datum/antagonist/thief/proc/check_and_give_lockpick(mob/living/carbon/human/H)
+	if(!H || QDELETED(H))
+		return
+	
+	// First check if they already have a lockpick (some classes like Infiltrator get one by default)
+	var/has_lockpick = FALSE
+	
+	// Check various inventory locations for lockpicks
+	if(H.back && istype(H.back, /obj/item/storage))
+		var/obj/item/storage/S = H.back
+		for(var/obj/item/I in S.contents)
+			if(istype(I, /obj/item/lockpick) || istype(I, /obj/item/lockpickring))
+				has_lockpick = TRUE
+				break
+	
+	// Check all possible belt slots
+	var/list/belt_slots = list(SLOT_BELT, SLOT_BELT_L, SLOT_BELT_R)
+	for(var/belt_slot in belt_slots)
+		var/obj/item/belt = H.get_item_by_slot(belt_slot)
+		if(istype(belt, /obj/item/storage))
+			var/obj/item/storage/S = belt
+			for(var/obj/item/I in S.contents)
+				if(istype(I, /obj/item/lockpick) || istype(I, /obj/item/lockpickring))
+					has_lockpick = TRUE
+					break
+		if(has_lockpick)
+			break
+	
+	// Also check if they're directly holding a lockpick
+	for(var/obj/item/I in H.held_items)
+		if(istype(I, /obj/item/lockpick) || istype(I, /obj/item/lockpickring))
+			has_lockpick = TRUE
+			break
+	
+	// If they don't already have a lockpick, give them one
+	if(!has_lockpick)
+		give_lockpick(H)
+	else
+		to_chat(H, span_notice("Your class choice has already equipped you with lockpicking tools."))
+	
+	return
 
 /datum/antagonist/thief/proc/equip_thief()
 	var/mob/living/carbon/human/H = owner.current
@@ -69,11 +109,8 @@
 	ADD_TRAIT(H, TRAIT_GENERIC, TRAIT_GENERIC)
 
 /datum/antagonist/thief/proc/give_lockpick(mob/living/carbon/human/H)
-	if(lockpick_given || !H || !istype(H))
+	if(!H || !istype(H))
 		return
-	
-	// Mark as given to prevent duplicates
-	lockpick_given = TRUE
 	
 	// First check if the thief has a backpack or other storage
 	var/obj/item/storage/backpack = H.back
