@@ -76,6 +76,7 @@ GLOBAL_LIST_INIT(courtier_positions, list(
 	"Court Physician",
 	"Jester",
 	"Seneschal",
+	"Servant",
 ))
 
 GLOBAL_LIST_INIT(garrison_positions, list(
@@ -85,6 +86,7 @@ GLOBAL_LIST_INIT(garrison_positions, list(
 	"Manor Guard",
 	"Dungeoneer",
 	"Gatemaster",
+	"Squire",
 ))
 
 GLOBAL_LIST_INIT(church_positions, list(
@@ -149,13 +151,11 @@ GLOBAL_LIST_INIT(mercenary_positions, list(
 ))
 
 GLOBAL_LIST_INIT(youngfolk_positions, list(
-	"Squire",
 	"Clerk",
 	"Apothecary",
 	"Smithy Apprentice",
 	"Magicians Associate",
 	"Churchling",
-	"Servant",
 	"Shophand",
 	"Vagabond",
 ))

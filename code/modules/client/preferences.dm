@@ -793,266 +793,317 @@ GLOBAL_LIST_EMPTY(chosen_names)
 	if(!SSjob)
 		return
 
-	//limit - The amount of jobs allowed per column. Defaults to 17 to make it look nice.
-	//splitJobs - Allows you split the table by job. You can make different tables for each department by including their heads. Defaults to CE to make it look nice.
-	//widthPerColumn - Screen's width for every column.
-	//height - Screen's height.
-
-	var/width = widthPerColumn
-
 	var/HTML = "<center>"
 	if(SSjob.occupations.len <= 0)
-//		HTML += "The job SSticker is not yet finished creating jobs, please try again later"
 		HTML += "<center><a href='?_src_=prefs;preference=job;task=close'>Done</a></center><br>" // Easier to press up here.
-
 	else
-//		HTML += "<b>Choose class preferences</b><br>"
-//		HTML += "<div align='center'>Left-click to raise a class preference, right-click to lower it.<br></div>"
 		HTML += "<center><a href='?_src_=prefs;preference=job;task=close'>Done</a></center><br>" // Easier to press up here.
 		if(joblessrole != RETURNTOLOBBY && joblessrole != BERANDOMJOB) // this is to catch those that used the previous definition and reset.
 			joblessrole = RETURNTOLOBBY
 		HTML += "<b>If Role Unavailable:</b><font color='purple'><a href='?_src_=prefs;preference=job;task=nojob'>[joblessrole]</a></font><BR>"
 		HTML += "<script type='text/javascript'>function setJobPrefRedirect(level, rank) { window.location.href='?_src_=prefs;preference=job;task=setJobLevel;level=' + level + ';text=' + encodeURIComponent(rank); return false; }</script>"
-		HTML += "<table width='100%' cellpadding='1' cellspacing='0'><tr><td width='20%'>" // Table within a table for alignment, also allows you to easily add more colomns.
-		HTML += "<table width='100%' cellpadding='1' cellspacing='0'>"
-		var/index = -1
-
-		//The job before the current job. I only use this to get the previous jobs color when I'm filling in blank rows.
-		var/datum/job/lastJob
-		for(var/datum/job/job in sortList(SSjob.occupations, GLOBAL_PROC_REF(cmp_job_display_asc)))
-			if(!job.spawn_positions)
-				continue
-			index += 1
-			if((index >= limit) || (job.title in splitJobs))
-				if((index < limit) && (lastJob != null))
-					//If the cells were broken up by a job in the splitJob list then it will fill in the rest of the cells with
-					//the last job's selection color. Creating a rather nice effect.
-					for(var/i = 0, i < (limit - index), i += 1)
-						HTML += "<tr bgcolor='000000'><td width='60%' align='right'>&nbsp</td><td>&nbsp</td></tr>"
-				HTML += "</table></td><td width='20%'><table width='100%' cellpadding='1' cellspacing='0'>"
-				index = 0
-
-			HTML += "<tr bgcolor='000000'><td width='60%' align='right'>"
-			var/rank = job.title
-			var/used_name = job.title
-			if((pronouns == SHE_HER || pronouns == THEY_THEM_F) && job.f_title)
-				used_name = job.f_title
-			lastJob = job
-			
-			// Check if species is compatible with this job
-			var/species_allowed = TRUE
-			if(job && length(job.allowed_races))
-				species_allowed = FALSE
-				// RACES_ALL_KINDS is a list of lists, so we need to check each sublist
-				for(var/race_list in job.allowed_races)
-					if(islist(race_list))
-						// If it's a list, check if pref_species's type is in that list
-						for(var/race_path in race_list)
-							if(istype(pref_species, race_path))
-								species_allowed = TRUE
-								break
-					else
-						// If it's a direct type path, check if pref_species is of that type
-						if(istype(pref_species, race_list))
-							species_allowed = TRUE
-							break
-					
-					if(species_allowed)
-						break
-			
-			if(is_banned_from(user.ckey, rank))
-				HTML += "<span class='banned'>[used_name]</span></td><td align='center'><font color='purple'><b> BANNED</b></font></td></tr>"
-				continue
-			else if(!species_allowed)
-				// Grey out incompatible jobs and don't allow any preference
-				HTML += "<span class='incompatible' style='color: #666666;'>[used_name]</span></td><td align='center'><font color='#666666'><b>INCOMPATIBLE</b></font></td></tr>"
-				continue
-			else if(job.required && !isnull(job.min_pq) && (get_playerquality(user.ckey) < job.min_pq))
-				var/pqp = FLOOR(get_playerquality(user.ckey), 1)
-				if(job_preferences[job.title] == JP_LOW)
-					HTML += "<span class='lowpq'>[used_name]</span><span class='lowbadge'>[pqp]</span>"
-				else
-					HTML += "<span class='bannedpq'>[used_name]</span><span class='bannedpqbadge'>[pqp]</span>"
-			else if(!job.required && !isnull(job.min_pq) && (get_playerquality(user.ckey) < job.min_pq))
-				var/pqp = FLOOR(get_playerquality(user.ckey), 1)
-				if(job_preferences[job.title] == JP_LOW)
-					HTML += "<span class='lowpq'>[used_name]</span><span class='lowbadge'>[pqp]</span>"
-				else
-					HTML += "<span class='bannedpq'>[used_name]</span><span class='bannedpqbadge'>[pqp]</span>"
-			else if(!job.required && !isnull(job.max_pq) && (get_playerquality(user.ckey) > job.max_pq))
-				var/pqp = FLOOR(get_playerquality(user.ckey), 1)
-				if(job_preferences[job.title] == JP_LOW)
-					HTML += "<span class='lowpq'>[used_name]</span><span class='lowbadge'>[pqp]</span>"
-				else
-					HTML += "<span class='bannedpq'>[used_name]</span><span class='bannedpqbadge'>[pqp]</span>"
-			else
-				if(job.tutorial && job.tutorial != "")
-					var/sanitized_tutorial = replacetext(replacetext(job.tutorial, "\"", "&quot;"), "'", "&#39;")
-					HTML += "<span class='job' data-tutorial='[sanitized_tutorial]' onmouseover='showTutorial(this.getAttribute(\"data-tutorial\"))' onmouseout='hideTutorial()'>[used_name]</span>"
-				else
-					HTML += "<span class='job'>[used_name]</span>"
-			
-			// Skip preference UI for incompatible races (already handled by continue above)
-			if(!species_allowed)
-				continue
-				
-			HTML += "</td><td width='40%'>"
-
-			var/prefLevelLabel = "ERROR"
-			var/prefLevelColor = "pink"
-			var/prefUpperLevel = -1 // level to assign on left click
-			var/prefLowerLevel = -1 // level to assign on right click
-
-			switch(job_preferences[job.title])
-				if(JP_HIGH)
-					prefLevelLabel = "High"
-					prefLevelColor = "slateblue"
-					prefUpperLevel = 4
-					prefLowerLevel = 2
-					var/mob/dead/new_player/P = user
-					if(istype(P))
-						P.topjob = job.title
-				if(JP_MEDIUM)
-					prefLevelLabel = "Medium"
-					prefLevelColor = "green"
-					prefUpperLevel = 1
-					prefLowerLevel = 3
-				if(JP_LOW)
-					prefLevelLabel = "Low"
-					prefLevelColor = "orange"
-					prefUpperLevel = 2
-					prefLowerLevel = 4
-				else
-					prefLevelLabel = "NEVER"
-					prefLevelColor = "red"
-					prefUpperLevel = 3
-					prefLowerLevel = 1
-
-			HTML += "<a class='white' href='?_src_=prefs;preference=job;task=setJobLevel;level=[prefUpperLevel];text=[rank]' oncontextmenu='javascript:return setJobPrefRedirect([prefLowerLevel], \"[rank]\");'>"
-
-			HTML += "<font color=[prefLevelColor]>[prefLevelLabel]</font>"
-			HTML += "</a></td></tr>"
-			
-			// Add advclass selector button for jobs with advclass_cat_rolls
-			// Only show if the job has a preference set (not NEVER)
-			// Exclude the Adventurer job as it uses a different system
-			if(job.advclass_cat_rolls && job_preferences[job.title] && job.title != "Adventurer" && job.title != "Artisan")
-				var/selected_class = null
-				var/tutorial_text = ""
-				if(job_advclasses && job_advclasses[job.title])
-					selected_class = job_advclasses[job.title]
-				
-				// If no saved preference exists, find the first available class
-				if(!selected_class)
-					// Get the first available subclass for display
-					for(var/ctag in job.advclass_cat_rolls)
-						if(!SSrole_class_handler.sorted_class_categories[ctag])
-							continue
-						var/list/ctag_classes = SSrole_class_handler.sorted_class_categories[ctag]
-						for(var/datum/advclass/AC in ctag_classes)
-							if(AC.check_requirements(pref_species) && (ctag in AC.category_tags))
-								selected_class = AC.name
-								break
-						if(selected_class)
-							break
-				
-				// If still no class found, fall back to "None" (shouldn't happen)
-				if(!selected_class)
-					selected_class = "None"
-					
-				// Find the tutorial text for the selected advclass
-				if(selected_class != "None")
-					for(var/ctag in job.advclass_cat_rolls)
-						if(!SSrole_class_handler.sorted_class_categories[ctag])
-							continue
-						var/list/ctag_classes = SSrole_class_handler.sorted_class_categories[ctag]
-						for(var/datum/advclass/AC in ctag_classes)
-							if(AC.name == selected_class && AC.tutorial)
-								tutorial_text = replacetext(AC.tutorial, "\"", "&quot;")
-								break
-						if(tutorial_text)
-							break
-				
-				if(tutorial_text && tutorial_text != "")
-					var/sanitized_tutorial = replacetext(replacetext(tutorial_text, "\"", "&quot;"), "'", "&#39;")
-					HTML += "<tr bgcolor='000000'><td colspan='2' align='center'><a href='?_src_=prefs;preference=job;task=advclass;job=[job.title]' class='advclass_select' data-tutorial='[sanitized_tutorial]' onmouseover='showTutorial(this.getAttribute(\"data-tutorial\"))' onmouseout='hideTutorial()'>Subclass: [selected_class]</a></td></tr>"
-				else
-					HTML += "<tr bgcolor='000000'><td colspan='2' align='center'><a href='?_src_=prefs;preference=job;task=advclass;job=[job.title]' class='advclass_select'>Subclass: [selected_class]</a></td></tr>"
-
-		for(var/i = 1, i < (limit - index), i += 1) // Finish the column so it is even
-			HTML += "<tr bgcolor='000000'><td width='60%' align='right'>&nbsp</td><td>&nbsp</td></tr>"
-
-		HTML += "</td'></tr></table>"
-		HTML += "</center></table><br>"
-
-//		var/message = "Be an [SSjob.overflow_role] if preferences unavailable"
-//		if(joblessrole == BERANDOMJOB)
-//			message = "Get random job if preferences unavailable"
-//		else if(joblessrole == RETURNTOLOBBY)
-//			message = "Return to lobby if preferences unavailable"
-//		HTML += "<center><br><a href='?_src_=prefs;preference=job;task=random'>[message]</a></center>"
-		if(user.client.prefs.lastclass)
-			HTML += "<center><a href='?_src_=prefs;preference=job;task=triumphthing'>PLAY AS [user.client.prefs.lastclass] AGAIN</a></center>"
-		else
-			HTML += "<br>"
-		HTML += "<center><a href='?_src_=prefs;preference=job;task=reset'>Reset</a></center>"
 		
-		// Add tutorial tooltip container and JavaScript
-		HTML += "<div id='tutorial-box' style='display: none; position: fixed; max-width: 300px; min-width: 100px; background-color: #333; border: 1px solid #666; padding: 10px; color: white; z-index: 1000; border-radius: 5px; font-size: 12px; line-height: 1.4; box-shadow: 0 2px 10px rgba(0,0,0,0.5); overflow-y: auto; max-height: 60vh;'></div>"
-		HTML += {"<script type='text/javascript'>
-			function showTutorial(text) {
-				var box = document.getElementById('tutorial-box');
-				box.innerHTML = text;
-				box.style.display = 'block';
-				
-				// Position the box near the mouse
-				document.onmousemove = function(e) {
-					// Get viewport dimensions
-					var windowWidth = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
-					var windowHeight = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
-					
-					// Default position
-					var x = e.clientX + 15;
-					var y = e.clientY + 15;
-					
-					// Wait for box to have dimensions
-					setTimeout(function() {
-						var boxWidth = box.offsetWidth;
-						var boxHeight = box.offsetHeight;
-						
-						// Adjust horizontal position if needed
-						if (x + boxWidth > windowWidth - 20) {
-							x = Math.max(20, e.clientX - boxWidth - 15);
-						}
-						
-						// Adjust vertical position if needed
-						if (y + boxHeight > windowHeight - 20) {
-							y = Math.max(20, e.clientY - boxHeight - 15);
-						}
-						
-						// Make sure box is always fully visible
-						x = Math.max(20, Math.min(windowWidth - boxWidth - 20, x));
-						y = Math.max(20, Math.min(windowHeight - boxHeight - 20, y));
-						
-						box.style.left = x + 'px';
-						box.style.top = y + 'px';
-					}, 0);
-				};
-			}
+		// Add tutorial display script
+		HTML += "<script type='text/javascript'>"
+		HTML += "function showTutorial(text, event) {"
+		HTML += "  var tutorialBox = document.getElementById('tutorial-box');"
+		HTML += "  if (!tutorialBox) {"
+		HTML += "    tutorialBox = document.createElement('div');"
+		HTML += "    tutorialBox.id = 'tutorial-box';"
+		HTML += "    tutorialBox.style.position = 'fixed';"
+		HTML += "    tutorialBox.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';"
+		HTML += "    tutorialBox.style.color = 'white';"
+		HTML += "    tutorialBox.style.padding = '10px';"
+		HTML += "    tutorialBox.style.borderRadius = '5px';"
+		HTML += "    tutorialBox.style.maxWidth = '300px';"
+		HTML += "    tutorialBox.style.zIndex = '1000';"
+		HTML += "    tutorialBox.style.textAlign = 'left';"
+		HTML += "    tutorialBox.style.fontSize = '14px';"
+		HTML += "    document.body.appendChild(tutorialBox);"
+		HTML += "  }"
+		HTML += "  tutorialBox.innerHTML = text;"
+		HTML += "  tutorialBox.style.display = 'block';"
+		HTML += "  var x = event.clientX + 15;"
+		HTML += "  var y = event.clientY + 15;"
+		HTML += "  var windowWidth = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;"
+		HTML += "  var windowHeight = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;"
+		HTML += "  if (x + tutorialBox.offsetWidth > windowWidth - 20) {"
+		HTML += "    x = Math.max(20, event.clientX - tutorialBox.offsetWidth - 15);"
+		HTML += "  }"
+		HTML += "  if (y + tutorialBox.offsetHeight > windowHeight - 20) {"
+		HTML += "    y = Math.max(20, event.clientY - tutorialBox.offsetHeight - 15);"
+		HTML += "  }"
+		HTML += "  tutorialBox.style.left = x + 'px';"
+		HTML += "  tutorialBox.style.top = y + 'px';"
+		HTML += "}"
+		HTML += "function hideTutorial() {"
+		HTML += "  var tutorialBox = document.getElementById('tutorial-box');"
+		HTML += "  if (tutorialBox) {"
+		HTML += "    tutorialBox.style.display = 'none';"
+		HTML += "  }"
+		HTML += "}"
+		HTML += "</script>"
+		
+		// Add CSS for styling with smaller boxes
+		HTML += "<style>"
+		HTML += ".job { cursor: pointer; font-size: 14px; display: inline-block; }"
+		HTML += ".command { font-weight: bold; }"
+		HTML += ".incompatible { color: #666666; }"
+		HTML += ".priority { color: #ff0000; }"
+		HTML += ".job-container { display: flex; flex-wrap: wrap; justify-content: center; max-width: 700px; margin: 0 auto; }"
+		HTML += ".job-category { margin: 3px; border: 2px solid; border-radius: 5px; padding: 4px; min-width: 150px; max-width: 170px; font-size: 14px; }"
+		HTML += ".job-category-header { font-weight: bold; text-align: center; margin-bottom: 4px; padding: 3px; border-radius: 3px; font-size: 15px; }"
+		HTML += ".job-entry { margin: 3px 0; line-height: 1.3; white-space: nowrap; display: flex; align-items: center; }"
+		HTML += ".job-pref { font-size: 13px; display: inline-block; margin-left: 5px; flex-shrink: 0; }"
+		HTML += ".advclass_select { display: block; width: 100%; text-align: center; background-color: #333; padding: 2px; margin-top: 2px; font-size: 13px; }"
+		HTML += "#tutorial-box { display: none; }"
+		HTML += "</style>"
+		
+		// Create job category containers similar to latejoin
+		HTML += "<div class='job-container'>"
+		
+		var/list/omegalist = list()
+		omegalist += list(GLOB.noble_positions)
+		omegalist += list(GLOB.courtier_positions)
+		omegalist += list(GLOB.garrison_positions)
+		omegalist += list(GLOB.church_positions)
+		omegalist += list(GLOB.inquisition_positions)
+		omegalist += list(GLOB.yeoman_positions)
+		omegalist += list(GLOB.peasant_positions)
+		omegalist += list(GLOB.mercenary_positions)
+		omegalist += list(GLOB.youngfolk_positions)
+		
+		// Special cases for specific game modes
+		if(istype(SSticker.mode, /datum/game_mode/chaosmode))
+			var/datum/game_mode/chaosmode/C = SSticker.mode
+			if(C.allmig)
+				omegalist = list(GLOB.allmig_positions)
+		if(istype(SSticker.mode, /datum/game_mode/roguewar))
+			omegalist = list(GLOB.roguewar_positions)
 			
-			function hideTutorial() {
-				var box = document.getElementById('tutorial-box');
-				box.style.display = 'none';
-				document.onmousemove = null;
-			}
-		</script>"}
-
-	var/datum/browser/noclose/popup = new(user, "mob_occupation", "<div align='center'>Class Selection</div>", width, height)
-	popup.set_window_options("can_close=0")
+		// Process each category
+		for(var/list/category in omegalist)
+			if(!SSjob.name_occupations[category[1]])
+				continue
+				
+			var/list/available_jobs = list()
+			for(var/job in category)
+				var/datum/job/job_datum = SSjob.name_occupations[job]
+				if(!job_datum)
+					continue
+				// Only include jobs that have available spawn positions
+				if(job_datum.spawn_positions > 0)
+					available_jobs += job
+				
+			if(length(available_jobs))
+				var/cat_color = SSjob.name_occupations[category[1]].selection_color
+				var/cat_name = ""
+				switch(SSjob.name_occupations[category[1]].department_flag)
+					if(NOBLEMEN)
+						cat_name = "Nobles"
+					if(COURTIERS)
+						cat_name = "Courtiers"
+					if(GARRISON)
+						cat_name = "Garrison"
+					if(CHURCHMEN)
+						cat_name = "Churchmen"
+					if(YEOMEN)
+						cat_name = "Yeomen"
+					if(PEASANTS)
+						cat_name = "Peasants"
+					if(YOUNGFOLK)
+						cat_name = "Sidefolk"
+					if(MERCENARIES)
+						cat_name = "Mercenaries"
+					if(INQUISITION)
+						cat_name = "Inquisition"
+				
+				HTML += "<div class='job-category' style='border-color: [cat_color];'>"
+				HTML += "<div class='job-category-header' style='background-color: [cat_color]; color: #ffffff;'>[cat_name]</div>"
+				
+				// Special cases for specific game modes
+				var/datum/game_mode/chaosmode/C = SSticker.mode
+				if(istype(C))
+					if(C.skeletons)
+						HTML += "<a class='job command' href='byond://?src=[REF(src)];SelectedJob=skeleton'>BECOME AN EVIL SKELETON</a>"
+						HTML += "</div>"
+						continue
+					if(C.deathknightspawn)
+						HTML += "<a class='job command' href='byond://?src=[REF(src)];SelectedJob=Death Knight'>JOIN THE VAMPIRE LORD AS A DEATH KNIGHT</a>"
+						HTML += "</div>"
+						continue
+				
+				// Process each job in the category
+				for(var/job in available_jobs)
+					var/datum/job/job_datum = SSjob.name_occupations[job]
+					if(!job_datum)
+						continue
+					
+					var/command_bold = ""
+					if(job in GLOB.noble_positions)
+						command_bold = " command"
+					
+					var/used_name = job_datum.title
+					if((pronouns == SHE_HER || pronouns == THEY_THEM_F) && job_datum.f_title)
+						used_name = job_datum.f_title
+						
+					// Check if user's species is compatible with this job
+					var/species_allowed = TRUE
+					if(job_datum && length(job_datum.allowed_races))
+						species_allowed = FALSE
+						// Check all allowed race lists
+						for(var/race_list in job_datum.allowed_races)
+							if(islist(race_list))
+								// If it's a list, check if pref_species's type is in that list
+								for(var/race_path in race_list)
+									if(istype(pref_species, race_path))
+										species_allowed = TRUE
+										break
+							else
+								// If it's a direct type path, check if pref_species is of that type
+								if(istype(pref_species, race_list))
+									species_allowed = TRUE
+									break
+								
+							if(species_allowed)
+								break
+								
+					// Display job entry based on availability
+					HTML += "<div class='job-entry'>"
+					
+					// Job preference selector - moved here to display inline
+					var/prefLevelLabel = "No"
+					var/prefLevelColor = "red"
+					var/prefUpperLevel = 3
+					var/prefLowerLevel = 1
+					
+					if(!is_banned_from(user.ckey, job_datum.title) && species_allowed)
+						switch(job_preferences[job_datum.title])
+							if(JP_HIGH)
+								prefLevelLabel = "High"
+								prefLevelColor = "slateblue"
+								prefUpperLevel = 4
+								prefLowerLevel = 2
+								var/mob/dead/new_player/P = user
+								if(istype(P))
+									P.topjob = job_datum.title
+							if(JP_MEDIUM)
+								prefLevelLabel = "Med"
+								prefLevelColor = "green"
+								prefUpperLevel = 1
+								prefLowerLevel = 3
+							if(JP_LOW)
+								prefLevelLabel = "Low"
+								prefLevelColor = "orange"
+								prefUpperLevel = 2
+								prefLowerLevel = 4
+					
+					if(is_banned_from(user.ckey, job_datum.title))
+						HTML += "<span class='banned'>[used_name]</span><font color='purple'><b> BANNED</b></font>"
+					else if(!species_allowed)
+						HTML += "<span class='incompatible'>[used_name]</span><font color='#666666'><b> INCOMPATIBLE</b></font>"
+					else if(job_datum.required && !isnull(job_datum.min_pq) && (get_playerquality(user.ckey) < job_datum.min_pq))
+						var/pqp = FLOOR(get_playerquality(user.ckey), 1)
+						if(job_preferences[job_datum.title] == JP_LOW)
+							HTML += "<span class='lowpq'>[used_name]</span><span class='lowbadge'>[pqp]</span>"
+						else
+							HTML += "<span class='bannedpq'>[used_name]</span><span class='bannedpqbadge'>[pqp]</span>"
+					else if(!job_datum.required && !isnull(job_datum.min_pq) && (get_playerquality(user.ckey) < job_datum.min_pq))
+						var/pqp = FLOOR(get_playerquality(user.ckey), 1)
+						if(job_preferences[job_datum.title] == JP_LOW)
+							HTML += "<span class='lowpq'>[used_name]</span><span class='lowbadge'>[pqp]</span>"
+						else
+							HTML += "<span class='bannedpq'>[used_name]</span><span class='bannedpqbadge'>[pqp]</span>"
+					else if(!job_datum.required && !isnull(job_datum.max_pq) && (get_playerquality(user.ckey) > job_datum.max_pq))
+						var/pqp = FLOOR(get_playerquality(user.ckey), 1)
+						if(job_preferences[job_datum.title] == JP_LOW)
+							HTML += "<span class='lowpq'>[used_name]</span><span class='lowbadge'>[pqp]</span>"
+						else
+							HTML += "<span class='bannedpq'>[used_name]</span><span class='bannedpqbadge'>[pqp]</span>"
+					else
+						if(job_datum.tutorial && job_datum.tutorial != "")
+							var/sanitized_tutorial = replacetext(replacetext(job_datum.tutorial, "\"", "&quot;"), "'", "&#39;")
+							HTML += "<span class='job[command_bold]' onmousemove='showTutorial(\"[sanitized_tutorial]\", event)' onmouseout='hideTutorial()'>[used_name]</span>"
+						else
+							HTML += "<span class='job[command_bold]'>[used_name]</span>"
+							
+						// Add job preference selector inline
+						HTML += " <a class='job-pref' href='?_src_=prefs;preference=job;task=setJobLevel;level=[prefUpperLevel];text=[job_datum.title]' oncontextmenu='javascript:return setJobPrefRedirect([prefLowerLevel], \"[job_datum.title]\");'>"
+						HTML += "<font color=[prefLevelColor]>[prefLevelLabel]</font>"
+						HTML += "</a>"
+					
+					HTML += "</div>"
+					
+					// Skip advclass selector for incompatible or banned jobs
+					if(!species_allowed || is_banned_from(user.ckey, job_datum.title))
+						continue
+					
+					// Add advclass selector button for jobs with advclass_cat_rolls
+					if(job_datum.advclass_cat_rolls && job_preferences[job_datum.title] && job_datum.title != "Adventurer" && job_datum.title != "Artisan")
+						var/selected_class = null
+						var/tutorial_text = ""
+						if(job_advclasses && job_advclasses[job_datum.title])
+							selected_class = job_advclasses[job_datum.title]
+						
+						// If no saved preference exists, find the first available class
+						if(!selected_class)
+							// Get the first available subclass for display
+							for(var/ctag in job_datum.advclass_cat_rolls)
+								if(!SSrole_class_handler.sorted_class_categories[ctag])
+									continue
+								var/list/ctag_classes = SSrole_class_handler.sorted_class_categories[ctag]
+								for(var/datum/advclass/AC in ctag_classes)
+									if(AC.check_requirements(pref_species) && (ctag in AC.category_tags))
+										selected_class = AC.name
+										break
+								if(selected_class)
+									break
+						
+						// If still no class found, fall back to "None" (shouldn't happen)
+						if(!selected_class)
+							selected_class = "None"
+							
+						// Find the tutorial text for the selected advclass
+						if(selected_class != "None")
+							for(var/ctag in job_datum.advclass_cat_rolls)
+								if(!SSrole_class_handler.sorted_class_categories[ctag])
+									continue
+								var/list/ctag_classes = SSrole_class_handler.sorted_class_categories[ctag]
+								for(var/datum/advclass/AC in ctag_classes)
+									if(AC.name == selected_class && AC.tutorial)
+										tutorial_text = replacetext(AC.tutorial, "\"", "&quot;")
+										break
+								if(tutorial_text)
+									break
+						
+						if(tutorial_text && tutorial_text != "")
+							var/sanitized_tutorial = replacetext(replacetext(tutorial_text, "\"", "&quot;"), "'", "&#39;")
+							HTML += "<a href='?_src_=prefs;preference=job;task=advclass;job=[job_datum.title]' class='advclass_select' onmousemove='showTutorial(\"[sanitized_tutorial]\", event)' onmouseout='hideTutorial()'>Sub: [selected_class]</a>"
+						else
+							HTML += "<a href='?_src_=prefs;preference=job;task=advclass;job=[job_datum.title]' class='advclass_select'>Sub: [selected_class]</a>"
+				
+				HTML += "</div>"
+			
+		
+		HTML += "</div>"
+		
+		// Add tutorial box div
+		HTML += "<div id='tutorial-box'></div>"
+		
+		// Last class option
+		HTML += "<div style='margin-top: 10px;'>"
+		if(user.client.prefs.lastclass)
+			HTML += "<a href='?_src_=prefs;preference=job;task=triumphthing' style='margin-right: 15px;'>PLAY AS [user.client.prefs.lastclass] AGAIN</a>"
+		
+		// Reset option
+		HTML += "<a href='?_src_=prefs;preference=job;task=reset'>Reset</a>"
+		HTML += "</div>"
+		
+	var/datum/browser/popup = new(user, "mob_occupation", "<div align='center'>Class Selection</div>", 720, 580)
+	popup.add_stylesheet("playeroptions", 'html/browser/playeroptions.css')
 	popup.set_content(HTML)
-	popup.open(FALSE)
-	
-// Function to handle advclass selection for jobs
+	popup.open(0)
+
 /datum/preferences/proc/SetAdvClass(mob/user, job_title)
 	var/datum/job/job = SSjob.GetJob(job_title)
 	if(!job || !job.advclass_cat_rolls)

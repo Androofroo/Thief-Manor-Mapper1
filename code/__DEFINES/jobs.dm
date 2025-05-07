@@ -1,4 +1,3 @@
-
 #define ENGSEC			(1<<0)
 
 #define CAPTAIN			(1<<0)
@@ -115,6 +114,7 @@
 #define BOGGUARD	(1<<4)
 #define SERGEANT	(1<<5)
 #define SHERIFF		(1<<6)
+#define SQUIRE		(1<<7)
 
 #define CHURCHMEN		(1<<2)
 
@@ -130,6 +130,7 @@
 #define PHYSICIAN 	(1<<2)
 #define BUTLER		(1<<3)
 #define COUNCILLOR	(1<<4)
+#define SERVANT		(1<<5)
 
 #define YEOMEN		(1<<4)
 
@@ -174,8 +175,6 @@
 
 #define APPRENTICE	(1<<0)
 #define CHURCHLING	(1<<1)
-#define SQUIRE		(1<<2)
-#define SERVANT		(1<<3)
 #define ORPHAN		(1<<4)
 #define PRINCE		(1<<5)
 #define SHOPHAND	(1<<6)
@@ -315,8 +314,6 @@
 	/datum/job/roguetown/veteran,\
 	/datum/job/roguetown/clerk,\
 	/datum/job/roguetown/wapprentice,\
-	/datum/job/roguetown/servant,\
-	/datum/job/roguetown/squire,\
 	/datum/job/roguetown/butler,\
 	/datum/job/roguetown/apothecary,\
 	/datum/job/roguetown/magician
@@ -336,6 +333,14 @@
 #define KING_QUEEN_ROLES \
 	/datum/job/roguetown/lady,\
 	/datum/job/roguetown/lord
+
+#define COURTIERS_ROLES \
+	/datum/job/roguetown/jester,\
+	/datum/job/roguetown/wizard,\
+	/datum/job/roguetown/physician,\
+	/datum/job/roguetown/butler,\
+	/datum/job/roguetown/councillor,\
+	/datum/job/roguetown/servant
 
 #define CHURCH_ROLES \
 	/datum/job/roguetown/churchling,\
@@ -390,7 +395,8 @@
 	/datum/job/roguetown/gatemaster,\
 	/datum/job/roguetown/manorguard,\
 	/datum/job/roguetown/sheriff,\
-	/datum/job/roguetown/guardsman
+	/datum/job/roguetown/guardsman,\
+	/datum/job/roguetown/squire
 
 #define INQUISITION_ROLES \
 	/datum/job/roguetown/puritan,\
