@@ -169,6 +169,7 @@ GLOBAL_LIST_EMPTY(chosen_names)
 	var/datum/loadout_item/loadout
 	var/datum/loadout_item/loadout2
 	var/datum/loadout_item/loadout3
+	var/datum/loadout_item/special_loadout // Special hidden slot for antag items like thief kit
 
 	var/flavortext
 	var/flavortext_display
@@ -465,6 +466,7 @@ GLOBAL_LIST_EMPTY(chosen_names)
 //			-----------END OF BODY TABLE-----------
 			dat += "</td>"
 			dat += "</tr>"
+			
 			dat += "</table>"
 
 		if (1) // Game Preferences
@@ -851,11 +853,11 @@ GLOBAL_LIST_EMPTY(chosen_names)
 		HTML += ".incompatible { color: #666666; }"
 		HTML += ".priority { color: #ff0000; }"
 		HTML += ".job-container { display: flex; flex-wrap: wrap; justify-content: center; max-width: 700px; margin: 0 auto; }"
-		HTML += ".job-category { margin: 3px; border: 2px solid; border-radius: 5px; padding: 4px; min-width: 150px; max-width: 170px; font-size: 14px; }"
+		HTML += ".job-category { margin: 3px; border: 2px solid; border-radius: 5px; padding: 4px 6px; min-width: 150px; max-width: 175px; font-size: 14px; }"
 		HTML += ".job-category-header { font-weight: bold; text-align: center; margin-bottom: 4px; padding: 3px; border-radius: 3px; font-size: 15px; }"
 		HTML += ".job-entry { margin: 3px 0; line-height: 1.3; white-space: nowrap; display: flex; align-items: center; }"
 		HTML += ".job-pref { font-size: 13px; display: inline-block; margin-left: 5px; flex-shrink: 0; }"
-		HTML += ".advclass_select { display: block; width: 100%; text-align: center; background-color: #333; padding: 2px; margin-top: 2px; font-size: 13px; }"
+		HTML += ".advclass_select { display: block; width: calc(100% - 8px); text-align: center; background-color: #333; padding: 2px; margin: 2px auto 0; font-size: 13px; border-radius: 3px; }"
 		HTML += "#tutorial-box { display: none; }"
 		HTML += "</style>"
 		
@@ -1001,7 +1003,7 @@ GLOBAL_LIST_EMPTY(chosen_names)
 					if(is_banned_from(user.ckey, job_datum.title))
 						HTML += "<span class='banned'>[used_name]</span><font color='purple'><b> BANNED</b></font>"
 					else if(!species_allowed)
-						HTML += "<span class='incompatible'>[used_name]</span><font color='#666666'><b> INCOMPATIBLE</b></font>"
+						HTML += "<span class='incompatible'>[used_name]</span><font color='#666666'><b></b></font>"
 					else if(job_datum.required && !isnull(job_datum.min_pq) && (get_playerquality(user.ckey) < job_datum.min_pq))
 						var/pqp = FLOOR(get_playerquality(user.ckey), 1)
 						if(job_preferences[job_datum.title] == JP_LOW)
@@ -1838,6 +1840,8 @@ GLOBAL_LIST_EMPTY(chosen_names)
 							continue
 						if (!loadout.name)
 							continue
+						if (loadout.hidden)
+							continue // Skip hidden loadout items
 						loadouts_available[loadout.name] = loadout
 
 					var/loadout_input = input(user, "Choose your character's loadout item. RMB a tree, statue or clock to collect. I cannot stress this enough. YOU DON'T SPAWN WITH THESE. YOU HAVE TO MANUALLY PICK THEM UP!!", "LOADOUT THAT YOU GET FROM A TREE OR STATUE OR CLOCK") as null|anything in loadouts_available
@@ -1859,6 +1863,8 @@ GLOBAL_LIST_EMPTY(chosen_names)
 							continue
 						if (!loadout2.name)
 							continue
+						if (loadout2.hidden)
+							continue // Skip hidden loadout items
 						loadouts_available[loadout2.name] = loadout2
 
 					var/loadout_input2 = input(user, "Choose your character's loadout item. RMB a tree, statue or clock to collect. I cannot stress this enough. YOU DON'T SPAWN WITH THESE. YOU HAVE TO MANUALLY PICK THEM UP!!", "LOADOUT THAT YOU GET FROM A TREE OR STATUE OR CLOCK") as null|anything in loadouts_available
@@ -1880,6 +1886,8 @@ GLOBAL_LIST_EMPTY(chosen_names)
 							continue
 						if (!loadout3.name)
 							continue
+						if (loadout3.hidden)
+							continue // Skip hidden loadout items
 						loadouts_available[loadout3.name] = loadout3
 
 					var/loadout_input3 = input(user, "Choose your character's loadout item. RMB a tree, statue or clock to collect. I cannot stress this enough. YOU DON'T SPAWN WITH THESE. YOU HAVE TO MANUALLY PICK THEM UP!!", "LOADOUT THAT YOU GET FROM A TREE OR STATUE OR CLOCK") as null|anything in loadouts_available

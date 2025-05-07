@@ -16,7 +16,8 @@
 
 /datum/outfit/job/roguetown/adventurer/warrior_manor/pre_equip(mob/living/carbon/human/H)
 	..()
-	H.adjust_blindness(-3)
+	// Keep player blind until they choose a subclass
+	// H.adjust_blindness(-3)
 	var/classes = list("Defender", "Striker", "Veteran")
 	var/classchoice = input("Choose your archetypes", "Available archetypes") as anything in classes
 
@@ -33,16 +34,20 @@
 			H.mind.adjust_skillrank(/datum/skill/misc/climbing, 2, TRUE)
 			H.mind.adjust_skillrank(/datum/skill/misc/reading, 1, TRUE)
 			H.set_blindness(0)
+			H.advsetup = 0
+			H.cure_blind("advsetup")
 			ADD_TRAIT(H, TRAIT_MEDIUMARMOR, TRAIT_GENERIC)
+			ADD_TRAIT(H, TRAIT_HEAVYARMOR, TRAIT_GENERIC)
 			H.change_stat("strength", 2)
 			H.change_stat("endurance", 2)
 			H.change_stat("constitution", 2)
 			belt = /obj/item/storage/belt/rogue/leather
 			backl = /obj/item/storage/backpack/rogue/satchel
 			wrists = /obj/item/clothing/wrists/roguetown/bracers/leather
-			shirt = /obj/item/clothing/suit/roguetown/armor/leather
-			pants = /obj/item/clothing/under/roguetown/heavy_leather_pants
-			shoes = /obj/item/clothing/shoes/roguetown/boots
+			shirt = /obj/item/clothing/suit/roguetown/armor/gambeson/heavy
+			pants = /obj/item/clothing/under/roguetown/platelegs
+			shoes = /obj/item/clothing/shoes/roguetown/boots/armor
+			armor = /obj/item/clothing/suit/roguetown/armor/plate/half/fluted
 			gloves = /obj/item/clothing/gloves/roguetown/fingerless_leather
 			backpack_contents = list(/obj/item/flashlight/flare/torch = 1)
 
@@ -57,13 +62,17 @@
 			H.mind.adjust_skillrank(/datum/skill/misc/climbing, 2, TRUE)
 			H.mind.adjust_skillrank(/datum/skill/misc/reading, 1, TRUE)
 			ADD_TRAIT(H, TRAIT_DODGEEXPERT, TRAIT_GENERIC)
+			ADD_TRAIT(H, TRAIT_MEDIUMARMOR, TRAIT_GENERIC)
 			H.set_blindness(0)
+			H.advsetup = 0
+			H.cure_blind("advsetup")
 			H.change_stat("strength", 1)
 			H.change_stat("endurance", 1)
 			H.change_stat("speed", 2)
-			shirt = /obj/item/clothing/suit/roguetown/armor/leather
-			pants = /obj/item/clothing/under/roguetown/trou/leather
-			shoes = /obj/item/clothing/shoes/roguetown/boots
+			shirt = /obj/item/clothing/suit/roguetown/armor/gambeson
+			armor = /obj/item/clothing/suit/roguetown/armor/leather/studded
+			pants = /obj/item/clothing/under/roguetown/chainlegs
+			shoes = /obj/item/clothing/shoes/roguetown/boots/leather
 			gloves = /obj/item/clothing/gloves/roguetown/fingerless_leather
 			backl = /obj/item/storage/backpack/rogue/satchel
 			belt = /obj/item/storage/belt/rogue/leather
@@ -81,15 +90,19 @@
 			H.mind.adjust_skillrank(/datum/skill/misc/climbing, 2, TRUE)
 			H.mind.adjust_skillrank(/datum/skill/misc/reading, 2, TRUE)
 			H.set_blindness(0)
+			H.advsetup = 0
+			H.cure_blind("advsetup")
+			ADD_TRAIT(H, TRAIT_MEDIUMARMOR, TRAIT_GENERIC)
 			H.change_stat("strength", 1)
 			H.change_stat("endurance", 1)
 			H.change_stat("constitution", 1)
 			H.change_stat("intelligence", 1)
 			belt = /obj/item/storage/belt/rogue/leather
 			backl = /obj/item/storage/backpack/rogue/satchel
-			shirt = /obj/item/clothing/suit/roguetown/armor/gambeson
-			pants = /obj/item/clothing/under/roguetown/heavy_leather_pants
-			shoes = /obj/item/clothing/shoes/roguetown/boots
+			shirt = /obj/item/clothing/suit/roguetown/armor/gambeson/heavy
+			pants = /obj/item/clothing/under/roguetown/splintlegs
+			shoes = /obj/item/clothing/shoes/roguetown/boots/armor/iron
+			armor = /obj/item/clothing/suit/roguetown/armor/brigandine
 			gloves = /obj/item/clothing/gloves/roguetown/fingerless_leather
 			backpack_contents = list(/obj/item/flashlight/flare/torch = 1)
 
@@ -109,7 +122,8 @@
 
 /datum/outfit/job/roguetown/adventurer/rogue_manor/pre_equip(mob/living/carbon/human/H)
 	..()
-	H.adjust_blindness(-3)
+	// Keep player blind until they choose a subclass
+	// H.adjust_blindness(-3)
 	var/classes = list("Infiltrator", "Shadow", "Scoundrel")
 	var/classchoice = input("Choose your archetypes", "Available archetypes") as anything in classes
 
@@ -125,9 +139,20 @@
 			H.mind.adjust_skillrank(/datum/skill/combat/wrestling, 1, TRUE)
 			H.mind.adjust_skillrank(/datum/skill/combat/unarmed, 1, TRUE)
 			H.set_blindness(0)
+			H.advsetup = 0
+			H.cure_blind("advsetup")
 			H.change_stat("speed", 1)
 			H.change_stat("perception", 2)
 			H.change_stat("fortune", 1)
+			
+			// Only add the disguise spell if they don't already have it
+			var/has_disguise = FALSE
+			for(var/obj/effect/proc_holder/spell/self/magical_disguise/S in H.mind.spell_list)
+				has_disguise = TRUE
+				break
+			if(!has_disguise)
+				H.mind.AddSpell(new /obj/effect/proc_holder/spell/self/magical_disguise)
+				
 			pants = /obj/item/clothing/under/roguetown/tights/black
 			shirt = /obj/item/clothing/suit/roguetown/shirt/undershirt
 			armor = /obj/item/clothing/suit/roguetown/armor/leather
@@ -140,16 +165,28 @@
 		if("Shadow")
 			to_chat(H, span_warning("You are a master of stealth, able to move unseen and strike from darkness."))
 			H.mind.adjust_skillrank(/datum/skill/combat/knives, 2, TRUE)
-			H.mind.adjust_skillrank(/datum/skill/misc/sneaking, 4, TRUE)
+			H.mind.adjust_skillrank(/datum/skill/misc/sneaking, 5, TRUE)
 			H.mind.adjust_skillrank(/datum/skill/misc/stealing, 2, TRUE)
 			H.mind.adjust_skillrank(/datum/skill/misc/climbing, 2, TRUE)
 			H.mind.adjust_skillrank(/datum/skill/misc/athletics, 2, TRUE)
 			H.mind.adjust_skillrank(/datum/skill/combat/wrestling, 1, TRUE)
 			H.mind.adjust_skillrank(/datum/skill/combat/unarmed, 1, TRUE)
 			H.set_blindness(0)
+			H.advsetup = 0
+			H.cure_blind("advsetup")
 			H.change_stat("speed", 2)
 			H.change_stat("perception", 1)
 			H.change_stat("fortune", 1)
+			
+			// Only add the invisibility spell if they don't already have it
+			var/has_invisibility = FALSE
+			for(var/obj/effect/proc_holder/spell/invoked/invisibility/S in H.mind.spell_list)
+				has_invisibility = TRUE
+				break
+			if(!has_invisibility)
+				H.mind.AddSpell(new /obj/effect/proc_holder/spell/invoked/invisibility)
+				
+			backpack_contents = list(/obj/item/flashlight/flare/torch = 1, /obj/item/smokebomb = 3)
 			pants = /obj/item/clothing/under/roguetown/tights/black
 			shirt = /obj/item/clothing/suit/roguetown/shirt/undershirt/black
 			armor = /obj/item/clothing/suit/roguetown/armor/leather
@@ -158,10 +195,10 @@
 			cloak = /obj/item/clothing/cloak/raincloak
 			belt = /obj/item/storage/belt/rogue/leather
 			backl = /obj/item/storage/backpack/rogue/satchel
-			backpack_contents = list(/obj/item/flashlight/flare/torch = 1)
 
 		if("Scoundrel")
 			to_chat(H, span_warning("You survive by your wits and quick reflexes, with a silver tongue to talk your way out of trouble."))
+			H.mind.adjust_skillrank(/datum/skill/combat/swords, 3, TRUE)
 			H.mind.adjust_skillrank(/datum/skill/combat/knives, 1, TRUE)
 			H.mind.adjust_skillrank(/datum/skill/misc/sneaking, 2, TRUE)
 			H.mind.adjust_skillrank(/datum/skill/misc/stealing, 2, TRUE)
@@ -170,6 +207,8 @@
 			H.mind.adjust_skillrank(/datum/skill/combat/wrestling, 1, TRUE)
 			H.mind.adjust_skillrank(/datum/skill/combat/unarmed, 1, TRUE)
 			H.set_blindness(0)
+			H.advsetup = 0
+			H.cure_blind("advsetup")
 			H.change_stat("speed", 1)
 			H.change_stat("intelligence", 1)
 			H.change_stat("fortune", 2)
@@ -199,7 +238,8 @@
 
 /datum/outfit/job/roguetown/adventurer/mage_manor/pre_equip(mob/living/carbon/human/H)
 	..()
-	H.adjust_blindness(-3)
+	// Keep player blind until they choose a subclass
+	// H.adjust_blindness(-3)
 	var/classes = list("Elementalist", "Enchanter", "Scholar")
 	var/classchoice = input("Choose your archetypes", "Available archetypes") as anything in classes
 
@@ -226,6 +266,9 @@
 			H.mind.adjust_spellpoints(3)
 			ADD_TRAIT(H, TRAIT_MAGEARMOR, TRAIT_GENERIC)
 			ADD_TRAIT(H, TRAIT_ARCYNE_T2, TRAIT_GENERIC)
+			H.set_blindness(0)
+			H.advsetup = 0
+			H.cure_blind("advsetup")
 
 		if("Enchanter")
 			to_chat(H, span_warning("You specialize in enchantments that affect the mind and manipulate others."))
@@ -250,6 +293,9 @@
 			ADD_TRAIT(H, TRAIT_MAGEARMOR, TRAIT_GENERIC)
 			ADD_TRAIT(H, TRAIT_ARCYNE_T2, TRAIT_GENERIC)
 			ADD_TRAIT(H, TRAIT_GOODLOVER, TRAIT_GENERIC)
+			H.set_blindness(0)
+			H.advsetup = 0
+			H.cure_blind("advsetup")
 
 		if("Scholar")
 			to_chat(H, span_warning("Your magical knowledge comes from dedicated study and research of ancient texts."))
@@ -272,6 +318,9 @@
 			H.mind.adjust_spellpoints(3)
 			ADD_TRAIT(H, TRAIT_MAGEARMOR, TRAIT_GENERIC)
 			ADD_TRAIT(H, TRAIT_ARCYNE_T2, TRAIT_GENERIC)
+			H.set_blindness(0)
+			H.advsetup = 0
+			H.cure_blind("advsetup")
 
 /datum/advclass/archer_manor
 	name = "Archer"
@@ -289,7 +338,8 @@
 
 /datum/outfit/job/roguetown/adventurer/archer_manor/pre_equip(mob/living/carbon/human/H)
 	..()
-	H.adjust_blindness(-3)
+	// Keep player blind until they choose a subclass
+	// H.adjust_blindness(-3)
 	var/classes = list("Marksman", "Hunter", "Scout")
 	var/classchoice = input("Choose your archetypes", "Available archetypes") as anything in classes
 
@@ -305,6 +355,8 @@
 			H.mind.adjust_skillrank(/datum/skill/misc/climbing, 1, TRUE)
 			H.mind.adjust_skillrank(/datum/skill/misc/reading, 1, TRUE)
 			H.set_blindness(0)
+			H.advsetup = 0
+			H.cure_blind("advsetup")
 			H.change_stat("perception", 3)
 			H.change_stat("endurance", 1)
 			pants = /obj/item/clothing/under/roguetown/trou/leather
@@ -327,6 +379,8 @@
 			H.mind.adjust_skillrank(/datum/skill/misc/climbing, 2, TRUE)
 			H.mind.adjust_skillrank(/datum/skill/misc/tracking, 3, TRUE)
 			H.set_blindness(0)
+			H.advsetup = 0
+			H.cure_blind("advsetup")
 			H.change_stat("perception", 2)
 			H.change_stat("endurance", 2)
 			pants = /obj/item/clothing/under/roguetown/trou/leather
@@ -350,6 +404,8 @@
 			H.mind.adjust_skillrank(/datum/skill/misc/athletics, 3, TRUE)
 			H.mind.adjust_skillrank(/datum/skill/misc/climbing, 2, TRUE)
 			H.set_blindness(0)
+			H.advsetup = 0
+			H.cure_blind("advsetup")
 			H.change_stat("perception", 2)
 			H.change_stat("speed", 2)
 			pants = /obj/item/clothing/under/roguetown/tights
@@ -372,7 +428,6 @@
 	category_tags = list(CTAG_ADVENTURERMANOR)
 	classes = list(
 		"Healer" = "You focus on healing wounds and curing ailments through divine magic.",
-		"Guardian" = "Your protective magic forms barriers and shields to protect allies.",
 		"Crusader" = "You channel divine power to oppose darkness and undeath."
 	)
 
@@ -381,7 +436,8 @@
 
 /datum/outfit/job/roguetown/adventurer/temple_cleric/pre_equip(mob/living/carbon/human/H)
 	..()
-	H.adjust_blindness(-3)
+	// Keep player blind until they choose a subclass
+	// H.adjust_blindness(-3)
 	var/classes = list("Healer", "Crusader")
 	var/classchoice = input("Choose your archetypes", "Available archetypes") as anything in classes
 
@@ -408,6 +464,9 @@
 			var/datum/devotion/C = new /datum/devotion(H, H.patron)
 			C.grant_spells_templar(H)
 			ADD_TRAIT(H, TRAIT_EMPATH, TRAIT_GENERIC)
+			H.set_blindness(0)
+			H.advsetup = 0
+			H.cure_blind("advsetup")
 
 		if("Crusader")
 			to_chat(H, span_warning("You channel divine power to oppose darkness and undeath."))
@@ -433,6 +492,9 @@
 			H.change_stat("perception", 1)
 			ADD_TRAIT(H, TRAIT_MEDIUMARMOR, TRAIT_GENERIC)
 			ADD_TRAIT(H, TRAIT_HEAVYARMOR, TRAIT_GENERIC)
+			H.set_blindness(0)
+			H.advsetup = 0
+			H.cure_blind("advsetup")
 
 /datum/advclass/druid_manor
 	name = "Druid"
@@ -450,7 +512,8 @@
 
 /datum/outfit/job/roguetown/adventurer/druid_manor/pre_equip(mob/living/carbon/human/H)
 	..()
-	H.adjust_blindness(-3)
+	// Keep player blind until they choose a subclass
+	// H.adjust_blindness(-3)
 	var/classes = list("Beastmaster", "Herbalist", "Elementalist")
 	var/classchoice = input("Choose your archetypes", "Available archetypes") as anything in classes
 
@@ -479,6 +542,9 @@
 			H.change_stat("endurance", 1)
 			H.mind.adjust_spellpoints(3)
 			ADD_TRAIT(H, TRAIT_EMPATH, TRAIT_GENERIC)
+			H.set_blindness(0)
+			H.advsetup = 0
+			H.cure_blind("advsetup")
 
 		if("Herbalist")
 			to_chat(H, span_warning("Your knowledge of plants and herbs allows you to heal and create potions."))
@@ -503,6 +569,9 @@
 			H.change_stat("perception", 2)
 			H.mind.adjust_spellpoints(2)
 			ADD_TRAIT(H, TRAIT_EMPATH, TRAIT_GENERIC)
+			H.set_blindness(0)
+			H.advsetup = 0
+			H.cure_blind("advsetup")
 
 		if("Elementalist")
 			to_chat(H, span_warning("You can call upon the powers of nature's elemental forces."))
@@ -529,3 +598,6 @@
 			H.change_stat("endurance", 1)
 			H.mind.adjust_spellpoints(3)
 			ADD_TRAIT(H, TRAIT_MAGEARMOR, TRAIT_GENERIC)
+			H.set_blindness(0)
+			H.advsetup = 0
+			H.cure_blind("advsetup")

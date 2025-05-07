@@ -1782,3 +1782,36 @@ GLOBAL_LIST_EMPTY(all_treasures)
 		if(has_valid_key)
 			return collar.toggle_lock(user, src)
 	return ..()
+
+// THIEF EQUIPMENT
+
+/obj/item/storage/thief_kit
+	name = "thief kit"
+	desc = "A small dark pouch containing essential tools of the trade for aspiring thieves. It has specialized compartments designed to hold specific items."
+	icon = 'thiefmanor/icons/treasures.dmi'
+	icon_state = "thief_kit"
+	w_class = WEIGHT_CLASS_TINY
+	slot_flags = ITEM_SLOT_BELT
+	resistance_flags = FIRE_PROOF
+	var/initialized = FALSE
+
+/obj/item/storage/thief_kit/ComponentInitialize()
+	. = ..()
+	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
+	
+	STR.max_w_class = WEIGHT_CLASS_SMALL
+	STR.max_combined_w_class = 4
+	STR.screen_max_rows = 3
+	STR.screen_max_columns = 2
+	STR.max_w_class = WEIGHT_CLASS_SMALL
+	STR.max_items = 2
+	STR.can_hold = typecacheof(list(
+		/obj/item/lockpickring,
+		/obj/item/lockpick,
+		/obj/item/reagent_containers/glass/bottle/rogue/strongstampoison
+	))
+
+/obj/item/storage/thief_kit/PopulateContents()
+	new /obj/item/lockpickring/mundane(src)
+	new /obj/item/reagent_containers/glass/bottle/rogue/strongstampoison(src)
+	initialized = TRUE

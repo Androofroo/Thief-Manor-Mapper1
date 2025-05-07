@@ -587,6 +587,20 @@ GLOBAL_LIST_INIT(roleplay_readme, world.file2list("strings/rt/rp_prompt.txt"))
 					if(AC) // If we found the class, no need to check more categories
 						break
 						
+				// Make sure loadout items are added to special_items BEFORE applying the advclass
+				if(character.mind && character.client && character.client.prefs)
+					// Initialize special_items list if it doesn't exist
+					if(!character.mind.special_items)
+						character.mind.special_items = list()
+					
+					// Add loadout items to special_items
+					if(character.client.prefs.loadout)
+						character.mind.special_items[character.client.prefs.loadout.name] = character.client.prefs.loadout.path
+					if(character.client.prefs.loadout2)
+						character.mind.special_items[character.client.prefs.loadout2.name] = character.client.prefs.loadout2.path
+					if(character.client.prefs.loadout3)
+						character.mind.special_items[character.client.prefs.loadout3.name] = character.client.prefs.loadout3.path
+						
 				if(AC)
 					AC.equipme(character)
 					character.advjob = AC.name
@@ -723,7 +737,7 @@ GLOBAL_LIST_INIT(roleplay_readme, world.file2list("strings/rt/rp_prompt.txt"))
 					if(job_datum in SSjob.prioritized_jobs)
 						dat += "<a class='job[command_bold]' href='byond://?src=[REF(src)];SelectedJob=[job_datum.title]'><span class='priority'>[used_name] ([job_datum.current_positions])</span></a>"
 					else
-						dat += "<a class='job[command_bold]' href='byond://?src=[REF(src)];SelectedJob=[job_datum.title]'>[used_name] ([job_datum.current_positions])[job_datum.round_contrib_points ? " RCP: +[job_datum.round_contrib_points]" : ""]</a>"
+						dat += "<a class='job[command_bold]' href='byond://?src=[REF(src)];SelectedJob=[job_datum.title]'>[used_name] ([job_datum.current_positions])</a>"
 
 			dat += "</fieldset><br>"
 			column_counter++

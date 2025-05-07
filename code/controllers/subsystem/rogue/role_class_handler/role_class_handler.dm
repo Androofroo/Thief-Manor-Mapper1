@@ -126,12 +126,21 @@ SUBSYSTEM_DEF(role_class_handler)
 			return FALSE // Along with stop here as they didn't get it.
 
 
-	H.advsetup = FALSE // This is actually on a lot of shit, so its a ghetto selector protector if u need one
+	// For adventurer types, we want to keep advsetup and blindness active until subclass is chosen
+	// The subclass selection will clear advsetup and blindness in adventurerjobs.dm
+	if(H.job != "Adventurer") // Only clear for non-adventurers
+		H.advsetup = FALSE 
+		H.invisibility = 0
+		var/atom/movable/screen/advsetup/GET_IT_OUT = locate() in H.hud_used.static_inventory
+		qdel(GET_IT_OUT)
+		H.cure_blind("advsetup")
+	
+	// For adventurers, we still need to remove the HUD element but keep blindness and advsetup flag
+	else
+		var/atom/movable/screen/advsetup/GET_IT_OUT = locate() in H.hud_used.static_inventory
+		qdel(GET_IT_OUT)
+	
 	picked_class.equipme(H)
-	H.invisibility = 0
-	var/atom/movable/screen/advsetup/GET_IT_OUT = locate() in H.hud_used.static_inventory // dis line sux its basically a loop anyways if i remember
-	qdel(GET_IT_OUT)
-	H.cure_blind("advsetup")
 
 	//If we get any plus factor at all, we run the datums boost proc on the human also.
 	if(plus_factor)

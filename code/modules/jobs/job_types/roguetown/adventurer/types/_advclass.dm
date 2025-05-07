@@ -53,6 +53,22 @@
 		// After the end of adv class equipping, apply a SPECIAL trait if able
 		apply_character_post_equipment(H)
 		
+		// Apply loadout items manually since jobs with advanced classes don't get them automatically
+		if(H.client && H.client.prefs)
+			var/client/C = H.client
+			
+			// Make sure special_items is initialized
+			if(!H.mind.special_items)
+				H.mind.special_items = list()
+				
+			// Add loadout items to special_items, but only if they don't already exist
+			if(C.prefs.loadout && !(C.prefs.loadout.name in H.mind.special_items))
+				H.mind.special_items[C.prefs.loadout.name] = C.prefs.loadout.path
+			if(C.prefs.loadout2 && !(C.prefs.loadout2.name in H.mind.special_items))
+				H.mind.special_items[C.prefs.loadout2.name] = C.prefs.loadout2.path
+			if(C.prefs.loadout3 && !(C.prefs.loadout3.name in H.mind.special_items))
+				H.mind.special_items[C.prefs.loadout3.name] = C.prefs.loadout3.path
+		
 		post_equip(H)
 
 	H.advjob = name

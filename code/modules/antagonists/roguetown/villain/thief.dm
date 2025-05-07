@@ -21,18 +21,46 @@
 	return ..()
 
 /datum/antagonist/thief/proc/finalize_thief()
+	// Add thief kit to special loadout right away
 	var/mob/living/carbon/human/H = owner.current
-	
-	// If advsetup is already 0, give the lockpick immediately
-	if(!H.advsetup)
-		give_lockpick(H)
+	if(istype(H))
+		add_loadout_item(H)
 
-/datum/antagonist/thief/on_life(mob/living/carbon/human/H)
-	// Check if the lockpick needs to be given and advsetup is complete
-	if(!lockpick_given && !H.advsetup)
-		give_lockpick(H)
-	
-	. = ..()
+/datum/antagonist/thief/proc/add_loadout_item(mob/living/carbon/human/H)
+	if(!H || QDELETED(H) || !istype(H) || !H.client)
+		return
+		
+	// First, find the thief_kit loadout item path
+	var/thief_kit_path
+	for(var/path in GLOB.loadout_items)
+		var/datum/loadout_item/LI = GLOB.loadout_items[path]
+		if(LI.name == "thief kit")
+			thief_kit_path = path
+			break
+			
+	if(thief_kit_path)
+		// Initialize special_items list if it doesn't exist
+		if(!H.mind.special_items)
+			H.mind.special_items = list()
+		
+		// Check if a thief kit already exists in the player's special items
+		var/has_thief_kit = FALSE
+		for(var/item_name in H.mind.special_items)
+			if(item_name == "Thief Kit")
+				has_thief_kit = TRUE
+				break
+				
+		// Only add the thief kit if it doesn't already exist in the player's special items
+		if(!has_thief_kit)
+			// Get the loadout item datum to access its path property
+			var/datum/loadout_item/thief_kit = GLOB.loadout_items[thief_kit_path]
+			if(thief_kit)
+				// Add the thief kit to the player's special items with a special name to identify it
+				H.mind.special_items["Thief Kit"] = thief_kit.path
+				to_chat(H, span_notice("A <b>thief kit</b> has been added to your stash. You can retrieve it from any tree, statue, or clock by right-clicking on them."))
+				
+				// Mark as given so we don't try to add it again
+				lockpick_given = TRUE
 
 /datum/antagonist/thief/proc/equip_thief()
 	var/mob/living/carbon/human/H = owner.current
@@ -56,9 +84,7 @@
 	if(H.job != "Manor Guard")
 		H.mind.adjust_skillrank(/datum/skill/misc/athletics, 3, TRUE)
 	
-	// Servant-specific skills
-	H.mind.adjust_skillrank(/datum/skill/craft/cooking, 2, TRUE)
-	
+		
 	// Slight stat adjustments
 	H.change_stat("dexterity", 3)
 	H.change_stat("intelligence", 2)
@@ -68,40 +94,11 @@
 	// Add thief traits
 	ADD_TRAIT(H, TRAIT_GENERIC, TRAIT_GENERIC)
 
-/datum/antagonist/thief/proc/give_lockpick(mob/living/carbon/human/H)
-	if(lockpick_given || !H || !istype(H))
-		return
-	
-	// Mark as given to prevent duplicates
-	lockpick_given = TRUE
-	
-	// First check if the thief has a backpack or other storage
-	var/obj/item/storage/backpack = H.back
-	if(istype(backpack))
-		new /obj/item/lockpickring/mundane(backpack)
-		to_chat(H, span_notice("You find a lockpick ring in your backpack."))
-		return
-	
-	// Try to place it in various equipment slots
-	if(H.equip_to_slot_if_possible(new /obj/item/lockpickring/mundane(), SLOT_IN_BACKPACK))
-		to_chat(H, span_notice("You find a lockpick ring tucked away in your backpack."))
-		return
-	
-	// Try belt slots
-	var/list/belt_slots = list(SLOT_BELT, SLOT_BELT_L, SLOT_BELT_R)
-	for(var/belt_slot in belt_slots)
-		if(H.equip_to_slot_if_possible(new /obj/item/lockpickring/mundane(), belt_slot))
-			to_chat(H, span_notice("You find a lockpick ring attached to your belt."))
-			return
-	
-	// If all else fails, drop at feet
-	new /obj/item/lockpickring/mundane(get_turf(H))
-	to_chat(H, span_notice("A lockpick ring appears at your feet."))
-
 /datum/antagonist/thief/greet()
 	to_chat(owner.current, "<span class='userdanger'>You are a thief!</span>")
 	to_chat(owner.current, "<span class='boldwarning'>You've worked in the manor for years, always overlooked, always underappreciated. You know every corner, every secret passage. Now it's time to take what you deserve - precious treasures! Your insider knowledge gives you an advantage, but betrayal is punished harshly in these lands.</span>")
 	to_chat(owner.current, "<span class='boldnotice'>You've been trained in the art of the thief, and have stealthy abilities and tools to help you complete your mission.</span>")
+	to_chat(owner.current, "<span class='boldnotice'>A <b>thief kit</b> has been added to your stash. You can retrieve it by right-clicking on any tree, statue, or clock.</span>")
 	
 	
 	if(owner.current.mind)
