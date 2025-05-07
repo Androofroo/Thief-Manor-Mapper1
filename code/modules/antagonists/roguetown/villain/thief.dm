@@ -45,13 +45,22 @@
 		// Initialize special_items list if it doesn't exist
 		if(!H.mind.special_items)
 			H.mind.special_items = list()
-			
-		// Add the thief kit to the player's special items with a special name to identify it
-		H.mind.special_items["Thief Kit"] = GLOB.loadout_items[thief_kit_path].path
-		to_chat(H, span_notice("A <b>thief kit</b> has been added to your stash. You can retrieve it from any tree, statue, or clock by right-clicking on them."))
 		
-		// Mark as given so we don't try to add it again
-		lockpick_given = TRUE
+		// Check if a thief kit already exists in the player's special items
+		var/has_thief_kit = FALSE
+		for(var/item_name in H.mind.special_items)
+			if(item_name == "Thief Kit")
+				has_thief_kit = TRUE
+				break
+				
+		// Only add the thief kit if it doesn't already exist in the player's special items
+		if(!has_thief_kit)
+			// Add the thief kit to the player's special items with a special name to identify it
+			H.mind.special_items["Thief Kit"] = GLOB.loadout_items[thief_kit_path].path
+			to_chat(H, span_notice("A <b>thief kit</b> has been added to your stash. You can retrieve it from any tree, statue, or clock by right-clicking on them."))
+			
+			// Mark as given so we don't try to add it again
+			lockpick_given = TRUE
 
 /datum/antagonist/thief/proc/equip_thief()
 	var/mob/living/carbon/human/H = owner.current
@@ -75,9 +84,7 @@
 	if(H.job != "Manor Guard")
 		H.mind.adjust_skillrank(/datum/skill/misc/athletics, 3, TRUE)
 	
-	// Servant-specific skills
-	H.mind.adjust_skillrank(/datum/skill/craft/cooking, 2, TRUE)
-	
+		
 	// Slight stat adjustments
 	H.change_stat("dexterity", 3)
 	H.change_stat("intelligence", 2)

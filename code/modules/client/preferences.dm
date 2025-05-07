@@ -455,11 +455,14 @@ GLOBAL_LIST_EMPTY(chosen_names)
 			dat += "<br><b>OOC Extra:</b> <a href='?_src_=prefs;preference=ooc_extra;task=input'>Change</a>"
 			*/
 
+			// Loadout items are disabled
+			/*
 			dat += "<br><b>Loadout Item I:</b> <a href='?_src_=prefs;preference=loadout_item;task=input'>[loadout ? loadout.name : "None"]</a>"
 
 			dat += "<br><b>Loadout Item II:</b> <a href='?_src_=prefs;preference=loadout_item2;task=input'>[loadout2 ? loadout2.name : "None"]</a>"
 
 			dat += "<br><b>Loadout Item III:</b> <a href='?_src_=prefs;preference=loadout_item3;task=input'>[loadout3 ? loadout3.name : "None"]</a>"
+			*/
 			dat += "</td>"
 
 			dat += "</tr></table>"
@@ -1831,6 +1834,10 @@ GLOBAL_LIST_EMPTY(chosen_names)
 					to_chat(user, "<font color='red'>OOC Extra has been disabled.</font>")
 					return
 				if("loadout_item")
+					to_chat(user, "<font color='red'>Loadout items have been disabled.</font>")
+					return
+					// Disabled loadout items
+					/*
 					var/list/loadouts_available = list("None")
 					for (var/path as anything in GLOB.loadout_items)
 						var/datum/loadout_item/loadout = GLOB.loadout_items[path]
@@ -1853,7 +1860,12 @@ GLOBAL_LIST_EMPTY(chosen_names)
 							to_chat(user, "<font color='yellow'><b>[loadout.name]</b></font>")
 							if(loadout.desc)
 								to_chat(user, "[loadout.desc]")
+					*/
 				if("loadout_item2")
+					to_chat(user, "<font color='red'>Loadout items have been disabled.</font>")
+					return
+					// Disabled loadout items
+					/*
 					var/list/loadouts_available = list("None")
 					for (var/path as anything in GLOB.loadout_items)
 						var/datum/loadout_item/loadout2 = GLOB.loadout_items[path]
@@ -1876,7 +1888,12 @@ GLOBAL_LIST_EMPTY(chosen_names)
 							to_chat(user, "<font color='yellow'><b>[loadout2.name]</b></font>")
 							if(loadout2.desc)
 								to_chat(user, "[loadout2.desc]")
+					*/
 				if("loadout_item3")
+					to_chat(user, "<font color='red'>Loadout items have been disabled.</font>")
+					return
+					// Disabled loadout items
+					/*
 					var/list/loadouts_available = list("None")
 					for (var/path as anything in GLOB.loadout_items)
 						var/datum/loadout_item/loadout3 = GLOB.loadout_items[path]
@@ -1899,6 +1916,7 @@ GLOBAL_LIST_EMPTY(chosen_names)
 							to_chat(user, "<font color='yellow'><b>[loadout3.name]</b></font>")
 							if(loadout3.desc)
 								to_chat(user, "[loadout3.desc]")
+					*/
 				if("species")
 					var/list/crap = list()
 					for(var/A in GLOB.roundstart_races)
