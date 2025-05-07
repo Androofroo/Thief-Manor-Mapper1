@@ -59,7 +59,7 @@
 
 
 
-	if(!gibbed)
+	//if(!gibbed)
 		/*
 			ZOMBIFICATION BY DEATH BEGINS HERE
 		*/
