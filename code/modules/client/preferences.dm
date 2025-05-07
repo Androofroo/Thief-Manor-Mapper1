@@ -238,6 +238,10 @@ GLOBAL_LIST_EMPTY(chosen_names)
 	reset_all_customizer_accessory_colors()
 	randomize_all_customizer_accessories()
 	reset_descriptors()
+	
+	// Refresh the job selection UI to apply race compatibility changes
+	if(user)
+		SetChoices(user)
 
 #define APPEARANCE_CATEGORY_COLUMN "<td valign='top' width='14%'>"
 #define MAX_MUTANT_ROWS 4
@@ -834,8 +838,34 @@ GLOBAL_LIST_EMPTY(chosen_names)
 			if((pronouns == SHE_HER || pronouns == THEY_THEM_F) && job.f_title)
 				used_name = job.f_title
 			lastJob = job
+			
+			// Check if species is compatible with this job
+			var/species_allowed = TRUE
+			if(job && length(job.allowed_races))
+				species_allowed = FALSE
+				// RACES_ALL_KINDS is a list of lists, so we need to check each sublist
+				for(var/race_list in job.allowed_races)
+					if(islist(race_list))
+						// If it's a list, check if pref_species's type is in that list
+						for(var/race_path in race_list)
+							if(istype(pref_species, race_path))
+								species_allowed = TRUE
+								break
+					else
+						// If it's a direct type path, check if pref_species is of that type
+						if(istype(pref_species, race_list))
+							species_allowed = TRUE
+							break
+					
+					if(species_allowed)
+						break
+			
 			if(is_banned_from(user.ckey, rank))
 				HTML += "<span class='banned'>[used_name]</span></td><td align='center'><font color='purple'><b> BANNED</b></font></td></tr>"
+				continue
+			else if(!species_allowed)
+				// Grey out incompatible jobs and don't allow any preference
+				HTML += "<span class='incompatible' style='color: #666666;'>[used_name]</span></td><td align='center'><font color='#666666'><b>INCOMPATIBLE</b></font></td></tr>"
 				continue
 			else if(job.required && !isnull(job.min_pq) && (get_playerquality(user.ckey) < job.min_pq))
 				var/pqp = FLOOR(get_playerquality(user.ckey), 1)
@@ -862,6 +892,10 @@ GLOBAL_LIST_EMPTY(chosen_names)
 				else
 					HTML += "<span class='job'>[used_name]</span>"
 			
+			// Skip preference UI for incompatible races (already handled by continue above)
+			if(!species_allowed)
+				continue
+				
 			HTML += "</td><td width='40%'>"
 
 			var/prefLevelLabel = "ERROR"
@@ -1098,6 +1132,33 @@ GLOBAL_LIST_EMPTY(chosen_names)
 		to_chat(user, span_danger("UpdateJobPreference - desired level was not a number. Please notify coders!"))
 		ShowChoices(user,4)
 		return
+	
+	// Check if the user's species is compatible with this job
+	var/species_allowed = TRUE
+	if(job && length(job.allowed_races))
+		species_allowed = FALSE
+		// RACES_ALL_KINDS is a list of lists, so we need to check each sublist
+		for(var/race_list in job.allowed_races)
+			if(islist(race_list))
+				// If it's a list, check if pref_species's type is in that list
+				for(var/race_path in race_list)
+					if(istype(pref_species, race_path))
+						species_allowed = TRUE
+						break
+			else
+				// If it's a direct type path, check if pref_species is of that type
+				if(istype(pref_species, race_list))
+					species_allowed = TRUE
+					break
+			
+			if(species_allowed)
+				break
+	
+	// If species is not allowed, don't allow setting any preference
+	if(!species_allowed)
+		to_chat(user, "<font color='red'>The [job.title] class is not available to your species ([pref_species.name]).</font>")
+		SetChoices(user)
+		return 0
 
 	var/jpval = null
 	switch(desiredLvl)
@@ -1795,7 +1856,44 @@ GLOBAL_LIST_EMPTY(chosen_names)
 					var/result = input(user, "Select a race", "Roguetown") as null|anything in crap
 
 					if(result)
-						set_new_race(result, user)
+						// Check if the new race is compatible with currently selected jobs
+						var/list/incompatible_jobs = list()
+						for(var/job_title in job_preferences)
+							if(job_preferences[job_title] > 0) // Only check jobs that are set to something
+								var/datum/job/job = SSjob.GetJob(job_title)
+								if(job && length(job.allowed_races))
+									// Check if any race in the job's allowed_races list matches the selected species
+									var/species_allowed = FALSE
+									
+									// RACES_ALL_KINDS is a list of lists, so we need to check each sublist
+									for(var/race_list in job.allowed_races)
+										if(islist(race_list))
+											// If it's a list, check if result's type is in that list
+											for(var/race_path in race_list)
+												if(istype(result, race_path))
+													species_allowed = TRUE
+													break
+										else
+											// If it's a direct type path, check if result is of that type
+											if(istype(result, race_list))
+												species_allowed = TRUE
+												break
+										
+										if(species_allowed)
+											break
+									
+									if(!species_allowed)
+										incompatible_jobs += job_title
+						
+						if(length(incompatible_jobs))
+							var/job_list = jointext(incompatible_jobs, ", ")
+							if(alert(user, "This race is incompatible with your currently selected jobs: [job_list]. Would you like to reset your job preferences?", "Race Change", "Yes", "No") == "Yes")
+								ResetJobs()
+								set_new_race(result, user)
+							else
+								to_chat(user, span_warning("Race change cancelled."))
+						else
+							set_new_race(result, user)
 
 				if("update_mutant_colors")
 					update_mutant_colors = !update_mutant_colors
@@ -2526,3 +2624,40 @@ GLOBAL_LIST_EMPTY(chosen_names)
 		dat += "[V.custom_text]"
 		dat += "</font>"
 	return dat
+
+// Add a new method to remove job preferences for incompatible races
+/datum/preferences/proc/remove_incompatible_job_preferences()
+	// Go through each job preference and remove those that are incompatible with current race
+	var/list/incompatible_jobs = list()
+	for(var/job_title in job_preferences)
+		if(job_preferences[job_title] > 0) // Only check jobs that are set to something
+			var/datum/job/job = SSjob.GetJob(job_title)
+			if(job && length(job.allowed_races))
+				// Check if any race in the job's allowed_races list matches the current species
+				var/species_allowed = FALSE
+				
+				// RACES_ALL_KINDS is a list of lists, so we need to check each sublist
+				for(var/race_list in job.allowed_races)
+					if(islist(race_list))
+						// If it's a list, check if pref_species's type is in that list
+						for(var/race_path in race_list)
+							if(istype(pref_species, race_path))
+								species_allowed = TRUE
+								break
+					else
+						// If it's a direct type path, check if pref_species is of that type
+						if(istype(pref_species, race_list))
+							species_allowed = TRUE
+							break
+					
+					if(species_allowed)
+						break
+				
+				if(!species_allowed)
+					incompatible_jobs += job_title
+	
+	// Remove job preferences for incompatible jobs
+	for(var/job_title in incompatible_jobs)
+		job_preferences -= job_title
+	
+	return incompatible_jobs
