@@ -851,11 +851,11 @@ GLOBAL_LIST_EMPTY(chosen_names)
 		HTML += ".incompatible { color: #666666; }"
 		HTML += ".priority { color: #ff0000; }"
 		HTML += ".job-container { display: flex; flex-wrap: wrap; justify-content: center; max-width: 700px; margin: 0 auto; }"
-		HTML += ".job-category { margin: 3px; border: 2px solid; border-radius: 5px; padding: 4px; min-width: 150px; max-width: 170px; font-size: 14px; }"
+		HTML += ".job-category { margin: 3px; border: 2px solid; border-radius: 5px; padding: 4px 6px; min-width: 150px; max-width: 175px; font-size: 14px; }"
 		HTML += ".job-category-header { font-weight: bold; text-align: center; margin-bottom: 4px; padding: 3px; border-radius: 3px; font-size: 15px; }"
 		HTML += ".job-entry { margin: 3px 0; line-height: 1.3; white-space: nowrap; display: flex; align-items: center; }"
 		HTML += ".job-pref { font-size: 13px; display: inline-block; margin-left: 5px; flex-shrink: 0; }"
-		HTML += ".advclass_select { display: block; width: 100%; text-align: center; background-color: #333; padding: 2px; margin-top: 2px; font-size: 13px; }"
+		HTML += ".advclass_select { display: block; width: calc(100% - 8px); text-align: center; background-color: #333; padding: 2px; margin: 2px auto 0; font-size: 13px; border-radius: 3px; }"
 		HTML += "#tutorial-box { display: none; }"
 		HTML += "</style>"
 		
