@@ -34,15 +34,17 @@
 			H.mind.adjust_skillrank(/datum/skill/misc/reading, 1, TRUE)
 			H.set_blindness(0)
 			ADD_TRAIT(H, TRAIT_MEDIUMARMOR, TRAIT_GENERIC)
+			ADD_TRAIT(H, TRAIT_HEAVYARMOR, TRAIT_GENERIC)
 			H.change_stat("strength", 2)
 			H.change_stat("endurance", 2)
 			H.change_stat("constitution", 2)
 			belt = /obj/item/storage/belt/rogue/leather
 			backl = /obj/item/storage/backpack/rogue/satchel
 			wrists = /obj/item/clothing/wrists/roguetown/bracers/leather
-			shirt = /obj/item/clothing/suit/roguetown/armor/leather
-			pants = /obj/item/clothing/under/roguetown/heavy_leather_pants
-			shoes = /obj/item/clothing/shoes/roguetown/boots
+			shirt = /obj/item/clothing/suit/roguetown/armor/gambeson/heavy
+			pants = /obj/item/clothing/under/roguetown/platelegs
+			shoes = /obj/item/clothing/shoes/roguetown/boots/armor
+			armor = /obj/item/clothing/suit/roguetown/armor/plate/half/fluted
 			gloves = /obj/item/clothing/gloves/roguetown/fingerless_leather
 			backpack_contents = list(/obj/item/flashlight/flare/torch = 1)
 
@@ -57,13 +59,15 @@
 			H.mind.adjust_skillrank(/datum/skill/misc/climbing, 2, TRUE)
 			H.mind.adjust_skillrank(/datum/skill/misc/reading, 1, TRUE)
 			ADD_TRAIT(H, TRAIT_DODGEEXPERT, TRAIT_GENERIC)
+			ADD_TRAIT(H, TRAIT_MEDIUMARMOR, TRAIT_GENERIC)
 			H.set_blindness(0)
 			H.change_stat("strength", 1)
 			H.change_stat("endurance", 1)
 			H.change_stat("speed", 2)
-			shirt = /obj/item/clothing/suit/roguetown/armor/leather
-			pants = /obj/item/clothing/under/roguetown/trou/leather
-			shoes = /obj/item/clothing/shoes/roguetown/boots
+			shirt = /obj/item/clothing/suit/roguetown/armor/gambeson
+			armor = /obj/item/clothing/suit/roguetown/armor/leather/studded
+			pants = /obj/item/clothing/under/roguetown/chainlegs
+			shoes = /obj/item/clothing/shoes/roguetown/boots/leather
 			gloves = /obj/item/clothing/gloves/roguetown/fingerless_leather
 			backl = /obj/item/storage/backpack/rogue/satchel
 			belt = /obj/item/storage/belt/rogue/leather
@@ -81,15 +85,17 @@
 			H.mind.adjust_skillrank(/datum/skill/misc/climbing, 2, TRUE)
 			H.mind.adjust_skillrank(/datum/skill/misc/reading, 2, TRUE)
 			H.set_blindness(0)
+			ADD_TRAIT(H, TRAIT_MEDIUMARMOR, TRAIT_GENERIC)
 			H.change_stat("strength", 1)
 			H.change_stat("endurance", 1)
 			H.change_stat("constitution", 1)
 			H.change_stat("intelligence", 1)
 			belt = /obj/item/storage/belt/rogue/leather
 			backl = /obj/item/storage/backpack/rogue/satchel
-			shirt = /obj/item/clothing/suit/roguetown/armor/gambeson
-			pants = /obj/item/clothing/under/roguetown/heavy_leather_pants
-			shoes = /obj/item/clothing/shoes/roguetown/boots
+			shirt = /obj/item/clothing/suit/roguetown/armor/gambeson/heavy
+			pants = /obj/item/clothing/under/roguetown/splintlegs
+			shoes = /obj/item/clothing/shoes/roguetown/boots/armor/iron
+			armor = /obj/item/clothing/suit/roguetown/armor/brigandine
 			gloves = /obj/item/clothing/gloves/roguetown/fingerless_leather
 			backpack_contents = list(/obj/item/flashlight/flare/torch = 1)
 
@@ -128,6 +134,7 @@
 			H.change_stat("speed", 1)
 			H.change_stat("perception", 2)
 			H.change_stat("fortune", 1)
+			H.mind.AddSpell(new /obj/effect/proc_holder/spell/self/magical_disguise)
 			pants = /obj/item/clothing/under/roguetown/tights/black
 			shirt = /obj/item/clothing/suit/roguetown/shirt/undershirt
 			armor = /obj/item/clothing/suit/roguetown/armor/leather
@@ -150,6 +157,8 @@
 			H.change_stat("speed", 2)
 			H.change_stat("perception", 1)
 			H.change_stat("fortune", 1)
+			H.mind.AddSpell(new /obj/effect/proc_holder/spell/invoked/invisibility)
+			backpack_contents = list(/obj/item/flashlight/flare/torch = 1, /obj/item/smokebomb = 3)
 			pants = /obj/item/clothing/under/roguetown/tights/black
 			shirt = /obj/item/clothing/suit/roguetown/shirt/undershirt/black
 			armor = /obj/item/clothing/suit/roguetown/armor/leather
@@ -158,7 +167,6 @@
 			cloak = /obj/item/clothing/cloak/raincloak
 			belt = /obj/item/storage/belt/rogue/leather
 			backl = /obj/item/storage/backpack/rogue/satchel
-			backpack_contents = list(/obj/item/flashlight/flare/torch = 1)
 
 		if("Scoundrel")
 			to_chat(H, span_warning("You survive by your wits and quick reflexes, with a silver tongue to talk your way out of trouble."))
