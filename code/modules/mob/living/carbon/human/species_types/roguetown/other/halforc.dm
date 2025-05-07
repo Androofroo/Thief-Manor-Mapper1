@@ -103,7 +103,7 @@
 	. = ..()
 	UnregisterSignal(C, COMSIG_MOB_SAY)
 
-/datum/species/goblinp/check_roundstart_eligible()
+/datum/species/halforc/check_roundstart_eligible()
 	return FALSE
 
 /datum/species/halforc/qualifies_for_rank(rank, list/features)
