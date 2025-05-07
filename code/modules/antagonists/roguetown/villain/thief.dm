@@ -98,14 +98,14 @@
 	to_chat(owner.current, "<span class='userdanger'>You are a thief!</span>")
 	to_chat(owner.current, "<span class='boldwarning'>You've worked in the manor for years, always overlooked, always underappreciated. You know every corner, every secret passage. Now it's time to take what you deserve - precious treasures! Your insider knowledge gives you an advantage, but betrayal is punished harshly in these lands.</span>")
 	to_chat(owner.current, "<span class='boldnotice'>You've been trained in the art of the thief, and have stealthy abilities and tools to help you complete your mission.</span>")
-	to_chat(owner.current, "<span class='boldnotice'>A <b>thief kit</b> has been added to your stash. You can retrieve it by right-clicking on any tree, statue, or clock.</span>")
+	to_chat(owner.current, "<span class='boldnotice'>A <b>thief kit</b> has been added to your stash. It contains a lockpick and a powerful, but slow acting sedative. You can retrieve it by right-clicking on any tree, statue, or clock.</span>")
 	
 	
 	if(owner.current.mind)
 		owner.current.mind.show_memory()
 	
 	// Play thief theme music
-	owner.current.playsound_local(get_turf(owner.current), 'sound/music/thief.ogg', 60, FALSE, pressure_affected = FALSE)
+	owner.current.playsound_local(get_turf(owner.current), 'sound/music/thief.ogg', 100, FALSE, pressure_affected = FALSE)
 
 /datum/antagonist/thief/proc/add_objectives()
 	// We'll create objective items dynamically based on available treasures

@@ -1808,10 +1808,10 @@ GLOBAL_LIST_EMPTY(all_treasures)
 	STR.can_hold = typecacheof(list(
 		/obj/item/lockpickring,
 		/obj/item/lockpick,
-		/obj/item/reagent_containers/glass/bottle/rogue/strongstampoison
+		/obj/item/reagent_containers/glass/bottle/rogue/sleepypoison
 	))
 
 /obj/item/storage/thief_kit/PopulateContents()
 	new /obj/item/lockpickring/mundane(src)
-	new /obj/item/reagent_containers/glass/bottle/rogue/strongstampoison(src)
+	new /obj/item/reagent_containers/glass/bottle/rogue/sleepypoison(src)
 	initialized = TRUE

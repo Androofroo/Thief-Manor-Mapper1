@@ -33,6 +33,9 @@
 /obj/item/reagent_containers/glass/bottle/rogue/strongstampoison
 	list_reagents = list(/datum/reagent/strongstampoison = 15)
 
+/obj/item/reagent_containers/glass/bottle/rogue/sleepypoison
+	list_reagents = list(/datum/reagent/toxin/sulfonal = 45)
+
 /obj/item/reagent_containers/glass/alchemical/strpot
 	list_reagents = list(/datum/reagent/buff/strength = 27)
 
