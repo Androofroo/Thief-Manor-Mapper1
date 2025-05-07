@@ -111,3 +111,17 @@
 	desc = "An ancient, ornate vault with broken magical seals. It stands open, having yielded its treasure: Kassidy's armor."
 	
 	visible_message(span_notice("The [src] opens with a flash of light, revealing Kassidy's armor inside!"))
+
+/obj/structure/closet/crate/roguecloset/lord/ninja
+	keylock = TRUE
+	icon = 'thiefmanor/icons/misc2.dmi'
+	lockid = "lord"
+	locked = TRUE
+	masterkey = TRUE
+	base_icon_state = "ninjacloset"
+	icon_state = "ninjacloset"
+
+/obj/structure/closet/crate/roguecloset/lord/ninja/Initialize()
+	. = ..()
+	new /obj/item/treasure/quiet_blade(src)
+	

@@ -219,7 +219,7 @@
 /obj/effect/proc_holder/spell/self/snuff_light
 	name = "Snuff Light"
 	desc = "Silently extinguish lights in your view to enhance your stealth operations."
-	overlay_state = "sacredflame"
+	overlay_state = "snufflight"
 	antimagic_allowed = TRUE
 	charge_max = 3000 // 5 minutes (300 seconds)
 	clothes_req = FALSE
@@ -266,7 +266,7 @@
 /obj/effect/proc_holder/spell/self/magical_disguise
 	name = "Magical Disguise"
 	desc = "Take on the appearance of another person."
-	overlay_state = "comedy"
+	overlay_state = "disguise"
 	clothes_req = FALSE
 	human_req = TRUE
 	charge_max = 600

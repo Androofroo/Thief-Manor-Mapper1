@@ -117,7 +117,7 @@ GLOBAL_LIST_EMPTY(all_treasures)
 	desc = "A golden heirloom set with a rare violet gem. Missing for years… or was it just hidden?"
 	icon_state = "brooch"
 	dropshrink = 0.5
-	difficulty = 5
+	difficulty = 3
 	drop_sound = 'sound/items/gem.ogg'
 
 /obj/item/treasure/wine
@@ -353,7 +353,7 @@ GLOBAL_LIST_EMPTY(all_treasures)
 	throwforce = 5
 	is_silver = TRUE
 	icon_state = "silverstake"
-	difficulty = 4
+	difficulty = 3
 	max_integrity = 200
 	resistance_flags = FIRE_PROOF
 	experimental_inhand = TRUE
