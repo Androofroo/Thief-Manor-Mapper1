@@ -134,7 +134,15 @@
 			H.change_stat("speed", 1)
 			H.change_stat("perception", 2)
 			H.change_stat("fortune", 1)
-			H.mind.AddSpell(new /obj/effect/proc_holder/spell/self/magical_disguise)
+			
+			// Only add the disguise spell if they don't already have it
+			var/has_disguise = FALSE
+			for(var/obj/effect/proc_holder/spell/self/magical_disguise/S in H.mind.spell_list)
+				has_disguise = TRUE
+				break
+			if(!has_disguise)
+				H.mind.AddSpell(new /obj/effect/proc_holder/spell/self/magical_disguise)
+				
 			pants = /obj/item/clothing/under/roguetown/tights/black
 			shirt = /obj/item/clothing/suit/roguetown/shirt/undershirt
 			armor = /obj/item/clothing/suit/roguetown/armor/leather
@@ -157,7 +165,15 @@
 			H.change_stat("speed", 2)
 			H.change_stat("perception", 1)
 			H.change_stat("fortune", 1)
-			H.mind.AddSpell(new /obj/effect/proc_holder/spell/invoked/invisibility)
+			
+			// Only add the invisibility spell if they don't already have it
+			var/has_invisibility = FALSE
+			for(var/obj/effect/proc_holder/spell/invoked/invisibility/S in H.mind.spell_list)
+				has_invisibility = TRUE
+				break
+			if(!has_invisibility)
+				H.mind.AddSpell(new /obj/effect/proc_holder/spell/invoked/invisibility)
+				
 			backpack_contents = list(/obj/item/flashlight/flare/torch = 1, /obj/item/smokebomb = 3)
 			pants = /obj/item/clothing/under/roguetown/tights/black
 			shirt = /obj/item/clothing/suit/roguetown/shirt/undershirt/black
