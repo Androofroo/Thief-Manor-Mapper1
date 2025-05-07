@@ -1136,7 +1136,7 @@
 
 /datum/objective/thief/survive
 	name = "survive"
-	explanation_text = "Stay alive and avoid being caught and imprisoned."
+	explanation_text = "Stay alive and avoid being caught and thrown in jail."
 
 /datum/objective/thief/survive/check_completion()
 	var/list/datum/mind/owners = get_owners()
