@@ -30,9 +30,6 @@
 	if(!H || QDELETED(H) || !istype(H) || !H.client)
 		return
 		
-	// Add the thief kit to the player's mind.special_items instead of special_loadout
-	// This lets them keep their regular loadout items
-	
 	// First, find the thief_kit loadout item path
 	var/thief_kit_path
 	for(var/path in GLOB.loadout_items)
@@ -55,12 +52,15 @@
 				
 		// Only add the thief kit if it doesn't already exist in the player's special items
 		if(!has_thief_kit)
-			// Add the thief kit to the player's special items with a special name to identify it
-			H.mind.special_items["Thief Kit"] = GLOB.loadout_items[thief_kit_path].path
-			to_chat(H, span_notice("A <b>thief kit</b> has been added to your stash. You can retrieve it from any tree, statue, or clock by right-clicking on them."))
-			
-			// Mark as given so we don't try to add it again
-			lockpick_given = TRUE
+			// Get the loadout item datum to access its path property
+			var/datum/loadout_item/thief_kit = GLOB.loadout_items[thief_kit_path]
+			if(thief_kit)
+				// Add the thief kit to the player's special items with a special name to identify it
+				H.mind.special_items["Thief Kit"] = thief_kit.path
+				to_chat(H, span_notice("A <b>thief kit</b> has been added to your stash. You can retrieve it from any tree, statue, or clock by right-clicking on them."))
+				
+				// Mark as given so we don't try to add it again
+				lockpick_given = TRUE
 
 /datum/antagonist/thief/proc/equip_thief()
 	var/mob/living/carbon/human/H = owner.current

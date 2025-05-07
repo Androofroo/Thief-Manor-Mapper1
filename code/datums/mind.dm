@@ -102,7 +102,6 @@
 	soulOwner = src
 	martial_art = default_martial_art
 	sleep_adv = new /datum/sleep_adv(src)
-	special_items = list()  // Initialize the special_items list
 
 /datum/mind/Destroy()
 	SSticker.minds -= src
