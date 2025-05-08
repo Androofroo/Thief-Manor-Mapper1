@@ -1,6 +1,7 @@
 /mob/living
 	//used by the basic ai controller /datum/ai_behavior/basic_melee_attack to determine how fast a mob can attack
 	var/melee_cooldown = CLICK_CD_MELEE
+	var/list/mob_offsets = list()
 
 /mob/living/Initialize()
 	. = ..()
@@ -497,9 +498,6 @@
 	M.layer = MOB_LAYER
 	//animate(M, pixel_x = 0 , pixel_y = 0, 1)
 
-/mob/living
-	var/list/mob_offsets = list()
-
 /mob/living/proc/set_mob_offsets(index, _x = 0, _y = 0)
 	if(index)
 		if(mob_offsets[index])
@@ -848,23 +846,27 @@
 		reset_offsets("wall_press")
 		return FALSE
 	if(buckled || lying)
-		wallpressed = FALSE
-		reset_offsets("wall_press")
+		stop_wallpress()
 		return FALSE
 	var/turf/newwall = get_step(newloc, wallpressed)
 	if(!T.Adjacent(newwall))
-		return reset_offsets("wall_press")
+		stop_wallpress()
+		return FALSE
 	if(isclosedturf(newwall) && fixedeye)
 		var/turf/closed/C = newwall
 		if(C.wallpress)
+			//Hard reset all vision for nearby mobs when a wallpressed mob moves
+			for(var/mob/living/L in orange(10, src))
+				if(L.client)
+					// Clear all images and force update with TRUE
+					L.client.images.Cut()
+					L.client.update_cone(TRUE)
 			return TRUE
-	wallpressed = FALSE
-	reset_offsets("wall_press")
-	update_wallpress_slowdown()
+	stop_wallpress()
+	return FALSE
 
 
 /mob/living/Move(atom/newloc, direct, glide_size_override)
-
 	var/old_direction = dir
 	var/turf/T = loc
 
@@ -891,9 +893,27 @@
 	if(pulling)
 		update_pull_movespeed()
 
-	. = ..()
+	. = ..(newloc, direct, glide_size_override)
 
 	update_sneak_invis()
+	
+	// Force update visibility for all nearby mobs when movement occurs
+	// This addresses two issues:
+	// 1. When someone moves to the other side of a wall from a wallpressed mob
+	// 2. When a wallpressed mob moves and needs to be revealed
+	if(.) // Only if movement was successful
+		// Hard reset all vision cones to address persistent visibility issues
+		// First, update all mobs that might see us and that we might see
+		for(var/mob/living/L in orange(10, src))
+			if(L.client)
+				// Force full vision cone update
+				L.client.images.Cut()
+				L.client.update_cone(TRUE)
+		
+		// Always update our own vision - with complete reset
+		if(client)
+			client.images.Cut()
+			client.update_cone(TRUE)
 
 	if(pulledby && moving_diagonally != FIRST_DIAG_STEP && get_dist(src, pulledby) > 1 && (pulledby != moving_from_pull))//separated from our puller and not in the middle of a diagonal move.
 		pulledby.stop_pulling()
@@ -902,7 +922,6 @@
 			var/mob/living/L = pulledby
 			L.set_pull_offsets(src, pulledby.grab_state)
 
-//	if(active_storage && !(CanReach(active_storage.parent,view_only = TRUE)))
 	if(active_storage)
 		active_storage.close(src)
 

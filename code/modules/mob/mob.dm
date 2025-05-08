@@ -185,6 +185,11 @@ GLOBAL_VAR_INIT(mobids, 1)
 			msg = blind_message
 		if(!msg)
 			continue
+		// Extra check for wallpressed mobs since we've modified the get_hearers_in_view to include visibility
+		if(isliving(src) && ismob(M))
+			var/mob/living/L = src
+			if(L.wallpressed && !can_see(M, L))
+				continue
 		M.show_message(msg, MSG_VISUAL, blind_message, MSG_AUDIBLE)
 		if(runechat_message && M.can_hear())
 			M.create_chat_message(src, raw_message = runechat_message, spans = list("emote"))

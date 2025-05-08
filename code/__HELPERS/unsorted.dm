@@ -407,8 +407,28 @@ Turf and target are separate in case you want to teleport some distance from a t
 	if(current == target_turf)	
 		return TRUE
 
+	// Check if target is leaning against a wall that blocks vision from source
+	if(isliving(target))
+		var/mob/living/L = target
+		if(L.wallpressed)
+			// Get the wall the target is leaning against
+			var/turf/wall_turf = get_step(target_turf, L.wallpressed)
+			if(istype(wall_turf, /turf/closed))
+				// Get the opposite direction from the wallpress direction
+				var/opposite_direction = turn(L.wallpressed, 180)
+				
+				// Check if source is on the opposite side of the wall
+				// If we're NOT in the opposite direction, we are on the same
+				// side of the wall as the target and can see them
+				if(!(get_dir(wall_turf, current) & opposite_direction))
+					// On same side, can see
+					return TRUE
+				else
+					// On opposite sides, can't see
+					return FALSE
+	
+	// Now check the path between the two atoms for opacity
 	var/steps = 1
-
 	current = get_step_towards(current, target_turf)
 	while(current != target_turf)
 		if(steps > length)

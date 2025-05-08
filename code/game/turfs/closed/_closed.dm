@@ -40,16 +40,26 @@
 	switch(dir2wall)
 		if(NORTH)
 			user.setDir(SOUTH)
-			user.set_mob_offsets("wall_press", _x = 0, _y = 20)
+			user.set_mob_offsets("wall_press", _x = 0, _y = 12)
 		if(SOUTH)
 			user.setDir(NORTH)
-			user.set_mob_offsets("wall_press", _x = 0, _y = -10)
+			user.set_mob_offsets("wall_press", _x = 0, _y = -12)
 		if(EAST)
 			user.setDir(WEST)
-			user.set_mob_offsets("wall_press", _x = 12, _y = 0)
+			user.set_mob_offsets("wall_press", _x = 8, _y = 0)
 		if(WEST)
 			user.setDir(EAST)
-			user.set_mob_offsets("wall_press", _x = -12, _y = 0)
+			user.set_mob_offsets("wall_press", _x = -8, _y = 0)
+	
+	// Ensure the mob remains clickable for mouse hover
+	user.mouse_opacity = MOUSE_OPACITY_OPAQUE
+	
+	// Hard reset all vision for nearby mobs
+	for(var/mob/living/L in orange(10, user))
+		if(L.client)
+			// Clear all images and force update with TRUE
+			L.client.images.Cut()
+			L.client.update_cone(TRUE)
 
 /turf/closed/proc/wallshove(mob/living/user)
 	if(user.wallpressed)
@@ -341,3 +351,27 @@
 	underlay_appearance.icon = 'icons/turf/floors.dmi'
 	underlay_appearance.icon_state = "basalt"
 	return TRUE
+
+/mob/living/proc/stop_wallpress()
+	if(!wallpressed)
+		return
+	wallpressed = null
+	update_wallpress_slowdown()
+	pixel_x = initial(pixel_x)
+	pixel_y = initial(pixel_y)
+	reset_offsets("wall_press")
+	
+	// Restore original mouse opacity (default for mobs is MOUSE_OPACITY_OPAQUE)
+	mouse_opacity = initial(mouse_opacity)
+	
+	//Hard reset all vision for nearby mobs
+	for(var/mob/living/L in orange(10, src))
+		if(L.client)
+			// Clear all images and force update with TRUE
+			L.client.images.Cut()
+			L.client.update_cone(TRUE)
+	
+	// Update our own vision - with complete reset
+	if(client)
+		client.images.Cut()
+		client.update_cone(TRUE)

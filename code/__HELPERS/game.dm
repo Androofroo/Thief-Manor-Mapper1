@@ -256,7 +256,36 @@
 	while(processing_list.len) // recursive_hear_check inlined here
 		var/atom/A = processing_list[1]
 		if(A.flags_1 & HEAR_1)
-			. += A
+			// Check for visibility between source and the potential hearer
+			if(ismob(source) && ismob(A))
+				// If both are mobs, check if they can see each other
+				var/mob/mob_source = source
+				var/mob/mob_receiver = A
+				
+				// Special handling for wall-leaning
+				var/can_source_see_receiver = TRUE
+				var/can_receiver_see_source = TRUE
+				
+				// Check if the source is wallpressed
+				if(isliving(mob_source))
+					var/mob/living/living_source = mob_source
+					if(living_source.wallpressed)
+						// Check if wallpressed blocks vision
+						can_receiver_see_source = can_see(mob_receiver, mob_source)
+				
+				// Check if the receiver is wallpressed
+				if(isliving(mob_receiver))
+					var/mob/living/living_receiver = mob_receiver
+					if(living_receiver.wallpressed)
+						// Check if wallpressed blocks vision
+						can_source_see_receiver = can_see(mob_source, mob_receiver)
+				
+				// Only add to hearers if mutual visibility is established
+				if(can_source_see_receiver && can_receiver_see_source)
+					. += A
+			else
+				// If not both mobs, add normally
+				. += A
 		processing_list.Cut(1, 2)
 		processing_list += A.contents
 

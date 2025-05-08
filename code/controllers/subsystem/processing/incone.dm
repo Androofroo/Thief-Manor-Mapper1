@@ -23,7 +23,10 @@ SUBSYSTEM_DEF(incone)
 			if (MC_TICK_CHECK)
 				return
 			continue
-		thing.update_cone()
-		STOP_PROCESSING(SSincone, thing)
+		
+		// Only update if the client still exists and has a mob
+		if(thing && thing.mob)
+			thing.update_cone()
+			
 		if (MC_TICK_CHECK)
 			return

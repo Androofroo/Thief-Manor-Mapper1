@@ -1,4 +1,3 @@
-
 /client
 	var/list/hidden_atoms = list()
 	var/list/hidden_mobs = list()
@@ -70,136 +69,129 @@
 	return list
 
 /mob/proc/update_vision_cone()
-	return
-
-/mob/proc/update_cone()
-	return
-
-/mob/living/update_vision_cone()
 	if(client)
 		if(hud_used && hud_used.fov)
 			hud_used.fov.dir = src.dir
 			hud_used.fov_blocker.dir = src.dir
 		START_PROCESSING(SSincone, client)
 
-/client/proc/update_cone()
-	if(mob)
-		mob.update_cone()
+/mob/proc/update_cone(force = FALSE)
+	return
 
-/mob/living/update_cone()
-	for(var/hidden_hud in client.hidden_images)
-		client.images -= hidden_hud
-		client.hidden_images -= hidden_hud
-	if(hud_used?.fov)
+/client/proc/update_cone(force = FALSE)
+	if(mob)
+		mob.update_cone(force)
+
+/mob/living/update_cone(force = FALSE)
+	if(!client)
+		return
+
+	// Create a new hidden image system that works more reliably
+	// First, clear all hidden things
+	for(var/image/I in client.images)
+		if(I in client.hidden_images)
+			client.images -= I
+	client.hidden_images.Cut()
+	client.hidden_atoms.Cut()
+	client.hidden_mobs.Cut()
+	
+	if(hud_used?.fov && !force)
 		if(hud_used.fov.alpha == 0)
 			return
+	
+	// Handle self image
 	var/image/I = image(src, src)
 	I.override = 1
 	I.plane = GAME_PLANE_UPPER
 	I.layer = layer
-	I.pixel_x = 0
-	I.pixel_y = 0
-	client.images += I
-	client.hidden_images += I
 	I.appearance_flags = RESET_TRANSFORM|KEEP_TOGETHER|PIXEL_SCALE
+	client.hidden_images += I
+	client.images += I
+	
+	// Handle buckled and pulling visibility (standard)
 	if(buckled)
 		var/image/IB = image(buckled, buckled)
 		IB.override = 1
 		IB.plane = GAME_PLANE_UPPER
 		IB.layer = IB.layer
-		IB.pixel_x = 0
-		IB.pixel_y = 0
 		IB.appearance_flags = RESET_TRANSFORM|KEEP_TOGETHER
 		client.hidden_images += IB
 		client.images += IB
 	if(pulling)
-		var/image/IB = image(pulling, pulling)
-		IB.override = 1
-		IB.plane = GAME_PLANE_UPPER
-		IB.layer = IB.layer
-		IB.pixel_x = 0
-		IB.pixel_y = 0
-		IB.appearance_flags = RESET_TRANSFORM|KEEP_TOGETHER
-		client.hidden_images += IB
-		client.images += IB
-/*	if(hud_used && hud_used.fov_blocker)
-		fov_blocker
+		var/image/IP = image(pulling, pulling)
+		IP.override = 1
+		IP.plane = GAME_PLANE_UPPER
+		IP.layer = IP.layer
+		IP.appearance_flags = RESET_TRANSFORM|KEEP_TOGETHER
+		client.hidden_images += IP
+		client.images += IP
+	
+	// NEW APPROACH: Process all mobs in view and determine visibility
+	var/list/all_visible_mobs = view(client.view, src)
+	for(var/mob/living/L in all_visible_mobs)
+		// Skip self
+		if(L == src)
+			continue
+		
+		var/should_hide = FALSE
+		
+		// Check if this mob is wallpressed
+		if(L.wallpressed)
+			var/turf/mob_turf = get_turf(L)
+			var/turf/wall_turf = get_step(mob_turf, L.wallpressed)
+			var/turf/my_turf = get_turf(src)
+			
+			// Only apply wallpress invisibility if it's actually against a closed turf
+			if(istype(wall_turf, /turf/closed))
+				// Check if we're on the opposite side
+				if(get_dir(wall_turf, my_turf) & L.wallpressed)
+					should_hide = TRUE
 
-		var/icon/new_blocker = icon("icon"='icons/mob/vision_cone.dmi', "icon_state"=hud_used.fov_blocker.icon_state)
-		var/icon/the_mob = icon("icon"='icons/mob/clothing/under/masking_helpers.dmi', "icon_state"="[(type == FEMALE_UNIFORM_FULL) ? "female_full" : "female_top"]")
-		female_clothing_icon.Blend(female_s, ICON_MULTIPLY)
-*/
+		// Remove any previous hiding image if we should NOT hide this mob
+		if(!should_hide)
+			for(var/image/img in client.images)
+				if(img.override && img.loc == L && img.icon == null)
+					client.images -= img
+					client.hidden_atoms -= img
+					break
 
-/*	if(src.client)
-		var/image/I = null
-		for(I in src.client.hidden_atoms)
-			I.override = 0
-			client.images -= I
-			qdel(I)
-		for(var/hidden_hud in client.hidden_images)
-			client.images += hidden_hud
-			client.hidden_images -= hidden_hud
-		src.client.hidden_atoms = list()
-		src.client.hidden_mobs = list()
-		client.hidden_images = list()
-		if(hud_used && hud_used.fov)
-//			hud_used.fov.dir = src.dir
-			if(hud_used.fov.alpha != 0)
-				var/mob/living/M
-				var/list/mobs2hide = list()
-
-				if(fovangle & FOV_RIGHT)
-					if(fovangle & FOV_LEFT)
-						var/dirlist = list(turn(src.dir, 180),turn(src.dir, -90),turn(src.dir, 90))
-						mobs2hide |= cone(src, dirlist, GLOB.mob_living_list.Copy())
-					else
-						if(fovangle & FOV_BEHIND)
-							var/dirlist = list(turn(src.dir, -90))
-							mobs2hide |= behind(src, list(turn(src.dir, 180)), GLOB.mob_living_list.Copy())
-							mobs2hide |= cone(src, dirlist, GLOB.mob_living_list.Copy())
-						else
-							var/dirlist = list(turn(src.dir, 180),turn(src.dir, -90))
-							mobs2hide |= cone(src, dirlist, GLOB.mob_living_list.Copy())
-				else
-					if(fovangle & FOV_LEFT)
-						if(fovangle & FOV_BEHIND)
-							var/dirlist = list(turn(src.dir, 90))
-							mobs2hide |= behind(src, list(turn(src.dir, 180)), GLOB.mob_living_list.Copy())
-							mobs2hide |= cone(src, dirlist, GLOB.mob_living_list.Copy())
-						else
-							var/dirlist = list(turn(src.dir, 180),turn(src.dir, 90))
-							mobs2hide |= cone(src, dirlist, GLOB.mob_living_list.Copy())
-					else
-						if(fovangle & FOV_BEHIND)
-							mobs2hide |= behind(src, list(turn(src.dir, 180)), GLOB.mob_living_list.Copy())
-						else//default
-							mobs2hide |= cone(src, list(turn(src.dir, 180)), GLOB.mob_living_list.Copy())
-
-				for(M in mobs2hide)
-					I = image("split", M)
-					I.override = 1
-					src.client.images += I
-					src.client.hidden_atoms += I
-					src.client.hidden_mobs += M
-					if(src.pulling == M)//If we're pulling them we don't want them to be invisible, too hard to play like that.
-						I.override = 0
-					if(src.pulledby == M)
-						I.icon = 'icons/mob/mob.dmi'
-						I.icon_state = "anon"
-		for(var/image/HUD in client.images)
-			if(HUD.icon != 'icons/mob/hud.dmi')
-				continue
-			for(var/mob/living/M in client.hidden_mobs)
-				if(HUD.loc == M)
-					client.hidden_images += HUD
-					client.images -= HUD
-					break*/
+		// If we determined this mob should be hidden, hide it
+		if(should_hide)
+			var/image/hiding = image(null, L)
+			hiding.override = TRUE
+			hiding.mouse_opacity = 0 // Explicitly set to not block mouseover
+			client.images += hiding
+			client.hidden_atoms += hiding
+			// No longer adding to hidden_mobs list
 
 /mob/proc/can_see_cone(mob/L)
 	if(!isliving(src) || !isliving(L))
 		return
 	if(!client)
 		return TRUE
+		
+	// First check if wall leaning blocks visibility
+	if(isliving(L))
+		var/mob/living/living_target = L
+		if(living_target.wallpressed)
+			var/turf/target_turf = get_turf(living_target)
+			var/turf/wall_turf = get_step(target_turf, living_target.wallpressed)
+			if(istype(wall_turf, /turf/closed))
+				var/turf/my_turf = get_turf(src)
+				
+				// Get the opposite direction from the wallpress direction
+				var/opposite_direction = turn(living_target.wallpressed, 180)
+				
+				// Check if we're on the opposite side of the wall
+				// If we're NOT in the opposite direction, we are on the same
+				// side of the wall as the target and can see them
+				if(!(get_dir(wall_turf, my_turf) & opposite_direction))
+					// If we're on the same side of the wall, we can see
+					return TRUE
+				else
+					// If we're on opposite sides of the wall, can't see
+					return FALSE
+	
 	if(hud_used && hud_used.fov)
 		if(hud_used.fov.alpha != 0)
 			var/list/mobs2hide = list()
@@ -232,15 +224,6 @@
 						mobs2hide |= cone(src, list(turn(src.dir, 180)), list(L))
 
 			if(L in mobs2hide)
-/*				I = image("split", M)
-				I.override = 1
-				src.client.images += I
-				src.client.hidden_atoms += I
-				if(src.pulling == M)//If we're pulling them we don't want them to be invisible, too hard to play like that.
-					I.override = 0
-				if(src.pulledby == M)
-					I.icon = 'icons/mob/mob.dmi'
-					I.icon_state = "anon"*/
 				return FALSE
 	return TRUE
 

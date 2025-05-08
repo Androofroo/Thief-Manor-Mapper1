@@ -131,7 +131,14 @@
 			return FALSE
 		if(isliving(p))
 			var/mob/living/L = p
-			if(!L.can_see_cone(src))
+			if(isliving(src))
+				var/mob/living/living_src = src
+				if(living_src.wallpressed)
+					if(!living_src.can_mouseover_wallpress(L))
+						return FALSE
+				else if(!L.can_see_cone(src))
+					return FALSE
+			else if(!L.can_see_cone(src))
 				return FALSE
 		if(p.client.pixel_x || p.client.pixel_y)
 			return FALSE
@@ -147,8 +154,8 @@
 			var/mob/living/carbon/human/H = src
 			if(H.voice_color)
 				if(H.name != "Unknown")
-					mousecolor = "#[H.voice_color]"
-		p.client.mouseovertext.maptext = {"<span style='font-size:8pt;font-family:"Pterra";color:[mousecolor];text-shadow:0 0 10px #fff, 0 0 20px #fff, 0 0 30px #e60073, 0 0 40px #e60073, 0 0 50px #e60073, 0 0 60px #e60073, 0 0 70px #e60073;' class='center maptext '>[name]"}
+					mousecolor = "#" + H.voice_color
+		p.client.mouseovertext.maptext = {"<span style='font-size:8pt;font-family:\"Pterra\";color:[mousecolor];text-shadow:0 0 10px #fff, 0 0 20px #fff, 0 0 30px #e60073, 0 0 40px #e60073, 0 0 50px #e60073, 0 0 60px #e60073, 0 0 70px #e60073;' class='center maptext '>[name]"}
 		p.client.mouseovertext.movethis(PM)
 		p.client.screen |= p.client.mouseovertext
 	return TRUE
@@ -211,3 +218,20 @@
 	mouseoverbox = new /atom/movable/screen/movable/mouseover
 	//var/datum/asset/stuff = get_asset_datum(/datum/asset/simple/roguefonts)
 	//stuff.send(src)
+
+/mob/living/proc/can_mouseover_wallpress(viewer)
+	if(!isliving(src) || !isliving(viewer))
+		return TRUE
+	if(!wallpressed)
+		return TRUE
+	var/turf/mob_turf = get_turf(src)
+	var/turf/wall_turf = get_step(mob_turf, wallpressed)
+	if(!istype(wall_turf, /turf/closed))
+		return TRUE
+	var/turf/viewer_turf = get_turf(viewer)
+	// Reverse the logic: allow mouseover if viewer is on the OPPOSITE side from the stealth logic
+	var/opposite_direction = turn(wallpressed, 180)
+	if(get_dir(wall_turf, viewer_turf) & opposite_direction)
+		return TRUE // allow mouseover from opposite side
+	else
+		return FALSE // block mouseover from same side
