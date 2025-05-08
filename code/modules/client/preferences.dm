@@ -182,6 +182,8 @@ GLOBAL_LIST_EMPTY(chosen_names)
 	// Map of job titles to selected advclass types
 	var/list/job_advclasses = list()
 
+	var/list/unlocked_loadout_items = list() // Tracks unlocked loadout item typepaths
+
 /datum/preferences/New(client/C)
 	parent = C
 	migrant  = new /datum/migrant_pref(src)
@@ -221,6 +223,8 @@ GLOBAL_LIST_EMPTY(chosen_names)
 	if(!job_advclasses)
 		job_advclasses = list()
 		
+	unlocked_loadout_items = list() // Initialize unlocked loadout items
+	
 	return
 
 /datum/preferences/proc/set_new_race(datum/species/new_race, user)
@@ -311,6 +315,7 @@ GLOBAL_LIST_EMPTY(chosen_names)
 			dat += "<a href='?_src_=prefs;preference=triumphs;task=menu'><b>TRIUMPHS:</b></a> [user.get_triumphs() ? "\Roman [user.get_triumphs()]" : "None"]"
 			if(SStriumphs.triumph_buys_enabled)
 				dat += "<a style='white-space:nowrap;' href='?_src_=prefs;preference=triumph_buy_menu'>Triumph Buy</a>"
+			dat += " | <a style='white-space:nowrap;font-weight:bold;color:gold;' href='?_src_=prefs;preference=loadoutshop'>Spend TRIUMPHS</a>"
 			dat += "</td>"
 
 			dat += "<td style='width:33%;text-align:right'>"
@@ -1458,6 +1463,30 @@ GLOBAL_LIST_EMPTY(chosen_names)
 	else if(href_list["preference"] == "triumph_buy_menu")
 		SStriumphs.startup_triumphs_menu(user.client)
 
+	else if(href_list["preference"] == "loadoutshop")
+		if(href_list["buy"] && href_list["confirm"])
+			var/typepath = text2path(href_list["buy"])
+			var/datum/loadout_item/item = GLOB.loadout_items[typepath]
+			if(!item)
+				show_loadout_shop(user, href_list)
+				return
+			var/datum/preferences/prefs = user.client.prefs
+			if(prefs.is_loadout_item_unlocked(typepath))
+				to_chat(user, "<span style='color:green'>You already own this item.</span>")
+				show_loadout_shop(user, href_list)
+				return
+			if(user.get_triumphs() < item.triumph_cost)
+				to_chat(user, "<span style='color:red'>Not enough TRIUMPHS.</span>")
+				show_loadout_shop(user, href_list)
+				return
+			user.adjust_triumphs(-item.triumph_cost)
+			prefs.unlock_loadout_item(typepath)
+			to_chat(user, "<span style='color:gold'>You have unlocked [item.name]!</span>")
+			show_loadout_shop(user, href_list)
+			return
+		show_loadout_shop(user, href_list)
+		return
+
 	else if(href_list["preference"] == "keybinds")
 		switch(href_list["task"])
 			if("close")
@@ -1842,6 +1871,12 @@ GLOBAL_LIST_EMPTY(chosen_names)
 							continue
 						if (loadout.hidden)
 							continue // Skip hidden loadout items
+						if(loadout.type == /datum/loadout_item/thief_kit) // Thief kit handled elsewhere
+							continue
+						if(loadout.ckeywhitelist) // Donator kits handled elsewhere
+							continue
+						if(!src.is_loadout_item_unlocked(loadout.type))
+							continue
 						loadouts_available[loadout.name] = loadout
 
 					var/loadout_input = input(user, "Choose your character's loadout item. RMB a tree, statue or clock to collect. I cannot stress this enough. YOU DON'T SPAWN WITH THESE. YOU HAVE TO MANUALLY PICK THEM UP!!", "LOADOUT THAT YOU GET FROM A TREE OR STATUE OR CLOCK") as null|anything in loadouts_available
@@ -1865,6 +1900,12 @@ GLOBAL_LIST_EMPTY(chosen_names)
 							continue
 						if (loadout2.hidden)
 							continue // Skip hidden loadout items
+						if(loadout2.type == /datum/loadout_item/thief_kit) // Thief kit handled elsewhere
+							continue
+						if(loadout2.ckeywhitelist) // Donator kits handled elsewhere
+							continue
+						if(!src.is_loadout_item_unlocked(loadout2.type))
+							continue
 						loadouts_available[loadout2.name] = loadout2
 
 					var/loadout_input2 = input(user, "Choose your character's loadout item. RMB a tree, statue or clock to collect. I cannot stress this enough. YOU DON'T SPAWN WITH THESE. YOU HAVE TO MANUALLY PICK THEM UP!!", "LOADOUT THAT YOU GET FROM A TREE OR STATUE OR CLOCK") as null|anything in loadouts_available
@@ -1888,6 +1929,12 @@ GLOBAL_LIST_EMPTY(chosen_names)
 							continue
 						if (loadout3.hidden)
 							continue // Skip hidden loadout items
+						if(loadout3.type == /datum/loadout_item/thief_kit) // Thief kit handled elsewhere
+							continue
+						if(loadout3.ckeywhitelist) // Donator kits handled elsewhere
+							continue
+						if(!src.is_loadout_item_unlocked(loadout3.type))
+							continue
 						loadouts_available[loadout3.name] = loadout3
 
 					var/loadout_input3 = input(user, "Choose your character's loadout item. RMB a tree, statue or clock to collect. I cannot stress this enough. YOU DON'T SPAWN WITH THESE. YOU HAVE TO MANUALLY PICK THEM UP!!", "LOADOUT THAT YOU GET FROM A TREE OR STATUE OR CLOCK") as null|anything in loadouts_available
@@ -2720,3 +2767,4 @@ GLOBAL_LIST_EMPTY(chosen_names)
 		job_preferences -= job_title
 	
 	return incompatible_jobs
+
