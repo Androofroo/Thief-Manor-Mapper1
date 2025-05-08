@@ -53,6 +53,7 @@
 	mask = /obj/item/clothing/mask/rogue/spectacles/golden
 	backl = /obj/item/storage/backpack/rogue/backpack
 	backpack_contents = list(
+						/obj/item/rogueweapon/engineers_wrench = 1,
 						/obj/item/rogueweapon/hammer/steel = 1,
 						/obj/item/rogueweapon/handsaw = 1,
 						/obj/item/rogueweapon/chisel = 1,

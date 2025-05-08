@@ -6,6 +6,7 @@
 	density = FALSE
 	anchored = TRUE
 	alpha = 30 //initially quite hidden when not "recharging"
+	var/trap_item_type = null
 	var/flare_message = span_warning("the trap flares brightly!")
 	var/last_trigger = 0
 	var/time_between_triggers = 600 //takes a minute to recharge

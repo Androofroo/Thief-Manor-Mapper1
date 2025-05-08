@@ -2057,6 +2057,7 @@
 #include "thiefmanor\items.dm"
 #include "thiefmanor\loadoutshop.dm"
 #include "thiefmanor\misc.dm"
+#include "thiefmanor\traps.dm"
 #include "thiefmanor\weapons.dm"
 // END_INCLUDE
 
