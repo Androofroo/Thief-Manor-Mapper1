@@ -76,9 +76,6 @@
 	item_state = "wrench"
 	possible_item_intents = list(/datum/intent/use, /datum/intent/mace/strike)
 
-/obj/item/rogueweapon/engineers_wrench/afterattack(atom/target, mob/user, proximity, click_parameters)
-	return ..()
-
 // Define an attackby for the base trap type to handle the engineer's wrench
 /obj/structure/trap/attackby(obj/item/I, mob/user, params)
 	if(istype(I, /obj/item/rogueweapon/engineers_wrench))
@@ -102,3 +99,74 @@
 			return FALSE
 	
 	return ..()
+
+// Tripwire Bell - requires Traps skill 3 to use
+/obj/item/trap/tripwire_bell
+	var/fade_timer = null
+	name = "Tripwire Bell"
+	desc = "A cunning trap that creates a loud sound when stepped on. Requires skill to arm."
+	icon = 'thiefmanor/icons/misc2.dmi'
+	icon_state = "belltrap"
+	w_class = WEIGHT_CLASS_SMALL
+	item_state = "belltrap"
+	associated_skill = /datum/skill/craft/traps
+
+/obj/item/trap/tripwire_bell/attack_self(mob/living/user)
+	if(!user.mind || user.mind.get_skill_level(/datum/skill/craft/traps) < 3)
+		to_chat(user, span_danger("You lack the skill to arm this trap. (Traps 3 required)"))
+		return
+	to_chat(user, span_notice("You carefully arm the tripwire bell. Set it down to deploy it!"))
+	playsound(user, 'sound/foley/trap_arm.ogg', 50, FALSE)
+	return
+
+/obj/item/trap/tripwire_bell/dropped(mob/living/user)
+	var/turf/T = get_turf(src)
+	if(T)
+		var/obj/structure/trap/tripwire_bell/F = new /obj/structure/trap/tripwire_bell(T)
+		F.alpha = 200 // Start visible
+		F.fade_to_invisible()
+	qdel(src)
+	..()
+
+// Custom Tripwire Bell Structure
+/obj/structure/trap/tripwire_bell
+	name = "tripwire bell"
+	desc = "A nearly invisible tripwire connected to a bell."
+	icon = 'thiefmanor/icons/misc2.dmi'
+	icon_state = "belltrap"
+	trap_item_type = /obj/item/trap/tripwire_bell
+
+/obj/structure/trap/tripwire_bell/Crossed(AM as mob|obj)
+	if(last_trigger + time_between_triggers > world.time)
+		return
+	// Don't want the traps triggered by sparks, ghosts or projectiles.
+	if(is_type_in_typecache(AM, ignore_typecache))
+		return
+	if(ismob(AM))
+		var/mob/M = AM
+		if(M.mind in immune_minds)
+			return
+		if(checks_antimagic && M.anti_magic_check())
+			flare()
+			return
+	if(charges <= 0)
+		return
+		
+	// Get the area name for the alert
+	var/area/trap_area = get_area(src)
+	var/area_name = trap_area?.name || "unknown area"
+	
+	// Trigger the bell sound and alert
+	flare()
+	if(isliving(AM))
+		playsound(src.loc, 'sound/misc/bell.ogg', 100, TRUE, -1)
+		visible_message(span_warning("[src] rings loudly as someone trips over the wire!"))
+		
+		// Send an alert to everyone
+		for(var/mob/M in GLOB.player_list)
+			to_chat(M, span_warning("You hear a loud bell ring from [area_name]!"))
+	..()
+
+/obj/structure/trap/tripwire_bell/proc/fade_to_invisible()
+	// Animate alpha from 200 to 30 over 10 seconds
+	animate(src, alpha = 30, time = 100)
