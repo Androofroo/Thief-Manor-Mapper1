@@ -26,9 +26,7 @@
 	if(armed)
 		var/turf/T = get_turf(src)
 		if(T)
-			var/obj/structure/trap/frosttrap/F = new /obj/structure/trap/frosttrap(T)
-			F.alpha = 200 // Start visible
-			F.fade_to_invisible()
+			new /obj/structure/trap/frosttrap(T)
 		qdel(src)
 	..()
 
@@ -44,13 +42,12 @@
 	if(isturf(loc))
 		if(isliving(AM))
 			var/mob/living/L = AM
-			// Only freeze, no damage, no embedding
 			to_chat(L, span_danger("<B>You step on a frost trap and are frozen solid in a block of ice!</B>"))
 			L.Paralyze(300)
 			L.adjust_bodytemperature(-300)
 			L.apply_status_effect(/datum/status_effect/freon)
 			visible_message(span_danger("[L] is encased in ice by a frost trap!"), span_danger("I am encased in ice by a frost trap!"))
-			alpha = 255
+			invisibility = 0
 			icon_state = "frosttrap"
 			playsound(src.loc, 'sound/items/beartrap.ogg', 100, TRUE, -1)
 	..()
@@ -96,11 +93,6 @@
 	
 	return ..()
 
-// Define the fade_to_invisible proc at the parent level so all traps can use it
-/obj/structure/trap/proc/fade_to_invisible(fade_time = 100)
-	// Animate alpha from 200 to 10 over the specified time (10 seconds by default)
-	animate(src, alpha = 10, time = fade_time)
-
 // Tripwire Bell - requires Traps skill 3 to use
 /obj/item/trap/tripwire_bell
 	var/armed = FALSE
@@ -129,9 +121,7 @@
 	if(armed)
 		var/turf/T = get_turf(src)
 		if(T)
-			var/obj/structure/trap/tripwire_bell/F = new /obj/structure/trap/tripwire_bell(T)
-			F.alpha = 200 // Start visible
-			F.fade_to_invisible()
+			new /obj/structure/trap/tripwire_bell(T)
 		qdel(src)
 	..()
 
@@ -146,7 +136,6 @@
 /obj/structure/trap/tripwire_bell/Crossed(AM as mob|obj)
 	if(last_trigger + time_between_triggers > world.time)
 		return
-	// Don't want the traps triggered by sparks, ghosts or projectiles.
 	if(is_type_in_typecache(AM, ignore_typecache))
 		return
 	if(ismob(AM))
@@ -158,20 +147,10 @@
 			return
 	if(charges <= 0)
 		return
-		
-	// Get the area name for the alert
-	var/area/trap_area = get_area(src)
-	var/area_name = trap_area?.name || "unknown area"
-	
-	// Trigger the bell sound and alert
 	flare()
 	if(isliving(AM))
 		playsound(src.loc, 'sound/misc/bell.ogg', 100, TRUE, -1)
 		visible_message(span_warning("[src] rings loudly as someone trips over the wire!"))
-		
-		// Send an alert to everyone
-		for(var/mob/M in GLOB.player_list)
-			to_chat(M, span_warningbig("You hear a loud burglar alarm bell ring from [area_name]!"))
 	..()
 
 // Fire Trap - requires Traps skill 5 to use
@@ -202,9 +181,7 @@
 	if(armed)
 		var/turf/T = get_turf(src)
 		if(T)
-			var/obj/structure/trap/firetrap/F = new /obj/structure/trap/firetrap(T)
-			F.alpha = 200 // Start visible
-			F.fade_to_invisible()
+			new /obj/structure/trap/firetrap(T)
 		qdel(src)
 	..()
 
@@ -219,7 +196,6 @@
 /obj/structure/trap/firetrap/Crossed(AM as mob|obj)
 	if(last_trigger + time_between_triggers > world.time)
 		return
-	// Don't want the traps triggered by sparks, ghosts or projectiles.
 	if(is_type_in_typecache(AM, ignore_typecache))
 		return
 	if(ismob(AM))
@@ -231,22 +207,17 @@
 			return
 	if(charges <= 0)
 		return
-	
-	// Trigger the fire trap
 	flare()
 	if(isliving(AM))
 		var/mob/living/L = AM
-		// Apply fire damage and fire effects
 		to_chat(L, span_danger("<B>You step on a fire trap and are engulfed in a burst of flames!</B>"))
-		L.Paralyze(100) // Shorter stun than the frost trap
+		L.Paralyze(100)
 		L.adjust_fire_stacks(3)
 		L.IgniteMob()
 		L.adjustFireLoss(20)
 		visible_message(span_danger("[L] is engulfed in flames from a fire trap!"), span_danger("I am engulfed in flames from a fire trap!"))
-		alpha = 255
 		icon_state = "firetrap"
 		playsound(src.loc, 'sound/magic/fireball.ogg', 100, TRUE, -1)
-		// Create fire effect on the tile
 		new /obj/effect/hotspot(get_turf(src))
 	..()
 
@@ -278,9 +249,7 @@
 	if(armed)
 		var/turf/T = get_turf(src)
 		if(T)
-			var/obj/structure/trap/peppertrap/F = new /obj/structure/trap/peppertrap(T)
-			F.alpha = 200 // Start visible
-			F.fade_to_invisible()
+			new /obj/structure/trap/peppertrap(T)
 		qdel(src)
 	..()
 
@@ -295,7 +264,6 @@
 /obj/structure/trap/peppertrap/Crossed(AM as mob|obj)
 	if(last_trigger + time_between_triggers > world.time)
 		return
-	// Don't want the traps triggered by sparks, ghosts or projectiles.
 	if(is_type_in_typecache(AM, ignore_typecache))
 		return
 	if(ismob(AM))
@@ -307,26 +275,143 @@
 			return
 	if(charges <= 0)
 		return
-	
-	// Trigger the pepper trap
 	flare()
 	if(isliving(AM))
-		// Create the pepper spray cloud - using chemical smoke system
 		var/datum/effect_system/smoke_spread/chem/S = new
 		var/obj/chemholder = new /obj()
-		var/datum/reagents/R = new/datum/reagents(15) // Small amount of reagents
+		var/datum/reagents/R = new/datum/reagents(15)
 		chemholder.reagents = R
 		R.my_atom = chemholder
-		// Add capsaicin to the chemical holder
 		R.add_reagent(/datum/reagent/consumable/condensedcapsaicin, 50)
-		
-		// Set up and start the smoke
 		S.chemholder = chemholder
 		S.set_up(R, 2, get_turf(src), 0)
 		S.start()
-		
-		// Visual and sound effects
 		visible_message(span_danger("A cloud of irritating pepper spray erupts from [src]!"))
 		playsound(src.loc, 'sound/items/smokebomb.ogg', 70, TRUE, -3)
-		alpha = 255
 	..()
+
+// Trap Goggles - special eyewear that allows the wearer to see traps even when they've faded to invisible
+/obj/item/clothing/glasses/trap_goggles
+	name = "trap detection goggles"
+	desc = "A special pair of goggles designed to reveal hidden traps. Perfect for disarming or avoiding them."
+	resistance_flags = FIRE_PROOF
+	slot_flags = ITEM_SLOT_MASK
+	body_parts_covered = EYES
+	icon = 'icons/roguetown/clothing/masks.dmi'
+	mob_overlay_icon = 'icons/roguetown/clothing/onmob/masks.dmi'
+	icon_state = "goggles"
+	item_state = "goggles"
+	darkness_view = 8
+	var/see_traps = TRUE
+	var/static/list/active_users = list()
+	var/refresh_timer_id = null
+
+/obj/item/clothing/glasses/trap_goggles/equipped(mob/user, slot)
+	. = ..()
+	if(slot == 8)
+		LAZYADD(active_users, user)
+		enable_trap_vision(user)
+		refresh_timer_id = addtimer(CALLBACK(src, PROC_REF(refresh_trap_vision), user), 50, TIMER_STOPPABLE|TIMER_LOOP)
+		
+/obj/item/clothing/glasses/trap_goggles/dropped(mob/user)
+	LAZYREMOVE(active_users, user)
+	disable_trap_vision(user)
+	if(refresh_timer_id)
+		deltimer(refresh_timer_id)
+		refresh_timer_id = null
+	return ..()
+
+/obj/item/clothing/glasses/trap_goggles/proc/enable_trap_vision(mob/user)
+	if(!user || !user.client)
+		return
+	
+	disable_trap_vision(user)
+	
+	if(!user.trap_highlight_list)
+		user.trap_highlight_list = list()
+	
+	var/view_range = 7
+	var/turf/user_turf = get_turf(user)
+	
+	for(var/obj/structure/trap/T in view(view_range, user_turf))
+		var/obj/effect/trap_highlight/existing = null
+		for(var/obj/effect/trap_highlight/H in get_turf(T))
+			if(H.parent_trap == T)
+				existing = H
+				break
+		
+		if(!existing)
+			existing = new /obj/effect/trap_highlight(get_turf(T), T)
+			
+		existing.visible_to |= user
+		user.trap_highlight_list |= existing
+
+/obj/item/clothing/glasses/trap_goggles/proc/disable_trap_vision(mob/user)
+	if(!user || !user.trap_highlight_list)
+		return
+	
+	for(var/obj/effect/trap_highlight/H in user.trap_highlight_list)
+		H.visible_to -= user
+		if(!length(H.visible_to))
+			qdel(H)
+	
+	user.trap_highlight_list.Cut()
+	user.trap_highlight_list = null
+
+/obj/item/clothing/glasses/trap_goggles/proc/refresh_trap_vision(mob/user)
+	if(QDELETED(src) || QDELETED(user) || !user.client)
+		if(refresh_timer_id)
+			deltimer(refresh_timer_id)
+			refresh_timer_id = null
+		return
+		
+	enable_trap_vision(user)
+
+// Create a helper object to use with visibility
+/obj/effect/trap_highlight
+	name = "trap highlight"
+	icon = 'icons/effects/effects.dmi'
+	icon_state = "nothing"
+	anchored = TRUE
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	layer = 100
+	plane = 30
+	
+	var/obj/structure/trap/parent_trap = null
+	var/list/visible_to = list()
+	
+/obj/effect/trap_highlight/Initialize(mapload, obj/structure/trap/T)
+	. = ..()
+	if(T)
+		parent_trap = T
+		icon = T.icon
+		icon_state = T.icon_state
+		alpha = 255
+		appearance_flags = RESET_ALPHA|RESET_TRANSFORM|KEEP_APART|TILE_BOUND
+		forceMove(get_turf(T))
+		
+		START_PROCESSING(SSobj, src)
+		
+/obj/effect/trap_highlight/process()
+	if(parent_trap)
+		if(get_turf(src) != get_turf(parent_trap))
+			forceMove(get_turf(parent_trap))
+	else
+		qdel(src)
+
+/obj/effect/trap_highlight/Destroy()
+	STOP_PROCESSING(SSobj, src)
+	parent_trap = null
+	visible_to.Cut()
+	return ..()
+
+/obj/effect/trap_highlight/examine(mob/user)
+	if(parent_trap)
+		return parent_trap.examine(user)
+	return ..()
+
+/obj/effect/trap_highlight/proc/hide_from_all_except(list/users)
+	visible_to = users
+
+/obj/effect/trap_highlight/proc/can_be_seen_by(mob/M)
+	return (M in visible_to)
