@@ -55,10 +55,6 @@
 			playsound(src.loc, 'sound/items/beartrap.ogg', 100, TRUE, -1)
 	..()
 
-/obj/structure/trap/frosttrap/proc/fade_to_invisible()
-	// Animate alpha from 200 to 30 over 10 seconds
-	animate(src, alpha = 30, time = 100)
-
 // Engineer's Wrench
 /obj/item/rogueweapon/engineers_wrench
 	name = "engineer's wrench"
@@ -100,8 +96,14 @@
 	
 	return ..()
 
+// Define the fade_to_invisible proc at the parent level so all traps can use it
+/obj/structure/trap/proc/fade_to_invisible(fade_time = 100)
+	// Animate alpha from 200 to 10 over the specified time (10 seconds by default)
+	animate(src, alpha = 10, time = fade_time)
+
 // Tripwire Bell - requires Traps skill 3 to use
 /obj/item/trap/tripwire_bell
+	var/armed = FALSE
 	var/fade_timer = null
 	name = "Tripwire Bell"
 	desc = "A cunning trap that creates a loud sound when stepped on. Requires skill to arm."
@@ -112,20 +114,25 @@
 	associated_skill = /datum/skill/craft/traps
 
 /obj/item/trap/tripwire_bell/attack_self(mob/living/user)
+	if(armed)
+		to_chat(user, span_warning("The tripwire bell is already armed! Set it down to deploy it."))
+		return
 	if(!user.mind || user.mind.get_skill_level(/datum/skill/craft/traps) < 3)
 		to_chat(user, span_danger("You lack the skill to arm this trap. (Traps 3 required)"))
 		return
+	armed = TRUE
 	to_chat(user, span_notice("You carefully arm the tripwire bell. Set it down to deploy it!"))
 	playsound(user, 'sound/foley/trap_arm.ogg', 50, FALSE)
 	return
 
 /obj/item/trap/tripwire_bell/dropped(mob/living/user)
-	var/turf/T = get_turf(src)
-	if(T)
-		var/obj/structure/trap/tripwire_bell/F = new /obj/structure/trap/tripwire_bell(T)
-		F.alpha = 200 // Start visible
-		F.fade_to_invisible()
-	qdel(src)
+	if(armed)
+		var/turf/T = get_turf(src)
+		if(T)
+			var/obj/structure/trap/tripwire_bell/F = new /obj/structure/trap/tripwire_bell(T)
+			F.alpha = 200 // Start visible
+			F.fade_to_invisible()
+		qdel(src)
 	..()
 
 // Custom Tripwire Bell Structure
@@ -164,9 +171,162 @@
 		
 		// Send an alert to everyone
 		for(var/mob/M in GLOB.player_list)
-			to_chat(M, span_warning("You hear a loud bell ring from [area_name]!"))
+			to_chat(M, span_warningbig("You hear a loud burglar alarm bell ring from [area_name]!"))
 	..()
 
-/obj/structure/trap/tripwire_bell/proc/fade_to_invisible()
-	// Animate alpha from 200 to 30 over 10 seconds
-	animate(src, alpha = 30, time = 100)
+// Fire Trap - requires Traps skill 5 to use
+/obj/item/trap/fire_trap
+	var/armed = FALSE
+	var/fade_timer = null
+	name = "Fire Trap"
+	desc = "A vicious trap that ignites victims in a burst of intense flame. Requires high skill to arm."
+	icon = 'thiefmanor/icons/misc2.dmi'
+	icon_state = "firetrap"
+	w_class = WEIGHT_CLASS_SMALL
+	item_state = "firetrap"
+	associated_skill = /datum/skill/craft/traps
+
+/obj/item/trap/fire_trap/attack_self(mob/living/user)
+	if(armed)
+		to_chat(user, span_warning("The fire trap is already armed! Set it down to deploy it."))
+		return
+	if(!user.mind || user.mind.get_skill_level(/datum/skill/craft/traps) < 4)
+		to_chat(user, span_danger("You lack the skill to arm this trap. (Traps 4 required)"))
+		return
+	armed = TRUE
+	to_chat(user, span_notice("You carefully arm the fire trap. Set it down to deploy it!"))
+	playsound(user, 'sound/foley/trap_arm.ogg', 50, FALSE)
+	return
+
+/obj/item/trap/fire_trap/dropped(mob/living/user)
+	if(armed)
+		var/turf/T = get_turf(src)
+		if(T)
+			var/obj/structure/trap/firetrap/F = new /obj/structure/trap/firetrap(T)
+			F.alpha = 200 // Start visible
+			F.fade_to_invisible()
+		qdel(src)
+	..()
+
+// Custom Fire Trap Structure
+/obj/structure/trap/firetrap
+	name = "fire trap"
+	desc = "A nearly invisible trap that erupts in flames when triggered."
+	icon = 'thiefmanor/icons/misc2.dmi'
+	icon_state = "firetrap"
+	trap_item_type = /obj/item/trap/fire_trap
+
+/obj/structure/trap/firetrap/Crossed(AM as mob|obj)
+	if(last_trigger + time_between_triggers > world.time)
+		return
+	// Don't want the traps triggered by sparks, ghosts or projectiles.
+	if(is_type_in_typecache(AM, ignore_typecache))
+		return
+	if(ismob(AM))
+		var/mob/M = AM
+		if(M.mind in immune_minds)
+			return
+		if(checks_antimagic && M.anti_magic_check())
+			flare()
+			return
+	if(charges <= 0)
+		return
+	
+	// Trigger the fire trap
+	flare()
+	if(isliving(AM))
+		var/mob/living/L = AM
+		// Apply fire damage and fire effects
+		to_chat(L, span_danger("<B>You step on a fire trap and are engulfed in a burst of flames!</B>"))
+		L.Paralyze(100) // Shorter stun than the frost trap
+		L.adjust_fire_stacks(3)
+		L.IgniteMob()
+		L.adjustFireLoss(20)
+		visible_message(span_danger("[L] is engulfed in flames from a fire trap!"), span_danger("I am engulfed in flames from a fire trap!"))
+		alpha = 255
+		icon_state = "firetrap"
+		playsound(src.loc, 'sound/magic/fireball.ogg', 100, TRUE, -1)
+		// Create fire effect on the tile
+		new /obj/effect/hotspot(get_turf(src))
+	..()
+
+// Pepper Trap - requires Traps skill 4 to use
+/obj/item/trap/pepper_trap
+	var/armed = FALSE
+	var/fade_timer = null
+	name = "Pepper Trap"
+	desc = "A nasty trap that releases a cloud of pepper spray when triggered. Requires skill to arm."
+	icon = 'thiefmanor/icons/misc2.dmi'
+	icon_state = "peppertrap"
+	w_class = WEIGHT_CLASS_SMALL
+	item_state = "peppertrap"
+	associated_skill = /datum/skill/craft/traps
+
+/obj/item/trap/pepper_trap/attack_self(mob/living/user)
+	if(armed)
+		to_chat(user, span_warning("The pepper trap is already armed! Set it down to deploy it."))
+		return
+	if(!user.mind || user.mind.get_skill_level(/datum/skill/craft/traps) < 4)
+		to_chat(user, span_danger("You lack the skill to arm this trap. (Traps 4 required)"))
+		return
+	armed = TRUE
+	to_chat(user, span_notice("You carefully arm the pepper trap. Set it down to deploy it!"))
+	playsound(user, 'sound/foley/trap_arm.ogg', 50, FALSE)
+	return
+
+/obj/item/trap/pepper_trap/dropped(mob/living/user)
+	if(armed)
+		var/turf/T = get_turf(src)
+		if(T)
+			var/obj/structure/trap/peppertrap/F = new /obj/structure/trap/peppertrap(T)
+			F.alpha = 200 // Start visible
+			F.fade_to_invisible()
+		qdel(src)
+	..()
+
+// Custom Pepper Trap Structure
+/obj/structure/trap/peppertrap
+	name = "pepper trap"
+	desc = "A nearly invisible trap that releases a cloud of irritating pepper spray when triggered."
+	icon = 'thiefmanor/icons/misc2.dmi'
+	icon_state = "peppertrap"
+	trap_item_type = /obj/item/trap/pepper_trap
+
+/obj/structure/trap/peppertrap/Crossed(AM as mob|obj)
+	if(last_trigger + time_between_triggers > world.time)
+		return
+	// Don't want the traps triggered by sparks, ghosts or projectiles.
+	if(is_type_in_typecache(AM, ignore_typecache))
+		return
+	if(ismob(AM))
+		var/mob/M = AM
+		if(M.mind in immune_minds)
+			return
+		if(checks_antimagic && M.anti_magic_check())
+			flare()
+			return
+	if(charges <= 0)
+		return
+	
+	// Trigger the pepper trap
+	flare()
+	if(isliving(AM))
+		// Create the pepper spray cloud - using chemical smoke system
+		var/datum/effect_system/smoke_spread/chem/S = new
+		var/obj/chemholder = new /obj()
+		var/datum/reagents/R = new/datum/reagents(15) // Small amount of reagents
+		chemholder.reagents = R
+		R.my_atom = chemholder
+		// Add capsaicin to the chemical holder
+		R.add_reagent(/datum/reagent/consumable/condensedcapsaicin, 50)
+		
+		// Set up and start the smoke
+		S.chemholder = chemholder
+		S.set_up(R, 2, get_turf(src), 0)
+		S.start()
+		
+		// Visual and sound effects
+		visible_message(span_danger("A cloud of irritating pepper spray erupts from [src]!"))
+		playsound(src.loc, 'sound/items/smokebomb.ogg', 70, TRUE, -3)
+		alpha = 255
+	..()
