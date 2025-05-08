@@ -294,8 +294,7 @@ GLOBAL_LIST_EMPTY(chosen_names)
 
 			// ANOTHA ROW
 			dat += "<tr style='padding-top: 0px;padding-bottom:0px'>"
-			dat += "<td style='width:33%;text-align:left'>"
-			dat += "</td>"
+			dat += "<td style='width:33%;text-align:left'></td>"
 
 			dat += "<td style='width:33%;text-align:center'>"
 			dat += "<a href='?_src_=prefs;preference=antag;task=menu'>Villain Selection</a>"
@@ -307,9 +306,7 @@ GLOBAL_LIST_EMPTY(chosen_names)
 
 			// ANOTHER ROW HOLY SHIT WE FINALLY A GOD DAMN GRID NOW! WHOA!
 			dat += "<tr style='padding-top: 0px;padding-bottom:0px'>"
-			dat += "<td style='width:33%; text-align:left'>"
-			dat += "<a href='?_src_=prefs;preference=playerquality;task=menu'><b>PQ:</b></a> [get_playerquality(user.ckey, text = TRUE)]"
-			dat += "</td>"
+			dat += "<td style='width:33%; text-align:left'></td>"
 
 			dat += "<td style='width:33%;text-align:center'>"
 			dat += "<a href='?_src_=prefs;preference=triumphs;task=menu'><b>TRIUMPHS:</b></a> [user.get_triumphs() ? "\Roman [user.get_triumphs()]" : "None"]"
