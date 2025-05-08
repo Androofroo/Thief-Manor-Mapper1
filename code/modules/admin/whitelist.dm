@@ -38,23 +38,25 @@ GLOBAL_PROTECT(whitelist)
 		return
 	
 	ckey_to_add = ckey(ckey_to_add)
-	
-	if(ckey_to_add in GLOB.whitelist)
+
+	// Read existing whitelist content and deduplicate in memory
+	var/list/whitelist_content = world.file2list(WHITELISTFILE)
+	var/list/unique_ckeys = list()
+	for(var/line in whitelist_content)
+		var/entry = ckey(line)
+		if(entry && !(entry in unique_ckeys))
+			unique_ckeys += entry
+
+	if(ckey_to_add in unique_ckeys)
 		to_chat(src, span_warning("[ckey_to_add] is already in the whitelist!"))
 		return
-	
-	// Read existing whitelist content
-	var/list/whitelist_content = world.file2list(WHITELISTFILE)
-	
-	// Add the new ckey to the whitelist file
-	whitelist_content += ckey_to_add
-	
-	// Write the updated whitelist back to the file
-	text2file(whitelist_content.Join("\n"), WHITELISTFILE)
-	
+
+	// Append the new ckey to the end of the file
+	WHITELISTFILE << "[ckey_to_add]\n"
+
 	// Reload whitelist
 	load_whitelist()
-	
+
 	log_admin("[key_name(src)] has added [ckey_to_add] to the whitelist.")
 	message_admins("[key_name_admin(src)] has added [ckey_to_add] to the whitelist.")
 	
