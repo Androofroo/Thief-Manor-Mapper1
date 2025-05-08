@@ -192,7 +192,7 @@ INITIALIZE_IMMEDIATE(/obj/effect/landmark)
 	icon_state = "arrow"
 
 /obj/effect/landmark/start/councillor
-	name = "Councillor"
+	name = "Noble Guest"
 	icon_state = "arrow"
 
 /obj/effect/landmark/start/veteran
@@ -399,7 +399,7 @@ INITIALIZE_IMMEDIATE(/obj/effect/landmark)
 //yrf
 
 /obj/effect/landmark/start/squire
-	name = "Squire"
+	name = "Recruit"
 	icon_state = "arrow"
 
 /obj/effect/landmark/start/wapprentice
