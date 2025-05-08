@@ -266,8 +266,7 @@
 /datum/outfit/job/roguetown/manorguard/witchfinder
 	shirt = /obj/item/clothing/suit/roguetown/armor/gambeson
 	armor = /obj/item/clothing/suit/roguetown/armor/plate/scale/inqcoat
-	head = /obj/item/clothing/head/roguetown/duelhat
-	cloak = /obj/item/clothing/cloak/half
+	head = /obj/item/clothing/head/roguetown/bucklehat
 	pants = /obj/item/clothing/under/roguetown/trou/beltpants
 	wrists = /obj/item/clothing/neck/roguetown/psicross/silver
 	gloves = /obj/item/clothing/gloves/roguetown/angle
