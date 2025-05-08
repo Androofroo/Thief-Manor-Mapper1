@@ -58,6 +58,8 @@ GLOBAL_PROTECT(admin_verbs_admin)
 	/client/proc/reload_admins,
 	/client/proc/reload_whitelist,
 	/client/proc/add_to_whitelist,		/*allows admins to add a player to the whitelist*/
+	/client/proc/remove_from_whitelist, /*allows admins to remove a player from the whitelist*/
+	/client/proc/check_whitelist_file, /*allows admins to check the whitelist file*/
 	/client/proc/reestablish_db_connection, /*reattempt a connection to the database*/
 	/client/proc/cmd_admin_pm_context,	/*right-click adminPM interface*/
 	/client/proc/cmd_admin_pm_panel,		/*admin-pm list*/
@@ -898,3 +900,5 @@ GLOBAL_PROTECT(admin_verbs_hideable)
 			message_admins("[ADMIN_LOOKUPFLW(src)] has removed the bounty on [ADMIN_LOOKUPFLW(target_name)]")
 			return
 	to_chat(src, "Error. Bounty no longer active.") 
+
+

@@ -58,4 +58,60 @@ GLOBAL_PROTECT(whitelist)
 	log_admin("[key_name(src)] has added [ckey_to_add] to the whitelist.")
 	message_admins("[key_name_admin(src)] has added [ckey_to_add] to the whitelist.")
 	
+/client/proc/check_whitelist_file()
+	set category = "-GameMaster-"
+	set name = "Check Whitelist"
+
+	if(!check_rights(R_ADMIN))
+		return
+
+	// Ensure whitelist is loaded
+	if(!GLOB.whitelist || !GLOB.whitelist.len)
+		load_whitelist()
+
+	var/list/entries = GLOB.whitelist
+	if(!entries || !entries.len)
+		to_chat(src, span_warning("Whitelist is empty!"))
+		return
+
+	var/dat = "<b>Current Whitelist:</b><br>"
+	for(var/ckey in entries)
+		dat += "[ckey]<br>"
+
+	// Show in a browser window
+	src << browse(dat, "window=whitelist;size=400x600;titlebar=1;can_close=1")
+
+/client/proc/remove_from_whitelist()
+	set category = "-GameMaster-"
+	set name = "Remove Whitelist"
+
+	if(!check_rights(R_ADMIN))
+		return
+
+	// Ensure whitelist is loaded
+	if(!GLOB.whitelist || !GLOB.whitelist.len)
+		load_whitelist()
+
+	var/list/entries = GLOB.whitelist.Copy()
+	if(!entries || !entries.len)
+		to_chat(src, span_warning("Whitelist is empty!"))
+		return
+
+	var/ckey_to_remove = input(src, "Select a ckey to remove from the whitelist:", "Remove from Whitelist") as null|anything in entries
+	if(!ckey_to_remove)
+		return
+
+	// Remove from file
+	var/list/whitelist_content = world.file2list(WHITELISTFILE)
+	var/list/new_content = list()
+	for(var/line in whitelist_content)
+		if(ckey(line) != ckey_to_remove)
+			new_content += line
+
+	text2file(new_content.Join("\n"), WHITELISTFILE)
+	load_whitelist()
+
+	log_admin("[key_name(src)] has removed [ckey_to_remove] from the whitelist.")
+	message_admins(span_adminnotice("[key_name_admin(src)] has removed [ckey_to_remove] from the whitelist."))
+
 #undef WHITELISTFILE
