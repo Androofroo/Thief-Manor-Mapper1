@@ -51,8 +51,15 @@ GLOBAL_PROTECT(whitelist)
 		to_chat(src, span_warning("[ckey_to_add] is already in the whitelist!"))
 		return
 
-	// Append the new ckey to the end of the file
-	WHITELISTFILE << "[ckey_to_add]\n"
+	// Append the new ckey to the end of the file, ensuring a newline if needed
+	var/last_char = null
+	var/file_text = file2text(WHITELISTFILE)
+	if(file_text && length(file_text))
+		last_char = copytext(file_text, length(file_text))
+	if(last_char != "\n")
+		file(WHITELISTFILE) << "\n[ckey_to_add]\n"
+	else
+		file(WHITELISTFILE) << "[ckey_to_add]\n"
 
 	// Reload whitelist
 	load_whitelist()
