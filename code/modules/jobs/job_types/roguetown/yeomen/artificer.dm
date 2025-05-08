@@ -50,7 +50,7 @@
 	belt = /obj/item/storage/belt/rogue/leather
 	beltr = /obj/item/storage/belt/rogue/pouch/coins/mid
 	beltl = /obj/item/roguekey/artificer
-	mask = /obj/item/clothing/mask/rogue/spectacles/golden
+	mask = /obj/item/clothing/glasses/trap_goggles
 	backl = /obj/item/storage/backpack/rogue/backpack
 	backpack_contents = list(
 						/obj/item/rogueweapon/engineers_wrench = 1,

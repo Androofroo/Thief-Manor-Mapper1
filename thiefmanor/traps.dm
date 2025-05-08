@@ -26,7 +26,8 @@
 	if(armed)
 		var/turf/T = get_turf(src)
 		if(T)
-			new /obj/structure/trap/frosttrap(T)
+			var/obj/structure/trap/frosttrap/S = new /obj/structure/trap/frosttrap(T)
+			S.fade_to_invisible()
 		qdel(src)
 	..()
 
@@ -121,7 +122,8 @@
 	if(armed)
 		var/turf/T = get_turf(src)
 		if(T)
-			new /obj/structure/trap/tripwire_bell(T)
+			var/obj/structure/trap/tripwire_bell/S = new /obj/structure/trap/tripwire_bell(T)
+			S.fade_to_invisible()
 		qdel(src)
 	..()
 
@@ -181,7 +183,8 @@
 	if(armed)
 		var/turf/T = get_turf(src)
 		if(T)
-			new /obj/structure/trap/firetrap(T)
+			var/obj/structure/trap/firetrap/S = new /obj/structure/trap/firetrap(T)
+			S.fade_to_invisible()
 		qdel(src)
 	..()
 
@@ -249,7 +252,8 @@
 	if(armed)
 		var/turf/T = get_turf(src)
 		if(T)
-			new /obj/structure/trap/peppertrap(T)
+			var/obj/structure/trap/peppertrap/S = new /obj/structure/trap/peppertrap(T)
+			S.fade_to_invisible()
 		qdel(src)
 	..()
 
@@ -297,8 +301,8 @@
 	resistance_flags = FIRE_PROOF
 	slot_flags = ITEM_SLOT_MASK
 	body_parts_covered = EYES
-	icon = 'icons/roguetown/clothing/masks.dmi'
 	mob_overlay_icon = 'icons/roguetown/clothing/onmob/masks.dmi'
+	icon = 'icons/roguetown/clothing/masks.dmi'
 	icon_state = "goggles"
 	item_state = "goggles"
 	darkness_view = 8
@@ -347,9 +351,12 @@
 		user.trap_highlight_list |= existing
 
 /obj/item/clothing/glasses/trap_goggles/proc/disable_trap_vision(mob/user)
-	if(!user || !user.trap_highlight_list)
+	if(!user)
 		return
 	
+	if(!user.trap_highlight_list)
+		return
+		
 	for(var/obj/effect/trap_highlight/H in user.trap_highlight_list)
 		H.visible_to -= user
 		if(!length(H.visible_to))
@@ -367,36 +374,69 @@
 		
 	enable_trap_vision(user)
 
+/obj/structure/trap/proc/set_invisible()
+	alpha = 0
+
+/obj/structure/trap/proc/fade_to_invisible()
+	// Properly fade the trap using animate() over 10 seconds
+	// This is more reliable than using sleep()
+	alpha = 255  // Ensure we start fully visible
+	animate(src, alpha = 0, time = 10 SECONDS, easing = SINE_EASING)
+
+/obj/structure/trap/flare()
+	alpha = 255
+	visible_message(flare_message)
+	if(sparks)
+		spark_system.start()
+	last_trigger = world.time
+	charges--
+	if(charges <= 0)
+		QDEL_IN(src, 10)
+	else
+		fade_to_invisible()
+
+// Define the variable for mobs
+/mob/var/list/trap_highlight_list = null
+
 // Create a helper object to use with visibility
 /obj/effect/trap_highlight
 	name = "trap highlight"
 	icon = 'icons/effects/effects.dmi'
-	icon_state = "nothing"
+	icon_state = "nothing"  // Invisible state
 	anchored = TRUE
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 	layer = 100
 	plane = 30
 	
+	// Store a reference to the original trap
 	var/obj/structure/trap/parent_trap = null
+	
+	// Track which users can see it
 	var/list/visible_to = list()
 	
 /obj/effect/trap_highlight/Initialize(mapload, obj/structure/trap/T)
 	. = ..()
 	if(T)
 		parent_trap = T
+		// Use the trap's icon and state
 		icon = T.icon
 		icon_state = T.icon_state
+		// Set appearance for visibility
 		alpha = 255
 		appearance_flags = RESET_ALPHA|RESET_TRANSFORM|KEEP_APART|TILE_BOUND
+		// Position exactly at the trap
 		forceMove(get_turf(T))
 		
+		// Set up a timer to follow the trap if it moves
 		START_PROCESSING(SSobj, src)
 		
 /obj/effect/trap_highlight/process()
 	if(parent_trap)
+		// If the trap moved, follow it
 		if(get_turf(src) != get_turf(parent_trap))
 			forceMove(get_turf(parent_trap))
 	else
+		// If the parent trap is gone, destroy self
 		qdel(src)
 
 /obj/effect/trap_highlight/Destroy()
@@ -410,8 +450,11 @@
 		return parent_trap.examine(user)
 	return ..()
 
+// For each mob that can see the trap, we'll directly modify how their client perceives the trap
 /obj/effect/trap_highlight/proc/hide_from_all_except(list/users)
+	// Store the users who should be able to see this
 	visible_to = users
 
+// Override canSee to control visibility (if implemented in the codebase)
 /obj/effect/trap_highlight/proc/can_be_seen_by(mob/M)
 	return (M in visible_to)
