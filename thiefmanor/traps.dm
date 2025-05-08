@@ -431,13 +431,15 @@
 		START_PROCESSING(SSobj, src)
 		
 /obj/effect/trap_highlight/process()
-	if(parent_trap)
-		// If the trap moved, follow it
-		if(get_turf(src) != get_turf(parent_trap))
-			forceMove(get_turf(parent_trap))
-	else
-		// If the parent trap is gone, destroy self
+	if(QDELETED(parent_trap))
+		// Parent trap is gone, destroy self
 		qdel(src)
+		return
+		
+	// Only move if the parent trap exists and has a valid turf
+	var/turf/trap_turf = get_turf(parent_trap)
+	if(trap_turf && get_turf(src) != trap_turf)
+		forceMove(trap_turf)
 
 /obj/effect/trap_highlight/Destroy()
 	STOP_PROCESSING(SSobj, src)

@@ -1915,6 +1915,7 @@
 	var/looktime = 50 - (STAPER * 2) - (mind?.get_skill_level(/datum/skill/misc/tracking) * 5)
 	looktime = clamp(looktime, 7, 50)
 	if(HAS_TRAIT(src, TRAIT_SLEUTH) ? move_after(src, looktime, target = src) : do_after(src, looktime, target = src))
+		// Look for mobs
 		for(var/mob/living/M in view(7,src))
 			var/marked = FALSE
 			if(M == src)
@@ -1958,6 +1959,7 @@
 					else
 						found_ping(get_turf(M), client, "hidden")
 
+		// Look for bear traps and maneaters
 		for(var/obj/O in view(7,src))
 			if(istype(O, /obj/item/restraints/legcuffs/beartrap))
 				var/obj/item/restraints/legcuffs/beartrap/M = O
@@ -1965,7 +1967,41 @@
 					found_ping(get_turf(M), client, "trap")
 			if(istype(O, /obj/structure/flora/roguegrass/maneater/real))
 				found_ping(get_turf(O), client, "trap")
-			//Hearthstone port - Tracking
+		
+		// NEW: Look for hidden traps based on PER and trap skill
+		var/trap_detection_chance = STAPER * 4 // Base chance from PER
+		var/trap_skill_level = 0
+		if(mind)
+			trap_skill_level = mind.get_skill_level(/datum/skill/craft/traps)
+			trap_detection_chance += trap_skill_level * 10 // Each trap skill level adds 10% detection chance
+		
+		// Cap the chance at 90%, leaving some uncertainty even for high-skill players
+		trap_detection_chance = min(trap_detection_chance, 90)
+		
+		// Look for any type of trap in a generous range
+		for(var/obj/structure/trap/T in view(7, src))
+			// Ignore traps that are already visible
+			if(T.alpha >= 200)
+				continue
+				
+			// Roll to see if we detect the trap
+			if(prob(trap_detection_chance))
+				found_ping(get_turf(T), client, "trap")
+				
+				// Add temporary highlight for the detected trap - higher skill means longer visibility
+				var/vision_duration = 30 + (trap_skill_level * 10) // 30 to 80 deciseconds depending on skill
+				temporary_trap_vision(T, vision_duration)
+				
+				if(trap_skill_level >= 3) // At higher skill levels, actually reveal the trap briefly
+					T.alpha = 180
+					addtimer(CALLBACK(T, TYPE_PROC_REF(/obj/structure/trap, set_invisible)), 10) // Make it fade again after 1 second
+				
+				// Give the player a hint about what kind of trap they found
+				to_chat(src, span_warning("I spot a hidden [T.name]!"))
+			else if(trap_skill_level >= 4 && prob(50)) // High level trap experts might sense something even on a failed roll
+				to_chat(src, span_warning("I sense something suspicious nearby..."))
+					
+		//Hearthstone port - Tracking
 		for(var/obj/effect/track/potential_track in orange(7, src)) //Can't use view because they're invisible by default.
 			if(!can_see(src, potential_track, 10))
 				continue
@@ -2153,3 +2189,46 @@
 	reset_perspective()
 	update_cone_show()
 //	UnregisterSignal(src, COMSIG_MOVABLE_PRE_MOVE)
+
+
+/mob/living/proc/temporary_trap_vision(obj/structure/trap/detected_trap, duration = 50)
+	if(!client || !detected_trap)
+		return
+	
+	// Create or get a trap highlight list if needed
+	if(!trap_highlight_list)
+		trap_highlight_list = list()
+	
+	// Check if there's already a highlight for this trap
+	var/obj/effect/trap_highlight/existing = null
+	for(var/obj/effect/trap_highlight/H in get_turf(detected_trap))
+		if(H.parent_trap == detected_trap)
+			existing = H
+			break
+	
+	// Create a new highlight if needed
+	if(!existing)
+		existing = new /obj/effect/trap_highlight(get_turf(detected_trap), detected_trap)
+	
+	// Make it visible to this user
+	existing.visible_to |= src
+	trap_highlight_list |= existing
+	
+	// Schedule removal after duration
+	addtimer(CALLBACK(src, PROC_REF(remove_temporary_trap_vision), existing), duration)
+	
+/mob/living/proc/remove_temporary_trap_vision(obj/effect/trap_highlight/highlight)
+	if(!highlight || !trap_highlight_list)
+		return
+		
+	// Remove self from visibility list
+	highlight.visible_to -= src
+	trap_highlight_list -= highlight
+	
+	// If no one can see it anymore, delete it
+	if(!length(highlight.visible_to))
+		qdel(highlight)
+	
+	// If our list is now empty, clean it up
+	if(!length(trap_highlight_list))
+		trap_highlight_list = null
