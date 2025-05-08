@@ -1,5 +1,5 @@
 /datum/job/roguetown/squire
-	title = "Squire"
+	title = "Recruit"
 	flag = SQUIRE
 	department_flag = GARRISON
 	faction = "Station"
@@ -9,7 +9,7 @@
 	allowed_sexes = list(MALE, FEMALE)
 	allowed_ages = list(AGE_ADULT)
 
-	tutorial = "The Squire is a loyal aide-in-training, eager to prove themselves in service to their knight or the manor. Though inexperienced, they're resourceful, quick on their feet, and often underestimated by friend and foe alike."
+	tutorial = "A green-clad rookie still getting used to the weight of a sword and the echo of their own footsteps in the manor’s quiet halls. Eager to prove themselves but prone to nerves, they follow orders to the letter—even when they shouldn’t."
 	outfit = /datum/outfit/job/roguetown/squire
 	display_order = JDO_SQUIRE
 	give_bank_account = TRUE
